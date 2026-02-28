@@ -1,16 +1,8 @@
-/// A minimal ACP client demonstrating the client-side API.
+/// A working ACP client + agent example using in-memory transports.
 ///
-/// This example uses in-memory linked transports to simulate a
-/// client ↔ agent connection without spawning a subprocess.
+/// Run with: `dart run example/basic_client.dart`
 ///
-/// In production, you would use [StdioProcessTransport.start] to
-/// spawn an agent process:
-///
-/// ```dart
-/// final transport = await StdioProcessTransport.start(
-///   'dart', ['run', 'example/basic_agent.dart'],
-/// );
-/// ```
+/// Shows the complete flow: initialize → new session → prompt → updates → close.
 library;
 
 import 'dart:async';
@@ -18,7 +10,48 @@ import 'dart:async';
 import 'package:acp/agent.dart';
 import 'package:acp/client.dart';
 import 'package:acp/schema.dart';
+import 'package:acp/src/protocol/json_rpc_message.dart';
 import 'package:acp/transport.dart';
+
+// -- In-memory linked transports --
+
+(AcpTransport, AcpTransport) _createLinkedTransports() {
+  // ignore: close_sinks
+  final aToB = StreamController<JsonRpcMessage>();
+  // ignore: close_sinks
+  final bToA = StreamController<JsonRpcMessage>();
+  final transportA = _LinkedTransport(inbound: bToA.stream, outboundSink: aToB);
+  final transportB = _LinkedTransport(inbound: aToB.stream, outboundSink: bToA);
+  return (transportA, transportB);
+}
+
+class _LinkedTransport implements AcpTransport {
+  final Stream<JsonRpcMessage> _inbound;
+  final StreamController<JsonRpcMessage> _outboundSink;
+  bool _closed = false;
+
+  _LinkedTransport({
+    required Stream<JsonRpcMessage> inbound,
+    required StreamController<JsonRpcMessage> outboundSink,
+  })  : _inbound = inbound,
+        _outboundSink = outboundSink;
+
+  @override
+  Stream<JsonRpcMessage> get messages => _inbound;
+
+  @override
+  Future<void> send(JsonRpcMessage message) async {
+    if (_closed) throw StateError('Transport is closed');
+    _outboundSink.add(message);
+  }
+
+  @override
+  Future<void> close() async {
+    if (_closed) return;
+    _closed = true;
+    await _outboundSink.close();
+  }
+}
 
 // -- A simple echo agent for the demo --
 
@@ -60,7 +93,7 @@ class _EchoAgentHandler extends AgentHandler {
   }
 }
 
-// -- A simple client handler --
+// -- A simple client handler that prints session updates --
 
 class _PrintingClientHandler extends ClientHandler {
   @override
@@ -68,62 +101,74 @@ class _PrintingClientHandler extends ClientHandler {
     switch (update) {
       case AgentMessageChunk(:final content):
         // ignore: avoid_print
-        print('[session/$sessionId] Agent: ${content['text']}');
+        print('   [session/$sessionId] Agent says: ${content['text']}');
       default:
         // ignore: avoid_print
-        print('[session/$sessionId] Update: ${update.runtimeType}');
+        print('   [session/$sessionId] Update: ${update.runtimeType}');
     }
   }
 }
 
-Future<void> main() async {
-  // Reference the types to show they compile against the real API.
-  // In production, you'd pass these to actual connections.
-  // ignore: avoid_print
-  print('Handler type: $_PrintingClientHandler');
-  // ignore: avoid_print
-  print('Agent handler factory: $_EchoAgentHandler\n');
+// -- Main --
 
+Future<void> main() async {
   // ignore: avoid_print
   print('=== ACP Client Example ===\n');
-  // ignore: avoid_print
-  print('In production, create a client like this:\n');
-  // ignore: avoid_print
-  print('''
-  // Spawn the agent process
-  final transport = await StdioProcessTransport.start(
-    'dart', ['run', 'example/basic_agent.dart'],
+
+  // Create linked in-memory transports
+  final (agentTransport, clientTransport) = _createLinkedTransports();
+
+  // Create agent side
+  // ignore: unused_local_variable
+  final agent = AgentSideConnection(
+    agentTransport,
+    handlerFactory: (conn) => _EchoAgentHandler(conn),
+    capabilityEnforcement: CapabilityEnforcement.permissive,
   );
 
-  // Create the client connection
+  // Create client side
+  final clientHandler = _PrintingClientHandler();
   final client = ClientSideConnection(
-    transport,
-    handler: MyClientHandler(),
-    clientCapabilities: ClientCapabilities(
+    clientTransport,
+    handler: clientHandler,
+    clientCapabilities: const ClientCapabilities(
       fs: FileSystemCapability(readTextFile: true),
-      terminal: true,
     ),
+    capabilityEnforcement: CapabilityEnforcement.permissive,
   );
 
-  // Initialize
-  await client.sendInitialize(protocolVersion: 1);
+  // 1. Initialize
+  // ignore: avoid_print
+  print('1. Initializing...');
+  final initResp = await client.sendInitialize(protocolVersion: 1);
+  // ignore: avoid_print
+  print('   Protocol version: ${initResp.protocolVersion}');
 
-  // Create a session
-  final session = await client.sendNewSession(cwd: '/home/user');
+  // 2. Create session
+  // ignore: avoid_print
+  print('\n2. Creating session...');
+  final sessionResp = await client.sendNewSession(cwd: '/home');
+  // ignore: avoid_print
+  print('   Session ID: ${sessionResp.sessionId}');
 
-  // Send a prompt
-  final response = await client.sendPrompt(
-    sessionId: session.sessionId,
-    prompt: [TextContent(text: 'Hello, agent!')],
+  // 3. Send prompt (the agent echoes it back as a session update)
+  // ignore: avoid_print
+  print('\n3. Sending prompt...');
+  final promptResp = await client.sendPrompt(
+    sessionId: sessionResp.sessionId,
+    prompt: [const TextContent(text: 'Hello, agent!')],
   );
-  print('Stop reason: \${response.stopReason}');
+  // ignore: avoid_print
+  print('   Stop reason: ${promptResp.stopReason}');
 
-  // Listen for streaming updates
-  client.sessionUpdates.listen((event) {
-    print('Update for \${event.sessionId}: \${event.update}');
-  });
+  // Give time for any remaining session updates to arrive
+  await Future<void>.delayed(const Duration(milliseconds: 100));
 
-  // Clean up
+  // 4. Clean up
+  // ignore: avoid_print
+  print('\n4. Closing...');
   await client.close();
-''');
+  await agent.close();
+  // ignore: avoid_print
+  print('   Done!');
 }
