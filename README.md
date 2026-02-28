@@ -156,6 +156,17 @@ Future<void> main() async {
 - **Cancellation** — every handler method receives an `AcpCancellationToken` for cooperative cancellation.
 - **Extension methods** — send and receive custom `_`-prefixed methods via `extMethod()` / `onExtMethod()`.
 - **Session updates** — agents stream `SessionUpdate` notifications (message chunks, tool calls, plan updates) to clients.
+- **Connection keepalive** — periodic `$/ping` notifications with automatic `$/pong` responses detect dead connections. Configure via `keepaliveInterval` (ping frequency) and `keepaliveTimeout` (max wait for pong before closing):
+  ```dart
+  final conn = Connection(transport,
+    keepaliveInterval: Duration(seconds: 30),
+    keepaliveTimeout: Duration(seconds: 10),
+  );
+  ```
+- **Message batching** — `JsonRpcMessage.parseBatch()` handles both single JSON-RPC objects and batch arrays per the JSON-RPC 2.0 spec. `WebSocketTransport` uses this automatically:
+  ```dart
+  final messages = JsonRpcMessage.parseBatch(jsonDecode(rawData));
+  ```
 
 ## Real-World Examples
 
@@ -232,6 +243,23 @@ dart test -t integration         # Integration tests only
 dart test -t compliance          # Wire format compliance tests
 ```
 
+### Code Generation
+
+`lib/src/schema/` is generated from the official ACP JSON Schema files checked in at `tool/upstream/schema/`. To update:
+
+```bash
+# Download latest upstream schema
+dart run tool/schema_sync/sync.dart
+
+# Regenerate Dart models
+dart run tool/generate/generate.dart
+
+# Verify
+dart analyze && dart test
+```
+
+CI verifies codegen freshness — if someone updates the schema but forgets to regenerate, the build fails.
+
 ### Linting & Formatting
 
 ```bash
@@ -262,6 +290,10 @@ test/
 example/
   basic_agent.dart      # Minimal echo agent
   basic_client.dart     # Minimal client demo
+tool/
+  generate/              # Schema → Dart code generator
+  schema_sync/           # Downloads upstream JSON Schema files
+  upstream/schema/       # Checked-in copies of official ACP schema
 ```
 
 ## Contributing

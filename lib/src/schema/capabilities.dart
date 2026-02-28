@@ -3,7 +3,6 @@
 // Source: tool/upstream/schema/schema.json
 // Run `dart run tool/generate/generate.dart` to regenerate.
 
-import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
 /// Filesystem capabilities supported by the client.
@@ -112,8 +111,8 @@ final class ClientCapabilities implements HasMeta {
 
 /// Prompt capabilities supported by the agent in `session/prompt` requests.
 ///
-/// Baseline agent functionality requires support for [TextContent]
-/// and [ResourceLink] in prompt requests.
+/// Baseline agent functionality requires support for [`ContentBlock::Text`]
+/// and [`ContentBlock::ResourceLink`] in prompt requests.
 ///
 /// Other variants must be explicitly opted in to.
 /// Capabilities for different types of content in prompt requests.
@@ -123,16 +122,16 @@ final class ClientCapabilities implements HasMeta {
 ///
 /// See protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/initialization#prompt-capabilities)
 final class PromptCapabilities implements HasMeta {
-  /// Agent supports [AudioContent] blocks.
+  /// Agent supports [`ContentBlock::Audio`].
   final bool audio;
 
   /// Agent supports embedded context in `session/prompt` requests.
   ///
-  /// When enabled, the Client is allowed to include [EmbeddedResource]
+  /// When enabled, the Client is allowed to include [`ContentBlock::Resource`]
   /// in prompt requests for pieces of context that are referenced in the message.
   final bool embeddedContext;
 
-  /// Agent supports [ImageContent] blocks.
+  /// Agent supports [`ContentBlock::Image`].
   final bool image;
 
   @override
@@ -177,10 +176,10 @@ final class PromptCapabilities implements HasMeta {
 
 /// MCP capabilities supported by the agent
 final class McpCapabilities implements HasMeta {
-  /// Agent supports HTTP-based MCP servers.
+  /// Agent supports [`McpServer::Http`].
   final bool http;
 
-  /// Agent supports SSE-based MCP servers.
+  /// Agent supports [`McpServer::Sse`].
   final bool sse;
 
   @override
@@ -274,7 +273,7 @@ final class AgentCapabilities implements HasMeta {
   /// Prompt capabilities supported by the agent.
   final PromptCapabilities promptCapabilities;
 
-  /// Session capabilities supported by the agent.
+  /// The session capabilities.
   final SessionCapabilities sessionCapabilities;
 
   @override

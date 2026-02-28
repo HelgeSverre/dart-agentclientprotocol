@@ -33,6 +33,7 @@ enforcement. This layer contains:
 | `AcpTransport`          | `transport/acp_transport.dart`           | Abstract send/receive boundary                           |
 | `StdioTransport`        | `transport/stdio_transport.dart`         | NDJSON over existing stdin/stdout                        |
 | `StdioProcessTransport` | `transport/stdio_process_transport.dart` | Spawns subprocess, NDJSON over its stdio                 |
+| `WebSocketTransport`    | `transport/web_socket_transport.dart`    | WebSocket text frames, client or server side             |
 | `Connection`            | `protocol/connection.dart`               | JSON-RPC state machine, request correlation, write queue |
 | `AgentSideConnection`   | `protocol/agent_side_connection.dart`    | Typed dispatch for agent implementers                    |
 | `ClientSideConnection`  | `protocol/client_side_connection.dart`   | Typed dispatch for client implementers                   |
@@ -143,3 +144,20 @@ Controlled by `CapabilityEnforcement` enum:
 cancellation. Tokens are passed to handlers and can be attached to outgoing
 requests. Cancellation completes the pending future with
 `RequestCanceledException`.
+
+### Connection Keepalive
+
+`Connection` supports optional keepalive probing via `$/ping` and `$/pong`
+notifications, configured through two constructor parameters:
+
+- **`keepaliveInterval`** — how often to send `$/ping`. When set, a periodic
+  timer fires and sends a `$/ping` notification to the remote side.
+- **`keepaliveTimeout`** — how long to wait for a `$/pong` response after each
+  ping. If no pong arrives within this duration, the connection is closed via
+  `_cleanup()`.
+
+Incoming `$/ping` notifications are automatically answered with `$/pong`.
+Incoming `$/pong` notifications reset the timeout timer and update `_lastPong`.
+
+Keepalive timers are started when the connection enters the `open` state and
+stopped during `_cleanup()` (close, error, or timeout).

@@ -54,10 +54,10 @@ sealed class ContentBlock implements HasMeta {
 /// All agents MUST support text content blocks in prompts.
 /// Clients SHOULD render this text as Markdown.
 final class TextContent extends ContentBlock {
-  /// Optional annotations for this content.
+  /// The annotations.
   final Annotations? annotations;
 
-  /// The text content.
+  /// The text.
   final String text;
 
   @override
@@ -107,16 +107,16 @@ final class TextContent extends ContentBlock {
 ///
 /// Requires the `image` prompt capability when included in prompts.
 final class ImageContent extends ContentBlock {
-  /// Optional annotations for this content.
+  /// The annotations.
   final Annotations? annotations;
 
-  /// Base64-encoded image data.
+  /// The data.
   final String data;
 
-  /// The MIME type of the image.
+  /// The mime type.
   final String mimeType;
 
-  /// Optional URI for the original image source.
+  /// The uri.
   final String? uri;
 
   @override
@@ -172,13 +172,13 @@ final class ImageContent extends ContentBlock {
 ///
 /// Requires the `audio` prompt capability when included in prompts.
 final class AudioContent extends ContentBlock {
-  /// Optional annotations for this content.
+  /// The annotations.
   final Annotations? annotations;
 
-  /// Base64-encoded audio data.
+  /// The data.
   final String data;
 
-  /// The MIME type of the audio.
+  /// The mime type.
   final String mimeType;
 
   @override
@@ -231,25 +231,25 @@ final class AudioContent extends ContentBlock {
 ///
 /// All agents MUST support resource links in prompts.
 final class ResourceLink extends ContentBlock {
-  /// Optional annotations for this resource link.
+  /// The annotations.
   final Annotations? annotations;
 
-  /// A human-readable description of the resource.
+  /// The description.
   final String? description;
 
-  /// The MIME type of the resource.
+  /// The mime type.
   final String? mimeType;
 
-  /// The display name of the resource.
+  /// The name.
   final String name;
 
-  /// The size of the resource in bytes.
+  /// The size.
   final int? size;
 
-  /// An optional title for the resource.
+  /// The title.
   final String? title;
 
-  /// The URI of the linked resource.
+  /// The uri.
   final String uri;
 
   @override
@@ -326,10 +326,10 @@ final class ResourceLink extends ContentBlock {
 ///
 /// Requires the `embeddedContext` prompt capability when included in prompts.
 final class EmbeddedResource extends ContentBlock {
-  /// Optional annotations for this embedded resource.
+  /// The annotations.
   final Annotations? annotations;
 
-  /// The embedded resource contents.
+  /// The resource.
   final Map<String, dynamic> resource;
 
   @override

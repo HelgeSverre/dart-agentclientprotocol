@@ -67,7 +67,7 @@ final class ReadTextFileRequest implements HasMeta {
 
 /// Response containing the contents of a text file.
 final class ReadTextFileResponse implements HasMeta {
-  /// The text content of the file.
+  /// The content.
   final String content;
 
   @override

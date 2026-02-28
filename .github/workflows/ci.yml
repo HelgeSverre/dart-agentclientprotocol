@@ -32,6 +32,22 @@ jobs:
       - run: dart pub get
       - run: dart test
 
+  codegen-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.7.0'
+      - run: dart pub get
+      - run: dart run tool/generate/generate.dart
+      - name: Check for uncommitted codegen changes
+        run: |
+          if ! git diff --exit-code lib/src/schema/; then
+            echo "::error::Generated schema code is out of date. Run 'dart run tool/generate/generate.dart' and commit the result."
+            exit 1
+          fi
+
   publish-dry-run:
     runs-on: ubuntu-latest
     steps:

@@ -7,13 +7,13 @@ import 'package:acp/src/schema/has_meta.dart';
 
 /// Optional annotations for the client. The client can use annotations to inform how objects are used or displayed
 final class Annotations implements HasMeta {
-  /// The intended audience for the annotated content.
+  /// The audience.
   final List<String>? audience;
 
-  /// ISO 8601 timestamp of when the content was last modified.
+  /// The last modified.
   final String? lastModified;
 
-  /// Priority hint for display ordering (higher = more important).
+  /// The priority.
   final double? priority;
 
   @override

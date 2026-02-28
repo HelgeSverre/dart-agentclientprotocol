@@ -115,10 +115,8 @@ void _emitStruct(StringBuffer buf, StructType type) {
 
   // Field declarations.
   for (final field in type.fields) {
-    if (field.description != null) {
-      _emitDocComment(buf, field.description!, '  ');
-    }
     if (field.jsonKey == '_meta') continue; // Handled as HasMeta.
+    _emitFieldDoc(buf, field);
     buf.writeln('  final ${_fieldDartType(field)} ${field.dartName};');
     buf.writeln();
   }
@@ -310,9 +308,7 @@ void _emitSealedVariant(
   } else {
     // Typed variant with fields.
     for (final field in variant.fields) {
-      if (field.description != null) {
-        _emitDocComment(buf, field.description!, '  ');
-      }
+      _emitFieldDoc(buf, field);
       buf.writeln('  final ${_fieldDartType(field)} ${field.dartName};');
       buf.writeln();
     }
@@ -663,6 +659,36 @@ String _toJsonExpr(FieldDef field) {
     default:
       return field.dartName;
   }
+}
+
+/// Emits a doc comment for a field, using description if available or
+/// a fallback derived from the field name.
+void _emitFieldDoc(StringBuffer buf, FieldDef field) {
+  if (field.description != null) {
+    _emitDocComment(buf, field.description!, '  ');
+  } else {
+    // Generate a minimal doc comment from the field name to satisfy
+    // public_member_api_docs.
+    final readable = _dartNameToReadable(field.dartName);
+    _emitDocComment(buf, 'The $readable.', '  ');
+  }
+}
+
+/// Converts a camelCase Dart name to a readable phrase.
+///
+/// Example: `sessionCapabilities` → `session capabilities`.
+String _dartNameToReadable(String name) {
+  final buf = StringBuffer();
+  for (var i = 0; i < name.length; i++) {
+    final c = name[i];
+    if (c == c.toUpperCase() && c != c.toLowerCase() && i > 0) {
+      buf.write(' ');
+      buf.write(c.toLowerCase());
+    } else {
+      buf.write(c);
+    }
+  }
+  return buf.toString();
 }
 
 void _emitDocComment(StringBuffer buf, String text, String indent) {

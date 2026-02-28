@@ -100,6 +100,43 @@ This ensures no zombie processes remain, even if the agent ignores `SIGTERM`.
 `StdioProcessTransport` depends on `dart:io` (`Process`, signals) and is only
 available on native platforms (not web).
 
+## `WebSocketTransport`
+
+**File:** `lib/src/transport/web_socket_transport.dart`
+
+Communicates via WebSocket text frames. Each JSON-RPC message is sent as a
+single JSON text frame.
+
+### Usage patterns
+
+```dart
+// Client-side: connect to a remote agent
+final transport = await WebSocketTransport.connect(
+  Uri.parse('ws://localhost:8080/acp'),
+  headers: {'Authorization': 'Bearer token'},
+);
+
+// Server-side: wrap an already-accepted WebSocket
+final transport = WebSocketTransport(upgradeSocket);
+```
+
+### Key details
+
+- **Static `connect()` factory** establishes an outgoing WebSocket connection,
+  accepting optional headers and sub-protocols.
+- **Default constructor** wraps an existing `WebSocket` (e.g. from
+  `WebSocketTransformer.upgrade`). Listening begins immediately.
+- **Non-string frames** (binary) are ignored with a warning log.
+- **Close inspection:** `closeCode` and `closeReason` expose the WebSocket
+  close frame received from the remote side.
+- **Close timeout:** Subscription cancellation uses a 1-second timeout to avoid
+  blocking if the underlying stream is in an intermediate state.
+
+### Platform availability
+
+`WebSocketTransport` depends on `dart:io` (`WebSocket`) and is only available
+on native platforms (not web).
+
 ## `LinkedTransport` (testing)
 
 **File:** `test/helpers/linked_transport.dart`

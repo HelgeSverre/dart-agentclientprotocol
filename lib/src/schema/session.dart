@@ -3,7 +3,6 @@
 // Source: tool/upstream/schema/schema.json
 // Run `dart run tool/generate/generate.dart` to regenerate.
 
-import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
@@ -231,15 +230,15 @@ final class LoadSessionResponse implements HasMeta {
 final class PromptRequest implements HasMeta {
   /// The blocks of content that compose the user's message.
   ///
-  /// As a baseline, the Agent MUST support [TextContent] and [ResourceLink],
-  /// while other variants are optionally enabled via [PromptCapabilities].
+  /// As a baseline, the Agent MUST support [`ContentBlock::Text`] and [`ContentBlock::ResourceLink`],
+  /// while other variants are optionally enabled via [`PromptCapabilities`].
   ///
-  /// The Client MUST adapt its interface according to [PromptCapabilities].
+  /// The Client MUST adapt its interface according to [`PromptCapabilities`].
   ///
   /// The client MAY include referenced pieces of context as either
-  /// [EmbeddedResource] or [ResourceLink].
+  /// [`ContentBlock::Resource`] or [`ContentBlock::ResourceLink`].
   ///
-  /// When available, [EmbeddedResource] is preferred
+  /// When available, [`ContentBlock::Resource`] is preferred
   /// as it avoids extra round-trips and allows the message to include
   /// pieces of context from sources the agent may not have access to.
   final List<ContentBlock> prompt;
