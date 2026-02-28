@@ -1,0 +1,7 @@
+tags:
+  unit:
+  integration:
+  compliance:
+  slow:
+
+timeout: 30s
