@@ -27,37 +27,37 @@ covering every ACP method, notification, and schema type.
 
 ### Methods (client → agent)
 
-| Method | Status |
-|--------|--------|
-| `initialize` | ✅ |
-| `authenticate` | ✅ |
-| `session/new` | ✅ |
-| `session/load` | ✅ |
-| `session/prompt` | ✅ |
-| `session/set_mode` | ✅ |
-| `session/set_config_option` | ✅ |
-| `session/list` | ✅ (unstable) |
-| `session/fork` | ✅ (unstable) |
+| Method                      | Status        |
+| --------------------------- | ------------- |
+| `initialize`                | ✅            |
+| `authenticate`              | ✅            |
+| `session/new`               | ✅            |
+| `session/load`              | ✅            |
+| `session/prompt`            | ✅            |
+| `session/set_mode`          | ✅            |
+| `session/set_config_option` | ✅            |
+| `session/list`              | ✅ (unstable) |
+| `session/fork`              | ✅ (unstable) |
 
 ### Methods (agent → client)
 
-| Method | Status |
-|--------|--------|
-| `fs/read_text_file` | ✅ |
-| `fs/write_text_file` | ✅ |
-| `terminal/create` | ✅ |
-| `terminal/output` | ✅ |
-| `terminal/release` | ✅ |
-| `terminal/kill` | ✅ |
-| `terminal/wait_for_exit` | ✅ |
-| `session/request_permission` | ✅ |
+| Method                       | Status |
+| ---------------------------- | ------ |
+| `fs/read_text_file`          | ✅     |
+| `fs/write_text_file`         | ✅     |
+| `terminal/create`            | ✅     |
+| `terminal/output`            | ✅     |
+| `terminal/release`           | ✅     |
+| `terminal/kill`              | ✅     |
+| `terminal/wait_for_exit`     | ✅     |
+| `session/request_permission` | ✅     |
 
 ### Notifications
 
-| Notification | Direction | Status |
-|--------------|-----------|--------|
-| `session/update` | agent → client | ✅ |
-| `session/cancel` | client → agent | ✅ |
+| Notification     | Direction      | Status |
+| ---------------- | -------------- | ------ |
+| `session/update` | agent → client | ✅     |
+| `session/cancel` | client → agent | ✅     |
 
 ### SessionUpdate discriminators
 

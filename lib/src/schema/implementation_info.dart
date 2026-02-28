@@ -20,6 +20,7 @@ final class ImplementationInfo implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [ImplementationInfo].
   const ImplementationInfo({
     required this.name,
     this.title,
@@ -28,6 +29,7 @@ final class ImplementationInfo implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ImplementationInfo.fromJson(Map<String, dynamic> json) {
     final known = {'name', 'version', 'title', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -42,6 +44,7 @@ final class ImplementationInfo implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'name': name,
     if (title != null) 'title': title,

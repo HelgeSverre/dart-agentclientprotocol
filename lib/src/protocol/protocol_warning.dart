@@ -6,6 +6,7 @@ sealed class ProtocolWarning {
   /// A human-readable description of the warning.
   final String message;
 
+  /// Creates a [ProtocolWarning] with the given [message].
   ProtocolWarning(this.message);
 
   /// A response arrived for a request that was already timed out or canceled.
@@ -24,6 +25,7 @@ final class LateResponseWarning extends ProtocolWarning {
   /// The request ID of the late response.
   final Object requestId;
 
+  /// Creates a [LateResponseWarning] for the given [requestId].
   LateResponseWarning(this.requestId)
     : super('Late response received for request $requestId');
 }
@@ -33,6 +35,7 @@ final class UnknownConfigOptionWarning extends ProtocolWarning {
   /// The unrecognized option ID.
   final String optionId;
 
+  /// Creates an [UnknownConfigOptionWarning] for the given [optionId].
   UnknownConfigOptionWarning(this.optionId)
     : super('Unknown config option: $optionId');
 }

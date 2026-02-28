@@ -12,8 +12,10 @@ final class ContentChunk implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ContentChunk].
   const ContentChunk({required this.content, this.meta, this.extensionData});
 
+  /// Deserializes from JSON.
   factory ContentChunk.fromJson(Map<String, dynamic> json) {
     final known = {'content', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -26,6 +28,7 @@ final class ContentChunk implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'content': content.toJson(),
     if (meta != null) '_meta': meta,

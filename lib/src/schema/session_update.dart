@@ -51,8 +51,10 @@ final class AgentMessageChunk extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates an [AgentMessageChunk].
   const AgentMessageChunk({required this.content, this.meta});
 
+  /// Deserializes from JSON.
   factory AgentMessageChunk.fromJson(Map<String, dynamic> json) {
     return AgentMessageChunk(
       content: json['content'] as Map<String, dynamic>,
@@ -76,8 +78,10 @@ final class UserMessageChunk extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [UserMessageChunk].
   const UserMessageChunk({required this.content, this.meta});
 
+  /// Deserializes from JSON.
   factory UserMessageChunk.fromJson(Map<String, dynamic> json) {
     return UserMessageChunk(
       content: json['content'] as Map<String, dynamic>,
@@ -101,8 +105,10 @@ final class AgentThoughtChunk extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates an [AgentThoughtChunk].
   const AgentThoughtChunk({required this.content, this.meta});
 
+  /// Deserializes from JSON.
   factory AgentThoughtChunk.fromJson(Map<String, dynamic> json) {
     return AgentThoughtChunk(
       content: json['content'] as Map<String, dynamic>,
@@ -126,8 +132,10 @@ final class ToolCallSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [ToolCallSessionUpdate].
   const ToolCallSessionUpdate({required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory ToolCallSessionUpdate.fromJson(Map<String, dynamic> json) {
     return ToolCallSessionUpdate(
       rawJson: json,
@@ -147,8 +155,10 @@ final class ToolCallDeltaSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [ToolCallDeltaSessionUpdate].
   const ToolCallDeltaSessionUpdate({required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory ToolCallDeltaSessionUpdate.fromJson(Map<String, dynamic> json) {
     return ToolCallDeltaSessionUpdate(
       rawJson: json,
@@ -168,8 +178,10 @@ final class PlanUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [PlanUpdate].
   const PlanUpdate({required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory PlanUpdate.fromJson(Map<String, dynamic> json) {
     return PlanUpdate(
       rawJson: json,
@@ -189,8 +201,10 @@ final class AvailableCommandsSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates an [AvailableCommandsSessionUpdate].
   const AvailableCommandsSessionUpdate({required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory AvailableCommandsSessionUpdate.fromJson(Map<String, dynamic> json) {
     return AvailableCommandsSessionUpdate(
       rawJson: json,
@@ -210,8 +224,10 @@ final class CurrentModeSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [CurrentModeSessionUpdate].
   const CurrentModeSessionUpdate({required this.currentModeId, this.meta});
 
+  /// Deserializes from JSON.
   factory CurrentModeSessionUpdate.fromJson(Map<String, dynamic> json) {
     return CurrentModeSessionUpdate(
       currentModeId: json['currentModeId'] as String,
@@ -235,8 +251,10 @@ final class ConfigOptionSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates a [ConfigOptionSessionUpdate].
   const ConfigOptionSessionUpdate({required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory ConfigOptionSessionUpdate.fromJson(Map<String, dynamic> json) {
     return ConfigOptionSessionUpdate(
       rawJson: json,
@@ -259,6 +277,7 @@ final class UnknownSessionUpdate extends SessionUpdate {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates an [UnknownSessionUpdate].
   const UnknownSessionUpdate({
     this.sessionUpdateType,
     required this.rawJson,

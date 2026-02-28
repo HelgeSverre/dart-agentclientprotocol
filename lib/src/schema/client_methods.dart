@@ -22,6 +22,7 @@ final class ReadTextFileRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ReadTextFileRequest].
   const ReadTextFileRequest({
     required this.sessionId,
     required this.path,
@@ -31,6 +32,7 @@ final class ReadTextFileRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ReadTextFileRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'path', 'line', 'limit', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -46,6 +48,7 @@ final class ReadTextFileRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'path': path,
@@ -67,12 +70,14 @@ final class ReadTextFileResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ReadTextFileResponse].
   const ReadTextFileResponse({
     required this.content,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ReadTextFileResponse.fromJson(Map<String, dynamic> json) {
     final known = {'content', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -85,6 +90,7 @@ final class ReadTextFileResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'content': content,
     if (meta != null) '_meta': meta,
@@ -109,6 +115,7 @@ final class WriteTextFileRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [WriteTextFileRequest].
   const WriteTextFileRequest({
     required this.sessionId,
     required this.path,
@@ -117,6 +124,7 @@ final class WriteTextFileRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory WriteTextFileRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'path', 'content', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -131,6 +139,7 @@ final class WriteTextFileRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'path': path,
@@ -148,8 +157,10 @@ final class WriteTextFileResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [WriteTextFileResponse].
   const WriteTextFileResponse({this.meta, this.extensionData});
 
+  /// Deserializes from JSON.
   factory WriteTextFileResponse.fromJson(Map<String, dynamic> json) {
     final known = <String>{'_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -161,6 +172,7 @@ final class WriteTextFileResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
@@ -195,6 +207,7 @@ final class CreateTerminalRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [CreateTerminalRequest].
   const CreateTerminalRequest({
     required this.sessionId,
     required this.command,
@@ -206,6 +219,7 @@ final class CreateTerminalRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory CreateTerminalRequest.fromJson(Map<String, dynamic> json) {
     final known = {
       'sessionId',
@@ -231,6 +245,7 @@ final class CreateTerminalRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'command': command,
@@ -254,12 +269,14 @@ final class CreateTerminalResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [CreateTerminalResponse].
   const CreateTerminalResponse({
     required this.terminalId,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory CreateTerminalResponse.fromJson(Map<String, dynamic> json) {
     final known = {'terminalId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -272,6 +289,7 @@ final class CreateTerminalResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'terminalId': terminalId,
     if (meta != null) '_meta': meta,
@@ -293,6 +311,7 @@ final class TerminalOutputRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [TerminalOutputRequest].
   const TerminalOutputRequest({
     required this.sessionId,
     required this.terminalId,
@@ -300,6 +319,7 @@ final class TerminalOutputRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory TerminalOutputRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'terminalId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -313,6 +333,7 @@ final class TerminalOutputRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'terminalId': terminalId,
@@ -338,6 +359,7 @@ final class TerminalOutputResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [TerminalOutputResponse].
   const TerminalOutputResponse({
     required this.output,
     required this.truncated,
@@ -346,6 +368,7 @@ final class TerminalOutputResponse implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory TerminalOutputResponse.fromJson(Map<String, dynamic> json) {
     final known = {'output', 'truncated', 'exitStatus', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -360,6 +383,7 @@ final class TerminalOutputResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'output': output,
     'truncated': truncated,
@@ -383,6 +407,7 @@ final class ReleaseTerminalRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ReleaseTerminalRequest].
   const ReleaseTerminalRequest({
     required this.sessionId,
     required this.terminalId,
@@ -390,6 +415,7 @@ final class ReleaseTerminalRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ReleaseTerminalRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'terminalId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -403,6 +429,7 @@ final class ReleaseTerminalRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'terminalId': terminalId,
@@ -425,6 +452,7 @@ final class KillTerminalCommandRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [KillTerminalCommandRequest].
   const KillTerminalCommandRequest({
     required this.sessionId,
     required this.terminalId,
@@ -432,6 +460,7 @@ final class KillTerminalCommandRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory KillTerminalCommandRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'terminalId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -445,6 +474,7 @@ final class KillTerminalCommandRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'terminalId': terminalId,
@@ -467,6 +497,7 @@ final class WaitForTerminalExitRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [WaitForTerminalExitRequest].
   const WaitForTerminalExitRequest({
     required this.sessionId,
     required this.terminalId,
@@ -474,6 +505,7 @@ final class WaitForTerminalExitRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory WaitForTerminalExitRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'terminalId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -487,6 +519,7 @@ final class WaitForTerminalExitRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'terminalId': terminalId,
@@ -509,6 +542,7 @@ final class WaitForTerminalExitResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [WaitForTerminalExitResponse].
   const WaitForTerminalExitResponse({
     this.exitCode,
     this.signal,
@@ -516,6 +550,7 @@ final class WaitForTerminalExitResponse implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory WaitForTerminalExitResponse.fromJson(Map<String, dynamic> json) {
     final known = {'exitCode', 'signal', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -529,6 +564,7 @@ final class WaitForTerminalExitResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (exitCode != null) 'exitCode': exitCode,
     if (signal != null) 'signal': signal,
@@ -556,6 +592,7 @@ final class RequestPermissionRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [RequestPermissionRequest].
   const RequestPermissionRequest({
     required this.sessionId,
     required this.toolCall,
@@ -564,6 +601,7 @@ final class RequestPermissionRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory RequestPermissionRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'toolCall', 'options', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -578,6 +616,7 @@ final class RequestPermissionRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'toolCall': toolCall,
@@ -598,12 +637,14 @@ final class RequestPermissionResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [RequestPermissionResponse].
   const RequestPermissionResponse({
     required this.outcome,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory RequestPermissionResponse.fromJson(Map<String, dynamic> json) {
     final known = {'outcome', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -616,6 +657,7 @@ final class RequestPermissionResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'outcome': outcome,
     if (meta != null) '_meta': meta,

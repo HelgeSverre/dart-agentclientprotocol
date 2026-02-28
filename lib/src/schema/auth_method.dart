@@ -21,6 +21,7 @@ final class AuthMethod implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [AuthMethod].
   const AuthMethod({
     required this.id,
     required this.name,
@@ -29,6 +30,7 @@ final class AuthMethod implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory AuthMethod.fromJson(Map<String, dynamic> json) {
     final known = {'id', 'name', 'description', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -43,6 +45,7 @@ final class AuthMethod implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,

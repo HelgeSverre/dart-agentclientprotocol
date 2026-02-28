@@ -24,6 +24,7 @@ final class InitializeRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [InitializeRequest].
   const InitializeRequest({
     required this.protocolVersion,
     this.clientCapabilities = const ClientCapabilities(),
@@ -32,6 +33,7 @@ final class InitializeRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory InitializeRequest.fromJson(Map<String, dynamic> json) {
     final known = {
       'protocolVersion',
@@ -61,6 +63,7 @@ final class InitializeRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'protocolVersion': protocolVersion,
     'clientCapabilities': clientCapabilities.toJson(),
@@ -92,6 +95,7 @@ final class InitializeResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [InitializeResponse].
   const InitializeResponse({
     required this.protocolVersion,
     this.agentCapabilities = const AgentCapabilities(),
@@ -101,6 +105,7 @@ final class InitializeResponse implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory InitializeResponse.fromJson(Map<String, dynamic> json) {
     final known = {
       'protocolVersion',
@@ -136,6 +141,7 @@ final class InitializeResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'protocolVersion': protocolVersion,
     'agentCapabilities': agentCapabilities.toJson(),
@@ -157,12 +163,14 @@ final class AuthenticateRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [AuthenticateRequest].
   const AuthenticateRequest({
     required this.methodId,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory AuthenticateRequest.fromJson(Map<String, dynamic> json) {
     final known = {'methodId', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -175,6 +183,7 @@ final class AuthenticateRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'methodId': methodId,
     if (meta != null) '_meta': meta,
@@ -190,8 +199,10 @@ final class AuthenticateResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [AuthenticateResponse].
   const AuthenticateResponse({this.meta, this.extensionData});
 
+  /// Deserializes from JSON.
   factory AuthenticateResponse.fromJson(Map<String, dynamic> json) {
     final known = <String>{'_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -203,6 +214,7 @@ final class AuthenticateResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,

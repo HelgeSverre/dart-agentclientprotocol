@@ -15,6 +15,7 @@ final class NewSessionRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [NewSessionRequest].
   const NewSessionRequest({
     required this.cwd,
     this.mcpServers = const [],
@@ -22,6 +23,7 @@ final class NewSessionRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory NewSessionRequest.fromJson(Map<String, dynamic> json) {
     final known = {'cwd', 'mcpServers', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -38,6 +40,7 @@ final class NewSessionRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'cwd': cwd,
     'mcpServers': mcpServers,
@@ -63,6 +66,7 @@ final class NewSessionResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [NewSessionResponse].
   const NewSessionResponse({
     required this.sessionId,
     this.modes,
@@ -71,6 +75,7 @@ final class NewSessionResponse implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory NewSessionResponse.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'modes', 'configOptions', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -87,6 +92,7 @@ final class NewSessionResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     if (modes != null) 'modes': modes,
@@ -113,6 +119,7 @@ final class LoadSessionRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [LoadSessionRequest].
   const LoadSessionRequest({
     required this.sessionId,
     required this.cwd,
@@ -121,6 +128,7 @@ final class LoadSessionRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory LoadSessionRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'cwd', 'mcpServers', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -138,6 +146,7 @@ final class LoadSessionRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'cwd': cwd,
@@ -161,6 +170,7 @@ final class LoadSessionResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [LoadSessionResponse].
   const LoadSessionResponse({
     this.modes,
     this.configOptions,
@@ -168,6 +178,7 @@ final class LoadSessionResponse implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory LoadSessionResponse.fromJson(Map<String, dynamic> json) {
     final known = {'modes', 'configOptions', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -183,6 +194,7 @@ final class LoadSessionResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (modes != null) 'modes': modes,
     if (configOptions != null) 'configOptions': configOptions,
@@ -205,6 +217,7 @@ final class PromptRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [PromptRequest].
   const PromptRequest({
     required this.sessionId,
     required this.prompt,
@@ -212,6 +225,7 @@ final class PromptRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory PromptRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'prompt', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -228,6 +242,7 @@ final class PromptRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'prompt': prompt.map((e) => e.toJson()).toList(),
@@ -280,6 +295,7 @@ final class PromptResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [PromptResponse].
   const PromptResponse({
     required this.stopReason,
     this.meta,
@@ -289,6 +305,7 @@ final class PromptResponse implements HasMeta {
   /// The parsed [StopReason], or `null` if the value is unknown.
   StopReason? get stopReasonEnum => StopReason.fromString(stopReason);
 
+  /// Deserializes from JSON.
   factory PromptResponse.fromJson(Map<String, dynamic> json) {
     final known = {'stopReason', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -301,6 +318,7 @@ final class PromptResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'stopReason': stopReason,
     if (meta != null) '_meta': meta,
@@ -319,12 +337,14 @@ final class CancelNotification implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [CancelNotification].
   const CancelNotification({
     required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory CancelNotification.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -337,6 +357,7 @@ final class CancelNotification implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     if (meta != null) '_meta': meta,
@@ -358,6 +379,7 @@ final class SetSessionModeRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SetSessionModeRequest].
   const SetSessionModeRequest({
     required this.sessionId,
     required this.modeId,
@@ -365,6 +387,7 @@ final class SetSessionModeRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory SetSessionModeRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'modeId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -378,6 +401,7 @@ final class SetSessionModeRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'modeId': modeId,
@@ -394,8 +418,10 @@ final class SetSessionModeResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SetSessionModeResponse].
   const SetSessionModeResponse({this.meta, this.extensionData});
 
+  /// Deserializes from JSON.
   factory SetSessionModeResponse.fromJson(Map<String, dynamic> json) {
     final known = <String>{'_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -407,6 +433,7 @@ final class SetSessionModeResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
@@ -430,6 +457,7 @@ final class SetSessionConfigOptionRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SetSessionConfigOptionRequest].
   const SetSessionConfigOptionRequest({
     required this.sessionId,
     required this.configId,
@@ -438,6 +466,7 @@ final class SetSessionConfigOptionRequest implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory SetSessionConfigOptionRequest.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'configId', 'value', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -452,6 +481,7 @@ final class SetSessionConfigOptionRequest implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'configId': configId,
@@ -472,12 +502,14 @@ final class SetSessionConfigOptionResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SetSessionConfigOptionResponse].
   const SetSessionConfigOptionResponse({
     required this.configOptions,
     this.meta,
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory SetSessionConfigOptionResponse.fromJson(Map<String, dynamic> json) {
     final known = {'configOptions', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -491,6 +523,7 @@ final class SetSessionConfigOptionResponse implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'configOptions': configOptions,
     if (meta != null) '_meta': meta,
@@ -514,6 +547,7 @@ final class SessionNotification implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SessionNotification].
   const SessionNotification({
     required this.sessionId,
     required this.update,
@@ -521,6 +555,7 @@ final class SessionNotification implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory SessionNotification.fromJson(Map<String, dynamic> json) {
     final known = {'sessionId', 'update', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
@@ -534,6 +569,7 @@ final class SessionNotification implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'update': update,

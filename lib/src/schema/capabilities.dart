@@ -14,6 +14,7 @@ final class FileSystemCapability implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [FileSystemCapability].
   const FileSystemCapability({
     this.readTextFile = false,
     this.writeTextFile = false,
@@ -21,6 +22,7 @@ final class FileSystemCapability implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory FileSystemCapability.fromJson(Map<String, dynamic> json) {
     final known = {'readTextFile', 'writeTextFile', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -34,6 +36,7 @@ final class FileSystemCapability implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'readTextFile': readTextFile,
     'writeTextFile': writeTextFile,
@@ -59,6 +62,7 @@ final class ClientCapabilities implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ClientCapabilities].
   const ClientCapabilities({
     this.fs = const FileSystemCapability(),
     this.terminal = false,
@@ -66,6 +70,7 @@ final class ClientCapabilities implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ClientCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {'fs', 'terminal', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -84,6 +89,7 @@ final class ClientCapabilities implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'fs': fs.toJson(),
     'terminal': terminal,
@@ -109,6 +115,7 @@ final class PromptCapabilities implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [PromptCapabilities].
   const PromptCapabilities({
     this.image = false,
     this.audio = false,
@@ -117,6 +124,7 @@ final class PromptCapabilities implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory PromptCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {'image', 'audio', 'embeddedContext', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -131,6 +139,7 @@ final class PromptCapabilities implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'image': image,
     'audio': audio,
@@ -154,6 +163,7 @@ final class McpCapabilities implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [McpCapabilities].
   const McpCapabilities({
     this.http = false,
     this.sse = false,
@@ -161,6 +171,7 @@ final class McpCapabilities implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory McpCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {'http', 'sse', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -174,6 +185,7 @@ final class McpCapabilities implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'http': http,
     'sse': sse,
@@ -190,8 +202,10 @@ final class SessionCapabilities implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [SessionCapabilities].
   const SessionCapabilities({this.meta, this.extensionData});
 
+  /// Deserializes from JSON.
   factory SessionCapabilities.fromJson(Map<String, dynamic> json) {
     final known = <String>{'_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -203,6 +217,7 @@ final class SessionCapabilities implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
@@ -229,6 +244,7 @@ final class AgentCapabilities implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [AgentCapabilities].
   const AgentCapabilities({
     this.loadSession = false,
     this.promptCapabilities = const PromptCapabilities(),
@@ -238,6 +254,7 @@ final class AgentCapabilities implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory AgentCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {
       'loadSession',
@@ -274,6 +291,7 @@ final class AgentCapabilities implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'loadSession': loadSession,
     'promptCapabilities': promptCapabilities.toJson(),

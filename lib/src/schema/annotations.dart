@@ -17,6 +17,7 @@ final class Annotations implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [Annotations] instance.
   const Annotations({
     this.audience,
     this.lastModified,
@@ -25,6 +26,7 @@ final class Annotations implements HasMeta {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory Annotations.fromJson(Map<String, dynamic> json) {
     final known = {'audience', 'lastModified', 'priority', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -39,6 +41,7 @@ final class Annotations implements HasMeta {
     );
   }
 
+  /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     if (audience != null) 'audience': audience,
     if (lastModified != null) 'lastModified': lastModified,

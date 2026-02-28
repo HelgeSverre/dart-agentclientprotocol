@@ -41,6 +41,7 @@ final class TextContent extends ContentBlock {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [TextContent].
   const TextContent({
     required this.text,
     this.annotations,
@@ -48,6 +49,7 @@ final class TextContent extends ContentBlock {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory TextContent.fromJson(Map<String, dynamic> json) {
     final known = {'type', 'text', 'annotations', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -96,6 +98,7 @@ final class ImageContent extends ContentBlock {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [ImageContent].
   const ImageContent({
     required this.data,
     required this.mimeType,
@@ -105,6 +108,7 @@ final class ImageContent extends ContentBlock {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ImageContent.fromJson(Map<String, dynamic> json) {
     final known = {'type', 'data', 'mimeType', 'uri', 'annotations', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -154,6 +158,7 @@ final class AudioContent extends ContentBlock {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [AudioContent].
   const AudioContent({
     required this.data,
     required this.mimeType,
@@ -162,6 +167,7 @@ final class AudioContent extends ContentBlock {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory AudioContent.fromJson(Map<String, dynamic> json) {
     final known = {'type', 'data', 'mimeType', 'annotations', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -221,6 +227,7 @@ final class ResourceLink extends ContentBlock {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ResourceLink].
   const ResourceLink({
     required this.uri,
     required this.name,
@@ -233,6 +240,7 @@ final class ResourceLink extends ContentBlock {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory ResourceLink.fromJson(Map<String, dynamic> json) {
     final known = {
       'type',
@@ -295,6 +303,7 @@ final class EmbeddedResource extends ContentBlock {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates an [EmbeddedResource].
   const EmbeddedResource({
     required this.resource,
     this.annotations,
@@ -302,6 +311,7 @@ final class EmbeddedResource extends ContentBlock {
     this.extensionData,
   });
 
+  /// Deserializes from JSON.
   factory EmbeddedResource.fromJson(Map<String, dynamic> json) {
     final known = {'type', 'resource', 'annotations', '_meta'};
     final extension = Map<String, Object?>.fromEntries(
@@ -341,8 +351,10 @@ final class UnknownContentBlock extends ContentBlock {
   @override
   final Map<String, Object?>? meta;
 
+  /// Creates an [UnknownContentBlock].
   const UnknownContentBlock({this.type, required this.rawJson, this.meta});
 
+  /// Deserializes from JSON.
   factory UnknownContentBlock.fromJson(Map<String, dynamic> json) {
     return UnknownContentBlock(
       type: json['type'] as String?,

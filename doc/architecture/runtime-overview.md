@@ -28,18 +28,18 @@ enforcement. This layer contains:
 
 ## Key Components
 
-| Component | File | Role |
-|-----------|------|------|
-| `AcpTransport` | `transport/acp_transport.dart` | Abstract send/receive boundary |
-| `StdioTransport` | `transport/stdio_transport.dart` | NDJSON over existing stdin/stdout |
-| `StdioProcessTransport` | `transport/stdio_process_transport.dart` | Spawns subprocess, NDJSON over its stdio |
-| `Connection` | `protocol/connection.dart` | JSON-RPC state machine, request correlation, write queue |
-| `AgentSideConnection` | `protocol/agent_side_connection.dart` | Typed dispatch for agent implementers |
-| `ClientSideConnection` | `protocol/client_side_connection.dart` | Typed dispatch for client implementers |
-| `AgentHandler` | `protocol/agent_handler.dart` | Abstract interface for agent business logic |
-| `ClientHandler` | `protocol/client_handler.dart` | Abstract interface for client business logic |
-| `AcpMethods` | `protocol/acp_methods.dart` | Wire-format method name constants |
-| `JsonRpcMessage` | `protocol/json_rpc_message.dart` | Sealed class: Request, Response, Notification |
+| Component               | File                                     | Role                                                     |
+| ----------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| `AcpTransport`          | `transport/acp_transport.dart`           | Abstract send/receive boundary                           |
+| `StdioTransport`        | `transport/stdio_transport.dart`         | NDJSON over existing stdin/stdout                        |
+| `StdioProcessTransport` | `transport/stdio_process_transport.dart` | Spawns subprocess, NDJSON over its stdio                 |
+| `Connection`            | `protocol/connection.dart`               | JSON-RPC state machine, request correlation, write queue |
+| `AgentSideConnection`   | `protocol/agent_side_connection.dart`    | Typed dispatch for agent implementers                    |
+| `ClientSideConnection`  | `protocol/client_side_connection.dart`   | Typed dispatch for client implementers                   |
+| `AgentHandler`          | `protocol/agent_handler.dart`            | Abstract interface for agent business logic              |
+| `ClientHandler`         | `protocol/client_handler.dart`           | Abstract interface for client business logic             |
+| `AcpMethods`            | `protocol/acp_methods.dart`              | Wire-format method name constants                        |
+| `JsonRpcMessage`        | `protocol/json_rpc_message.dart`         | Sealed class: Request, Response, Notification            |
 
 ## Connection State Machine
 
@@ -49,13 +49,13 @@ Every `Connection` follows a strict lifecycle:
 idle → opening → open → closing → closed
 ```
 
-| State | Description |
-|-------|-------------|
-| `idle` | Constructed but not started. No read/write activity. |
-| `opening` | Transport subscription active. Initialize handshake in progress. |
-| `open` | Normal operation. Requests and notifications flow freely. |
-| `closing` | `close()` called. Write queue draining (up to `flushTimeout`). New sends rejected. |
-| `closed` | Terminal. All streams completed. All pending requests failed with `ConnectionClosedException`. |
+| State     | Description                                                                                    |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `idle`    | Constructed but not started. No read/write activity.                                           |
+| `opening` | Transport subscription active. Initialize handshake in progress.                               |
+| `open`    | Normal operation. Requests and notifications flow freely.                                      |
+| `closing` | `close()` called. Write queue draining (up to `flushTimeout`). New sends rejected.             |
+| `closed`  | Terminal. All streams completed. All pending requests failed with `ConnectionClosedException`. |
 
 ### Transition triggers
 

@@ -22,3 +22,4 @@ linter:
     - unawaited_futures
     - cancel_subscriptions
     - close_sinks
+    - public_member_api_docs

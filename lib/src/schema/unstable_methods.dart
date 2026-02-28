@@ -15,6 +15,7 @@ final class ListSessionsRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ListSessionsRequest].
   const ListSessionsRequest({this.meta, this.extensionData});
 
   /// Deserializes from JSON.
@@ -48,6 +49,7 @@ final class ListSessionsResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ListSessionsResponse].
   const ListSessionsResponse({
     required this.sessions,
     this.meta,
@@ -93,6 +95,7 @@ final class ForkSessionRequest implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ForkSessionRequest].
   const ForkSessionRequest({
     required this.sessionId,
     this.meta,
@@ -132,6 +135,7 @@ final class ForkSessionResponse implements HasMeta {
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
 
+  /// Creates a [ForkSessionResponse].
   const ForkSessionResponse({
     required this.sessionId,
     this.meta,

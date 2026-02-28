@@ -63,8 +63,10 @@ final class JsonRpcRequest extends JsonRpcMessage {
   /// Optional method parameters.
   final Map<String, dynamic>? params;
 
+  /// Creates a [JsonRpcRequest].
   const JsonRpcRequest({required this.id, required this.method, this.params});
 
+  /// Deserializes a [JsonRpcRequest] from a JSON map.
   factory JsonRpcRequest.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
     if (id is! String && id is! int) {
@@ -109,8 +111,10 @@ final class JsonRpcNotification extends JsonRpcMessage {
   /// Optional notification parameters.
   final Map<String, dynamic>? params;
 
+  /// Creates a [JsonRpcNotification].
   const JsonRpcNotification({required this.method, this.params});
 
+  /// Deserializes a [JsonRpcNotification] from a JSON map.
   factory JsonRpcNotification.fromJson(Map<String, dynamic> json) {
     final method = json['method'] as String;
     final params = json['params'];
@@ -139,8 +143,10 @@ final class JsonRpcError {
   /// Optional additional error data.
   final Object? data;
 
+  /// Creates a [JsonRpcError].
   const JsonRpcError({required this.code, required this.message, this.data});
 
+  /// Deserializes a [JsonRpcError] from a JSON map.
   factory JsonRpcError.fromJson(Map<String, dynamic> json) {
     return JsonRpcError(
       code: json['code'] as int,
@@ -149,6 +155,7 @@ final class JsonRpcError {
     );
   }
 
+  /// Serializes this error to a JSON map.
   Map<String, dynamic> toJson() => {
     'code': code,
     'message': message,
@@ -170,6 +177,7 @@ final class JsonRpcResponse extends JsonRpcMessage {
   /// The error object on failure. Mutually exclusive with [result].
   final JsonRpcError? error;
 
+  /// Creates a [JsonRpcResponse].
   const JsonRpcResponse({required this.id, this.result, this.error});
 
   /// Whether this is a successful response.
@@ -178,6 +186,7 @@ final class JsonRpcResponse extends JsonRpcMessage {
   /// Whether this is an error response.
   bool get isError => error != null;
 
+  /// Deserializes a [JsonRpcResponse] from a JSON map.
   factory JsonRpcResponse.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
     final error = json['error'];
