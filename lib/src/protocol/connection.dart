@@ -226,6 +226,21 @@ final class Connection {
     await _enqueueWrite(notification);
   }
 
+  /// Sends multiple JSON-RPC notifications as a batch.
+  ///
+  /// All notifications are enqueued to the write queue in order and
+  /// sent sequentially. This is a convenience method for sending
+  /// multiple related notifications together.
+  Future<void> sendNotifications(
+    List<(String method, Map<String, dynamic>? params)> notifications,
+  ) async {
+    _ensureCanSend();
+    for (final (method, params) in notifications) {
+      final notification = JsonRpcNotification(method: method, params: params);
+      await _enqueueWrite(notification);
+    }
+  }
+
   /// Sends a JSON-RPC response.
   Future<void> sendResponse(JsonRpcResponse response) async {
     // Responses can be sent in closing state (draining)

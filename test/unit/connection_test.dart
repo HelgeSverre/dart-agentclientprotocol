@@ -463,4 +463,51 @@ void main() {
       expect(conn.state, ConnectionState.closed);
     });
   });
+
+  group('Batch sending', () {
+    test('sendNotifications sends all notifications in order', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+
+      await conn.sendNotifications([
+        ('test/first', {'seq': 1}),
+        ('test/second', {'seq': 2}),
+        ('test/third', {'seq': 3}),
+      ]);
+
+      expect(transport.sent, hasLength(3));
+      expect((transport.sent[0] as JsonRpcNotification).method, 'test/first');
+      expect((transport.sent[1] as JsonRpcNotification).method, 'test/second');
+      expect((transport.sent[2] as JsonRpcNotification).method, 'test/third');
+
+      await conn.close();
+    });
+
+    test('sendNotifications throws when connection is closed', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+      await conn.close();
+
+      expect(
+        () => conn.sendNotifications([('test/fail', null)]),
+        throwsA(isA<ConnectionClosedException>()),
+      );
+    });
+
+    test('sendNotifications with empty list is a no-op', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+
+      await conn.sendNotifications([]);
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+  });
 }

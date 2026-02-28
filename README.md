@@ -23,15 +23,6 @@ Then run:
 dart pub get
 ```
 
-> **Note:** This package is not yet published on pub.dev. For now, use a git dependency:
->
-> ```yaml
-> dependencies:
->   acp:
->     git:
->       url: https://github.com/HelgeSverre/dart-agentclientprotocol.git
-> ```
-
 ## Usage
 
 ### Building an Agent
@@ -149,11 +140,14 @@ Future<void> main() async {
 
 ### Transports
 
-| Transport               | Use case                                             |
-| ----------------------- | ---------------------------------------------------- |
-| `StdioTransport`        | Agent-side: communicate over stdin/stdout via NDJSON |
-| `StdioProcessTransport` | Client-side: spawn an agent subprocess               |
-| `AcpTransport`          | Interface for implementing custom transports         |
+| Transport               | Use case                                              |
+| ----------------------- | ----------------------------------------------------- |
+| `StdioTransport`        | Agent-side: communicate over stdin/stdout via NDJSON  |
+| `StdioProcessTransport` | Client-side: spawn an agent subprocess                |
+| `HttpSseTransport`      | HTTP POST + Server-Sent Events                        |
+| `WebSocketTransport`    | WebSocket text frames                                 |
+| `ReconnectingTransport` | Auto-reconnect wrapper with exponential backoff       |
+| `AcpTransport`          | Interface for implementing custom transports          |
 
 ### Key Concepts
 

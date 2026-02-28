@@ -1,11 +1,20 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
+import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
-/// File system capabilities supported by the client.
+/// Filesystem capabilities supported by the client.
+/// File system capabilities that a client may support.
+///
+/// See protocol docs: [FileSystem](https://agentclientprotocol.com/protocol/initialization#filesystem)
 final class FileSystemCapability implements HasMeta {
-  /// Whether the client supports reading text files.
+  /// Whether the Client supports `fs/read_text_file` requests.
   final bool readTextFile;
 
-  /// Whether the client supports writing text files.
+  /// Whether the Client supports `fs/write_text_file` requests.
   final bool writeTextFile;
 
   @override
@@ -25,14 +34,14 @@ final class FileSystemCapability implements HasMeta {
   /// Deserializes from JSON.
   factory FileSystemCapability.fromJson(Map<String, dynamic> json) {
     final known = {'readTextFile', 'writeTextFile', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return FileSystemCapability(
       readTextFile: json['readTextFile'] as bool? ?? false,
       writeTextFile: json['writeTextFile'] as bool? ?? false,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
@@ -47,13 +56,16 @@ final class FileSystemCapability implements HasMeta {
 
 /// Capabilities supported by the client.
 ///
-/// Advertised during initialization to inform the agent about available
-/// features and methods.
+/// Advertised during initialization to inform the agent about
+/// available features and methods.
+///
+/// See protocol docs: [Client Capabilities](https://agentclientprotocol.com/protocol/initialization#client-capabilities)
 final class ClientCapabilities implements HasMeta {
-  /// File system capabilities.
+  /// File system capabilities supported by the client.
+  /// Determines which file operations the agent can request.
   final FileSystemCapability fs;
 
-  /// Whether the client supports all `terminal/*` methods.
+  /// Whether the Client support all `terminal/*` methods.
   final bool terminal;
 
   @override
@@ -73,7 +85,7 @@ final class ClientCapabilities implements HasMeta {
   /// Deserializes from JSON.
   factory ClientCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {'fs', 'terminal', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ClientCapabilities(
@@ -85,7 +97,7 @@ final class ClientCapabilities implements HasMeta {
               : const FileSystemCapability(),
       terminal: json['terminal'] as bool? ?? false,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
@@ -98,16 +110,30 @@ final class ClientCapabilities implements HasMeta {
   };
 }
 
-/// Prompt capabilities supported by the agent.
+/// Prompt capabilities supported by the agent in `session/prompt` requests.
+///
+/// Baseline agent functionality requires support for [TextContent]
+/// and [ResourceLink] in prompt requests.
+///
+/// Other variants must be explicitly opted in to.
+/// Capabilities for different types of content in prompt requests.
+///
+/// Indicates which content types beyond the baseline (text and resource links)
+/// the agent can process.
+///
+/// See protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/initialization#prompt-capabilities)
 final class PromptCapabilities implements HasMeta {
-  /// Whether the agent supports image content blocks.
-  final bool image;
-
-  /// Whether the agent supports audio content blocks.
+  /// Agent supports [AudioContent] blocks.
   final bool audio;
 
-  /// Whether the agent supports embedded context content blocks.
+  /// Agent supports embedded context in `session/prompt` requests.
+  ///
+  /// When enabled, the Client is allowed to include [EmbeddedResource]
+  /// in prompt requests for pieces of context that are referenced in the message.
   final bool embeddedContext;
+
+  /// Agent supports [ImageContent] blocks.
+  final bool image;
 
   @override
   final Map<String, Object?>? meta;
@@ -117,44 +143,44 @@ final class PromptCapabilities implements HasMeta {
 
   /// Creates a [PromptCapabilities].
   const PromptCapabilities({
-    this.image = false,
     this.audio = false,
     this.embeddedContext = false,
+    this.image = false,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory PromptCapabilities.fromJson(Map<String, dynamic> json) {
-    final known = {'image', 'audio', 'embeddedContext', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'audio', 'embeddedContext', 'image', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return PromptCapabilities(
-      image: json['image'] as bool? ?? false,
       audio: json['audio'] as bool? ?? false,
       embeddedContext: json['embeddedContext'] as bool? ?? false,
+      image: json['image'] as bool? ?? false,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'image': image,
     'audio': audio,
     'embeddedContext': embeddedContext,
+    'image': image,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// MCP capabilities supported by the agent.
+/// MCP capabilities supported by the agent
 final class McpCapabilities implements HasMeta {
-  /// Whether the agent supports HTTP MCP transport.
+  /// Agent supports HTTP-based MCP servers.
   final bool http;
 
-  /// Whether the agent supports SSE MCP transport.
+  /// Agent supports SSE-based MCP servers.
   final bool sse;
 
   @override
@@ -174,14 +200,14 @@ final class McpCapabilities implements HasMeta {
   /// Deserializes from JSON.
   factory McpCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {'http', 'sse', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return McpCapabilities(
       http: json['http'] as bool? ?? false,
       sse: json['sse'] as bool? ?? false,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
@@ -195,6 +221,14 @@ final class McpCapabilities implements HasMeta {
 }
 
 /// Session capabilities supported by the agent.
+///
+/// As a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`.
+///
+/// Optionally, they **MAY** support other session methods and notifications by specifying additional capabilities.
+///
+/// Note: `session/load` is still handled by the top-level `load_session` capability. This will be unified in future versions of the protocol.
+///
+/// See protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/initialization#session-capabilities)
 final class SessionCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -207,13 +241,13 @@ final class SessionCapabilities implements HasMeta {
 
   /// Deserializes from JSON.
   factory SessionCapabilities.fromJson(Map<String, dynamic> json) {
-    final known = <String>{'_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'_meta'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return SessionCapabilities(
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
@@ -225,17 +259,22 @@ final class SessionCapabilities implements HasMeta {
 }
 
 /// Capabilities supported by the agent.
+///
+/// Advertised during initialization to inform the client about
+/// available features and content types.
+///
+/// See protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)
 final class AgentCapabilities implements HasMeta {
-  /// Whether the agent supports loading existing sessions.
+  /// Whether the agent supports `session/load`.
   final bool loadSession;
 
-  /// Prompt content type capabilities.
-  final PromptCapabilities promptCapabilities;
-
-  /// MCP server capabilities.
+  /// MCP capabilities supported by the agent.
   final McpCapabilities mcpCapabilities;
 
-  /// Session-level capabilities.
+  /// Prompt capabilities supported by the agent.
+  final PromptCapabilities promptCapabilities;
+
+  /// Session capabilities supported by the agent.
   final SessionCapabilities sessionCapabilities;
 
   @override
@@ -247,8 +286,8 @@ final class AgentCapabilities implements HasMeta {
   /// Creates an [AgentCapabilities].
   const AgentCapabilities({
     this.loadSession = false,
-    this.promptCapabilities = const PromptCapabilities(),
     this.mcpCapabilities = const McpCapabilities(),
+    this.promptCapabilities = const PromptCapabilities(),
     this.sessionCapabilities = const SessionCapabilities(),
     this.meta,
     this.extensionData,
@@ -258,28 +297,28 @@ final class AgentCapabilities implements HasMeta {
   factory AgentCapabilities.fromJson(Map<String, dynamic> json) {
     final known = {
       'loadSession',
-      'promptCapabilities',
       'mcpCapabilities',
+      'promptCapabilities',
       'sessionCapabilities',
       '_meta',
     };
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return AgentCapabilities(
       loadSession: json['loadSession'] as bool? ?? false,
-      promptCapabilities:
-          json['promptCapabilities'] is Map<String, dynamic>
-              ? PromptCapabilities.fromJson(
-                json['promptCapabilities'] as Map<String, dynamic>,
-              )
-              : const PromptCapabilities(),
       mcpCapabilities:
           json['mcpCapabilities'] is Map<String, dynamic>
               ? McpCapabilities.fromJson(
                 json['mcpCapabilities'] as Map<String, dynamic>,
               )
               : const McpCapabilities(),
+      promptCapabilities:
+          json['promptCapabilities'] is Map<String, dynamic>
+              ? PromptCapabilities.fromJson(
+                json['promptCapabilities'] as Map<String, dynamic>,
+              )
+              : const PromptCapabilities(),
       sessionCapabilities:
           json['sessionCapabilities'] is Map<String, dynamic>
               ? SessionCapabilities.fromJson(
@@ -287,15 +326,15 @@ final class AgentCapabilities implements HasMeta {
               )
               : const SessionCapabilities(),
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'loadSession': loadSession,
-    'promptCapabilities': promptCapabilities.toJson(),
     'mcpCapabilities': mcpCapabilities.toJson(),
+    'promptCapabilities': promptCapabilities.toJson(),
     'sessionCapabilities': sessionCapabilities.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,

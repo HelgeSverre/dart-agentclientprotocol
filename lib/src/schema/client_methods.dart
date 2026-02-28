@@ -1,20 +1,26 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
 import 'package:acp/src/schema/has_meta.dart';
 
 // -- File System --
-
-/// Request to read a text file (`fs/read_text_file`).
+/// Request to read content from a text file.
+///
+/// Only available if the client supports the `fs.readTextFile` capability.
 final class ReadTextFileRequest implements HasMeta {
-  /// The session ID.
-  final String sessionId;
+  /// Maximum number of lines to read.
+  final int? limit;
 
-  /// Path to the file.
-  final String path;
-
-  /// Optional starting line number.
+  /// Line number to start reading from (1-based).
   final int? line;
 
-  /// Optional line count limit.
-  final int? limit;
+  /// Absolute path to the file to read.
+  final String path;
+
+  /// The session ID for this request.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -24,25 +30,25 @@ final class ReadTextFileRequest implements HasMeta {
 
   /// Creates a [ReadTextFileRequest].
   const ReadTextFileRequest({
-    required this.sessionId,
-    required this.path,
-    this.line,
     this.limit,
+    this.line,
+    required this.path,
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory ReadTextFileRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'path', 'line', 'limit', '_meta'};
+    final known = {'limit', 'line', 'path', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ReadTextFileRequest(
-      sessionId: json['sessionId'] as String,
-      path: json['path'] as String,
-      line: json['line'] as int?,
       limit: json['limit'] as int?,
+      line: json['line'] as int?,
+      path: json['path'] as String,
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -50,18 +56,18 @@ final class ReadTextFileRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
-    'path': path,
-    if (line != null) 'line': line,
     if (limit != null) 'limit': limit,
+    if (line != null) 'line': line,
+    'path': path,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `fs/read_text_file`.
+/// Response containing the contents of a text file.
 final class ReadTextFileResponse implements HasMeta {
-  /// The file content.
+  /// The text content of the file.
   final String content;
 
   @override
@@ -98,16 +104,18 @@ final class ReadTextFileResponse implements HasMeta {
   };
 }
 
-/// Request to write a text file (`fs/write_text_file`).
+/// Request to write content to a text file.
+///
+/// Only available if the client supports the `fs.writeTextFile` capability.
 final class WriteTextFileRequest implements HasMeta {
-  /// The session ID.
-  final String sessionId;
+  /// The text content to write to the file.
+  final String content;
 
-  /// Path to the file.
+  /// Absolute path to the file to write.
   final String path;
 
-  /// The content to write.
-  final String content;
+  /// The session ID for this request.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -117,23 +125,23 @@ final class WriteTextFileRequest implements HasMeta {
 
   /// Creates a [WriteTextFileRequest].
   const WriteTextFileRequest({
-    required this.sessionId,
-    required this.path,
     required this.content,
+    required this.path,
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory WriteTextFileRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'path', 'content', '_meta'};
+    final known = {'content', 'path', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return WriteTextFileRequest(
-      sessionId: json['sessionId'] as String,
-      path: json['path'] as String,
       content: json['content'] as String,
+      path: json['path'] as String,
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -141,15 +149,15 @@ final class WriteTextFileRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
-    'path': path,
     'content': content,
+    'path': path,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `fs/write_text_file`.
+/// Response to `fs/write_text_file`
 final class WriteTextFileResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -162,7 +170,7 @@ final class WriteTextFileResponse implements HasMeta {
 
   /// Deserializes from JSON.
   factory WriteTextFileResponse.fromJson(Map<String, dynamic> json) {
-    final known = <String>{'_meta'};
+    final known = {'_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
@@ -181,25 +189,32 @@ final class WriteTextFileResponse implements HasMeta {
 
 // -- Terminal --
 
-/// Request to create a terminal (`terminal/create`).
+/// Request to create a new terminal and execute a command.
 final class CreateTerminalRequest implements HasMeta {
-  /// The session ID.
-  final String sessionId;
+  /// Array of command arguments.
+  final List<String> args;
 
   /// The command to execute.
   final String command;
 
-  /// Optional command arguments.
-  final List<String>? args;
-
-  /// Optional environment variables (raw JSON).
-  final List<Map<String, dynamic>>? env;
-
-  /// Optional working directory.
+  /// Working directory for the command (absolute path).
   final String? cwd;
 
-  /// Optional output byte limit.
+  /// Environment variables for the command.
+  final List<Map<String, dynamic>> env;
+
+  /// Maximum number of output bytes to retain.
+  ///
+  /// When the limit is exceeded, the Client truncates from the beginning of the output
+  /// to stay within the limit.
+  ///
+  /// The Client MUST ensure truncation happens at a character boundary to maintain valid
+  /// string output, even if this means the retained output is slightly less than the
+  /// specified limit.
   final int? outputByteLimit;
+
+  /// The session ID for this request.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -209,12 +224,12 @@ final class CreateTerminalRequest implements HasMeta {
 
   /// Creates a [CreateTerminalRequest].
   const CreateTerminalRequest({
-    required this.sessionId,
+    this.args = const [],
     required this.command,
-    this.args,
-    this.env,
     this.cwd,
+    this.env = const [],
     this.outputByteLimit,
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
@@ -222,24 +237,26 @@ final class CreateTerminalRequest implements HasMeta {
   /// Deserializes from JSON.
   factory CreateTerminalRequest.fromJson(Map<String, dynamic> json) {
     final known = {
-      'sessionId',
-      'command',
       'args',
-      'env',
+      'command',
       'cwd',
+      'env',
       'outputByteLimit',
+      'sessionId',
       '_meta',
     };
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return CreateTerminalRequest(
-      sessionId: json['sessionId'] as String,
+      args: (json['args'] as List<dynamic>?)?.cast<String>() ?? const [],
       command: json['command'] as String,
-      args: (json['args'] as List<dynamic>?)?.cast<String>(),
-      env: (json['env'] as List<dynamic>?)?.cast<Map<String, dynamic>>(),
       cwd: json['cwd'] as String?,
+      env:
+          (json['env'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
+          const [],
       outputByteLimit: json['outputByteLimit'] as int?,
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -247,20 +264,20 @@ final class CreateTerminalRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
+    'args': args,
     'command': command,
-    if (args != null) 'args': args,
-    if (env != null) 'env': env,
     if (cwd != null) 'cwd': cwd,
+    'env': env,
     if (outputByteLimit != null) 'outputByteLimit': outputByteLimit,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `terminal/create`.
+/// Response containing the ID of the created terminal.
 final class CreateTerminalResponse implements HasMeta {
-  /// The unique terminal identifier.
+  /// The unique identifier for the created terminal.
   final String terminalId;
 
   @override
@@ -297,12 +314,12 @@ final class CreateTerminalResponse implements HasMeta {
   };
 }
 
-/// Request for terminal output (`terminal/output`).
+/// Request to get the current output and status of a terminal.
 final class TerminalOutputRequest implements HasMeta {
-  /// The session ID.
+  /// The session ID for this request.
   final String sessionId;
 
-  /// The terminal ID.
+  /// The ID of the terminal to get output from.
   final String terminalId;
 
   @override
@@ -342,16 +359,16 @@ final class TerminalOutputRequest implements HasMeta {
   };
 }
 
-/// Response to `terminal/output`.
+/// Response containing the terminal output and exit status.
 final class TerminalOutputResponse implements HasMeta {
-  /// The terminal output.
+  /// Exit status if the command has completed.
+  final Map<String, dynamic>? exitStatus;
+
+  /// The terminal output captured so far.
   final String output;
 
-  /// Whether the output was truncated.
+  /// Whether the output was truncated due to byte limits.
   final bool truncated;
-
-  /// Exit status if the process has exited (raw JSON).
-  final Map<String, dynamic>? exitStatus;
 
   @override
   final Map<String, Object?>? meta;
@@ -361,23 +378,23 @@ final class TerminalOutputResponse implements HasMeta {
 
   /// Creates a [TerminalOutputResponse].
   const TerminalOutputResponse({
+    this.exitStatus,
     required this.output,
     required this.truncated,
-    this.exitStatus,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory TerminalOutputResponse.fromJson(Map<String, dynamic> json) {
-    final known = {'output', 'truncated', 'exitStatus', '_meta'};
+    final known = {'exitStatus', 'output', 'truncated', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return TerminalOutputResponse(
+      exitStatus: json['exitStatus'] as Map<String, dynamic>?,
       output: json['output'] as String,
       truncated: json['truncated'] as bool,
-      exitStatus: json['exitStatus'] as Map<String, dynamic>?,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -385,20 +402,20 @@ final class TerminalOutputResponse implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
+    if (exitStatus != null) 'exitStatus': exitStatus,
     'output': output,
     'truncated': truncated,
-    if (exitStatus != null) 'exitStatus': exitStatus,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Request to release a terminal (`terminal/release`).
+/// Request to release a terminal and free its resources.
 final class ReleaseTerminalRequest implements HasMeta {
-  /// The session ID.
+  /// The session ID for this request.
   final String sessionId;
 
-  /// The terminal ID.
+  /// The ID of the terminal to release.
   final String terminalId;
 
   @override
@@ -438,12 +455,12 @@ final class ReleaseTerminalRequest implements HasMeta {
   };
 }
 
-/// Request to kill a terminal command (`terminal/kill`).
+/// Request to kill a terminal command without releasing the terminal.
 final class KillTerminalCommandRequest implements HasMeta {
-  /// The session ID.
+  /// The session ID for this request.
   final String sessionId;
 
-  /// The terminal ID.
+  /// The ID of the terminal to kill.
   final String terminalId;
 
   @override
@@ -483,12 +500,12 @@ final class KillTerminalCommandRequest implements HasMeta {
   };
 }
 
-/// Request to wait for terminal exit (`terminal/wait_for_exit`).
+/// Request to wait for a terminal command to exit.
 final class WaitForTerminalExitRequest implements HasMeta {
-  /// The session ID.
+  /// The session ID for this request.
   final String sessionId;
 
-  /// The terminal ID.
+  /// The ID of the terminal to wait for.
   final String terminalId;
 
   @override
@@ -528,12 +545,12 @@ final class WaitForTerminalExitRequest implements HasMeta {
   };
 }
 
-/// Response to `terminal/wait_for_exit`.
+/// Response containing the exit status of a terminal command.
 final class WaitForTerminalExitResponse implements HasMeta {
-  /// Exit code, if available.
+  /// The process exit code (may be null if terminated by signal).
   final int? exitCode;
 
-  /// Signal name, if the process was killed by a signal.
+  /// The signal that terminated the process (may be null if exited normally).
   final String? signal;
 
   @override
@@ -575,16 +592,20 @@ final class WaitForTerminalExitResponse implements HasMeta {
 
 // -- Permission --
 
-/// Request for user permission (`session/request_permission`).
+/// Request for user permission to execute a tool call.
+///
+/// Sent when the agent needs authorization before performing a sensitive operation.
+///
+/// See protocol docs: [Requesting Permission](https://agentclientprotocol.com/protocol/tool-calls#requesting-permission)
 final class RequestPermissionRequest implements HasMeta {
-  /// The session ID.
+  /// Available permission options for the user to choose from.
+  final List<Map<String, dynamic>> options;
+
+  /// The session ID for this request.
   final String sessionId;
 
-  /// The tool call requiring permission (raw JSON).
+  /// Details about the tool call requiring permission.
   final Map<String, dynamic> toolCall;
-
-  /// Available permission options (raw JSON).
-  final List<Map<String, dynamic>> options;
 
   @override
   final Map<String, Object?>? meta;
@@ -594,23 +615,25 @@ final class RequestPermissionRequest implements HasMeta {
 
   /// Creates a [RequestPermissionRequest].
   const RequestPermissionRequest({
+    this.options = const [],
     required this.sessionId,
     required this.toolCall,
-    required this.options,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory RequestPermissionRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'toolCall', 'options', '_meta'};
+    final known = {'options', 'sessionId', 'toolCall', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return RequestPermissionRequest(
+      options:
+          (json['options'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
+          const [],
       sessionId: json['sessionId'] as String,
       toolCall: json['toolCall'] as Map<String, dynamic>,
-      options: (json['options'] as List<dynamic>).cast<Map<String, dynamic>>(),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -618,17 +641,17 @@ final class RequestPermissionRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
+    'options': options,
     'sessionId': sessionId,
     'toolCall': toolCall,
-    'options': options,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `session/request_permission`.
+/// Response to a permission request.
 final class RequestPermissionResponse implements HasMeta {
-  /// The user's decision (raw JSON with discriminator "outcome").
+  /// The user's decision on the permission request.
   final Map<String, dynamic> outcome;
 
   @override

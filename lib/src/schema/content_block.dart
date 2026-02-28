@@ -1,10 +1,25 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
 import 'package:acp/src/schema/annotations.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
-/// A content block in an ACP message.
+/// Content blocks represent displayable information in the Agent Client Protocol.
 ///
-/// Content blocks are discriminated by the `type` field with snake_case values.
-/// Unknown types are captured as [UnknownContentBlock] for forward compatibility.
+/// They provide a structured way to handle various types of user-facing content—whether
+/// it's text from language models, images for analysis, or embedded resources for context.
+///
+/// Content blocks appear in:
+/// - User prompts sent via `session/prompt`
+/// - Language model output streamed through `session/update` notifications
+/// - Progress updates and results from tool calls
+///
+/// This structure is compatible with the Model Context Protocol (MCP), enabling
+/// agents to seamlessly forward content from MCP tool outputs without transformation.
+///
+/// See protocol docs: [Content](https://agentclientprotocol.com/protocol/content)
 sealed class ContentBlock implements HasMeta {
   const ContentBlock();
 
@@ -13,27 +28,37 @@ sealed class ContentBlock implements HasMeta {
   /// Switches on the `type` discriminator field.
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
+    if (type == null) {
+      return UnknownContentBlock(rawJson: json);
+    }
     return switch (type) {
       'text' => TextContent.fromJson(json),
       'image' => ImageContent.fromJson(json),
       'audio' => AudioContent.fromJson(json),
       'resource_link' => ResourceLink.fromJson(json),
       'resource' => EmbeddedResource.fromJson(json),
-      _ => UnknownContentBlock.fromJson(json),
+      _ => UnknownContentBlock(
+        type: type,
+        rawJson: json,
+        meta: json['_meta'] as Map<String, Object?>?,
+      ),
     };
   }
 
-  /// Serializes this content block to JSON.
+  /// Serializes this contentBlock to JSON.
   Map<String, dynamic> toJson();
 }
 
-/// Plain text or markdown content.
+/// Text content. May be plain text or formatted with Markdown.
+///
+/// All agents MUST support text content blocks in prompts.
+/// Clients SHOULD render this text as Markdown.
 final class TextContent extends ContentBlock {
+  /// Optional annotations for this content.
+  final Annotations? annotations;
+
   /// The text content.
   final String text;
-
-  /// Optional annotations.
-  final Annotations? annotations;
 
   @override
   final Map<String, Object?>? meta;
@@ -43,54 +68,56 @@ final class TextContent extends ContentBlock {
 
   /// Creates a [TextContent].
   const TextContent({
-    required this.text,
     this.annotations,
+    required this.text,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory TextContent.fromJson(Map<String, dynamic> json) {
-    final known = {'type', 'text', 'annotations', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'annotations', 'text', '_meta', 'type'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return TextContent(
-      text: json['text'] as String,
       annotations:
           json['annotations'] is Map<String, dynamic>
               ? Annotations.fromJson(
                 json['annotations'] as Map<String, dynamic>,
               )
               : null,
+      text: json['text'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     'type': 'text',
-    'text': text,
     if (annotations != null) 'annotations': annotations!.toJson(),
+    'text': text,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Base64-encoded image content.
+/// Images for visual context or analysis.
+///
+/// Requires the `image` prompt capability when included in prompts.
 final class ImageContent extends ContentBlock {
+  /// Optional annotations for this content.
+  final Annotations? annotations;
+
   /// Base64-encoded image data.
   final String data;
 
-  /// MIME type (e.g. "image/png").
+  /// The MIME type of the image.
   final String mimeType;
 
-  /// Optional URI for the image source.
+  /// Optional URI for the original image source.
   final String? uri;
-
-  /// Optional annotations.
-  final Annotations? annotations;
 
   @override
   final Map<String, Object?>? meta;
@@ -100,57 +127,59 @@ final class ImageContent extends ContentBlock {
 
   /// Creates an [ImageContent].
   const ImageContent({
+    this.annotations,
     required this.data,
     required this.mimeType,
     this.uri,
-    this.annotations,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory ImageContent.fromJson(Map<String, dynamic> json) {
-    final known = {'type', 'data', 'mimeType', 'uri', 'annotations', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'annotations', 'data', 'mimeType', 'uri', '_meta', 'type'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ImageContent(
-      data: json['data'] as String,
-      mimeType: json['mimeType'] as String,
-      uri: json['uri'] as String?,
       annotations:
           json['annotations'] is Map<String, dynamic>
               ? Annotations.fromJson(
                 json['annotations'] as Map<String, dynamic>,
               )
               : null,
+      data: json['data'] as String,
+      mimeType: json['mimeType'] as String,
+      uri: json['uri'] as String?,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     'type': 'image',
+    if (annotations != null) 'annotations': annotations!.toJson(),
     'data': data,
     'mimeType': mimeType,
     if (uri != null) 'uri': uri,
-    if (annotations != null) 'annotations': annotations!.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Base64-encoded audio content.
+/// Audio data for transcription or analysis.
+///
+/// Requires the `audio` prompt capability when included in prompts.
 final class AudioContent extends ContentBlock {
+  /// Optional annotations for this content.
+  final Annotations? annotations;
+
   /// Base64-encoded audio data.
   final String data;
 
-  /// MIME type (e.g. "audio/wav").
+  /// The MIME type of the audio.
   final String mimeType;
-
-  /// Optional annotations.
-  final Annotations? annotations;
 
   @override
   final Map<String, Object?>? meta;
@@ -160,66 +189,68 @@ final class AudioContent extends ContentBlock {
 
   /// Creates an [AudioContent].
   const AudioContent({
+    this.annotations,
     required this.data,
     required this.mimeType,
-    this.annotations,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory AudioContent.fromJson(Map<String, dynamic> json) {
-    final known = {'type', 'data', 'mimeType', 'annotations', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'annotations', 'data', 'mimeType', '_meta', 'type'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return AudioContent(
-      data: json['data'] as String,
-      mimeType: json['mimeType'] as String,
       annotations:
           json['annotations'] is Map<String, dynamic>
               ? Annotations.fromJson(
                 json['annotations'] as Map<String, dynamic>,
               )
               : null,
+      data: json['data'] as String,
+      mimeType: json['mimeType'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     'type': 'audio',
+    if (annotations != null) 'annotations': annotations!.toJson(),
     'data': data,
     'mimeType': mimeType,
-    if (annotations != null) 'annotations': annotations!.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// A URI reference to a resource.
+/// References to resources that the agent can access.
+///
+/// All agents MUST support resource links in prompts.
 final class ResourceLink extends ContentBlock {
-  /// URI of the resource.
-  final String uri;
+  /// Optional annotations for this resource link.
+  final Annotations? annotations;
 
-  /// Display name.
-  final String name;
-
-  /// Optional description.
+  /// A human-readable description of the resource.
   final String? description;
 
-  /// Optional MIME type.
+  /// The MIME type of the resource.
   final String? mimeType;
 
-  /// Optional display title.
-  final String? title;
+  /// The display name of the resource.
+  final String name;
 
-  /// Optional file size in bytes.
+  /// The size of the resource in bytes.
   final int? size;
 
-  /// Optional annotations.
-  final Annotations? annotations;
+  /// An optional title for the resource.
+  final String? title;
+
+  /// The URI of the linked resource.
+  final String uri;
 
   @override
   final Map<String, Object?>? meta;
@@ -229,13 +260,13 @@ final class ResourceLink extends ContentBlock {
 
   /// Creates a [ResourceLink].
   const ResourceLink({
-    required this.uri,
-    required this.name,
+    this.annotations,
     this.description,
     this.mimeType,
-    this.title,
+    required this.name,
     this.size,
-    this.annotations,
+    this.title,
+    required this.uri,
     this.meta,
     this.extensionData,
   });
@@ -243,59 +274,63 @@ final class ResourceLink extends ContentBlock {
   /// Deserializes from JSON.
   factory ResourceLink.fromJson(Map<String, dynamic> json) {
     final known = {
-      'type',
-      'uri',
-      'name',
+      'annotations',
       'description',
       'mimeType',
-      'title',
+      'name',
       'size',
-      'annotations',
+      'title',
+      'uri',
       '_meta',
+      'type',
     };
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ResourceLink(
-      uri: json['uri'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      mimeType: json['mimeType'] as String?,
-      title: json['title'] as String?,
-      size: json['size'] as int?,
       annotations:
           json['annotations'] is Map<String, dynamic>
               ? Annotations.fromJson(
                 json['annotations'] as Map<String, dynamic>,
               )
               : null,
+      description: json['description'] as String?,
+      mimeType: json['mimeType'] as String?,
+      name: json['name'] as String,
+      size: json['size'] as int?,
+      title: json['title'] as String?,
+      uri: json['uri'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     'type': 'resource_link',
-    'uri': uri,
-    'name': name,
+    if (annotations != null) 'annotations': annotations!.toJson(),
     if (description != null) 'description': description,
     if (mimeType != null) 'mimeType': mimeType,
-    if (title != null) 'title': title,
+    'name': name,
     if (size != null) 'size': size,
-    if (annotations != null) 'annotations': annotations!.toJson(),
+    if (title != null) 'title': title,
+    'uri': uri,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// An inline embedded resource.
+/// Complete resource contents embedded directly in the message.
+///
+/// Preferred for including context as it avoids extra round-trips.
+///
+/// Requires the `embeddedContext` prompt capability when included in prompts.
 final class EmbeddedResource extends ContentBlock {
-  /// The resource contents (text or blob, as raw JSON).
-  final Map<String, dynamic> resource;
-
-  /// Optional annotations.
+  /// Optional annotations for this embedded resource.
   final Annotations? annotations;
+
+  /// The embedded resource contents.
+  final Map<String, dynamic> resource;
 
   @override
   final Map<String, Object?>? meta;
@@ -305,44 +340,44 @@ final class EmbeddedResource extends ContentBlock {
 
   /// Creates an [EmbeddedResource].
   const EmbeddedResource({
-    required this.resource,
     this.annotations,
+    required this.resource,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory EmbeddedResource.fromJson(Map<String, dynamic> json) {
-    final known = {'type', 'resource', 'annotations', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'annotations', 'resource', '_meta', 'type'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return EmbeddedResource(
-      resource: json['resource'] as Map<String, dynamic>,
       annotations:
           json['annotations'] is Map<String, dynamic>
               ? Annotations.fromJson(
                 json['annotations'] as Map<String, dynamic>,
               )
               : null,
+      resource: json['resource'] as Map<String, dynamic>,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     'type': 'resource',
-    'resource': resource,
     if (annotations != null) 'annotations': annotations!.toJson(),
+    'resource': resource,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// A content block with an unknown type, preserved for forward compatibility.
+/// A contentBlock with an unknown type, preserved for forward compatibility.
 final class UnknownContentBlock extends ContentBlock {
-  /// The unknown type value.
+  /// The unknown discriminator value.
   final String? type;
 
   /// The raw JSON object, preserved as-is.
@@ -353,15 +388,6 @@ final class UnknownContentBlock extends ContentBlock {
 
   /// Creates an [UnknownContentBlock].
   const UnknownContentBlock({this.type, required this.rawJson, this.meta});
-
-  /// Deserializes from JSON.
-  factory UnknownContentBlock.fromJson(Map<String, dynamic> json) {
-    return UnknownContentBlock(
-      type: json['type'] as String?,
-      rawJson: json,
-      meta: json['_meta'] as Map<String, Object?>?,
-    );
-  }
 
   @override
   Map<String, dynamic> toJson() => rawJson;

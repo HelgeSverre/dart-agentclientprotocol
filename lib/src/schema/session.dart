@@ -1,12 +1,20 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
+import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
-/// Request parameters for the `session/new` method.
+/// Request parameters for creating a new session.
+///
+/// See protocol docs: [Creating a Session](https://agentclientprotocol.com/protocol/session-setup#creating-a-session)
 final class NewSessionRequest implements HasMeta {
-  /// The working directory for the session.
+  /// The working directory for this session. Must be an absolute path.
   final String cwd;
 
-  /// MCP servers to connect to (raw JSON for each server).
+  /// List of MCP (Model Context Protocol) servers the agent should connect to.
   final List<Map<String, dynamic>> mcpServers;
 
   @override
@@ -49,16 +57,22 @@ final class NewSessionRequest implements HasMeta {
   };
 }
 
-/// Response to the `session/new` method.
+/// Response from creating a new session.
+///
+/// See protocol docs: [Creating a Session](https://agentclientprotocol.com/protocol/session-setup#creating-a-session)
 final class NewSessionResponse implements HasMeta {
-  /// The unique session identifier.
-  final String sessionId;
+  /// Initial session configuration options if supported by the Agent.
+  final List<Map<String, dynamic>>? configOptions;
 
-  /// Available modes and current mode (raw JSON).
+  /// Initial mode state if supported by the Agent
+  ///
+  /// See protocol docs: [Session Modes](https://agentclientprotocol.com/protocol/session-modes)
   final Map<String, dynamic>? modes;
 
-  /// Available configuration options (raw JSON list).
-  final List<Map<String, dynamic>>? configOptions;
+  /// Unique identifier for the created session.
+  ///
+  /// Used in all subsequent requests for this conversation.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -68,25 +82,25 @@ final class NewSessionResponse implements HasMeta {
 
   /// Creates a [NewSessionResponse].
   const NewSessionResponse({
-    required this.sessionId,
-    this.modes,
     this.configOptions,
+    this.modes,
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory NewSessionResponse.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'modes', 'configOptions', '_meta'};
+    final known = {'configOptions', 'modes', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return NewSessionResponse(
-      sessionId: json['sessionId'] as String,
-      modes: json['modes'] as Map<String, dynamic>?,
       configOptions:
           (json['configOptions'] as List<dynamic>?)
               ?.cast<Map<String, dynamic>>(),
+      modes: json['modes'] as Map<String, dynamic>?,
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -94,24 +108,28 @@ final class NewSessionResponse implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
-    if (modes != null) 'modes': modes,
     if (configOptions != null) 'configOptions': configOptions,
+    if (modes != null) 'modes': modes,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Request parameters for the `session/load` method.
+/// Request parameters for loading an existing session.
+///
+/// Only available if the Agent supports the `loadSession` capability.
+///
+/// See protocol docs: [Loading Sessions](https://agentclientprotocol.com/protocol/session-setup#loading-sessions)
 final class LoadSessionRequest implements HasMeta {
-  /// The session ID to resume.
-  final String sessionId;
-
-  /// The working directory.
+  /// The working directory for this session.
   final String cwd;
 
-  /// MCP servers to connect to (raw JSON for each server).
+  /// List of MCP servers to connect to for this session.
   final List<Map<String, dynamic>> mcpServers;
+
+  /// The ID of the session to load.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -121,26 +139,26 @@ final class LoadSessionRequest implements HasMeta {
 
   /// Creates a [LoadSessionRequest].
   const LoadSessionRequest({
-    required this.sessionId,
     required this.cwd,
     this.mcpServers = const [],
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory LoadSessionRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'cwd', 'mcpServers', '_meta'};
+    final known = {'cwd', 'mcpServers', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return LoadSessionRequest(
-      sessionId: json['sessionId'] as String,
       cwd: json['cwd'] as String,
       mcpServers:
           (json['mcpServers'] as List<dynamic>?)
               ?.cast<Map<String, dynamic>>() ??
           const [],
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -148,21 +166,23 @@ final class LoadSessionRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
     'cwd': cwd,
     'mcpServers': mcpServers,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to the `session/load` method.
+/// Response from loading an existing session.
 final class LoadSessionResponse implements HasMeta {
-  /// Available modes and current mode (raw JSON).
-  final Map<String, dynamic>? modes;
-
-  /// Available configuration options (raw JSON list).
+  /// Initial session configuration options if supported by the Agent.
   final List<Map<String, dynamic>>? configOptions;
+
+  /// Initial mode state if supported by the Agent
+  ///
+  /// See protocol docs: [Session Modes](https://agentclientprotocol.com/protocol/session-modes)
+  final Map<String, dynamic>? modes;
 
   @override
   final Map<String, Object?>? meta;
@@ -172,23 +192,23 @@ final class LoadSessionResponse implements HasMeta {
 
   /// Creates a [LoadSessionResponse].
   const LoadSessionResponse({
-    this.modes,
     this.configOptions,
+    this.modes,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory LoadSessionResponse.fromJson(Map<String, dynamic> json) {
-    final known = {'modes', 'configOptions', '_meta'};
+    final known = {'configOptions', 'modes', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return LoadSessionResponse(
-      modes: json['modes'] as Map<String, dynamic>?,
       configOptions:
           (json['configOptions'] as List<dynamic>?)
               ?.cast<Map<String, dynamic>>(),
+      modes: json['modes'] as Map<String, dynamic>?,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -196,20 +216,36 @@ final class LoadSessionResponse implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    if (modes != null) 'modes': modes,
     if (configOptions != null) 'configOptions': configOptions,
+    if (modes != null) 'modes': modes,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Request parameters for the `session/prompt` method.
+/// Request parameters for sending a user prompt to the agent.
+///
+/// Contains the user's message and any additional context.
+///
+/// See protocol docs: [User Message](https://agentclientprotocol.com/protocol/prompt-turn#1-user-message)
 final class PromptRequest implements HasMeta {
-  /// The session ID to send the prompt to.
-  final String sessionId;
-
-  /// The prompt content blocks.
+  /// The blocks of content that compose the user's message.
+  ///
+  /// As a baseline, the Agent MUST support [TextContent] and [ResourceLink],
+  /// while other variants are optionally enabled via [PromptCapabilities].
+  ///
+  /// The Client MUST adapt its interface according to [PromptCapabilities].
+  ///
+  /// The client MAY include referenced pieces of context as either
+  /// [EmbeddedResource] or [ResourceLink].
+  ///
+  /// When available, [EmbeddedResource] is preferred
+  /// as it avoids extra round-trips and allows the message to include
+  /// pieces of context from sources the agent may not have access to.
   final List<ContentBlock> prompt;
+
+  /// The ID of the session to send this user message to
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -219,24 +255,25 @@ final class PromptRequest implements HasMeta {
 
   /// Creates a [PromptRequest].
   const PromptRequest({
+    this.prompt = const [],
     required this.sessionId,
-    required this.prompt,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory PromptRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'prompt', '_meta'};
+    final known = {'prompt', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return PromptRequest(
-      sessionId: json['sessionId'] as String,
       prompt:
-          (json['prompt'] as List<dynamic>)
-              .map((e) => ContentBlock.fromJson(e as Map<String, dynamic>))
-              .toList(),
+          (json['prompt'] as List<dynamic>?)
+              ?.map((e) => ContentBlock.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -244,28 +281,38 @@ final class PromptRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
     'prompt': prompt.map((e) => e.toJson()).toList(),
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// The reason a prompt turn ended.
+/// Reasons why an agent stops processing a prompt turn.
+///
+/// See protocol docs: [Stop Reasons](https://agentclientprotocol.com/protocol/prompt-turn#stop-reasons)
 enum StopReason {
-  /// The agent finished its turn normally.
+  /// The turn ended successfully.
   endTurn('end_turn'),
 
-  /// Token limit reached.
+  /// The turn ended because the agent reached the maximum number of tokens.
   maxTokens('max_tokens'),
 
-  /// Turn request limit reached.
+  /// The turn ended because the agent reached the maximum number of allowed
+  /// agent requests between user turns.
   maxTurnRequests('max_turn_requests'),
 
-  /// The agent refused to continue.
+  /// The turn ended because the agent refused to continue. The user prompt
+  /// and everything that comes after it won't be included in the next
+  /// prompt, so this should be reflected in the UI.
   refusal('refusal'),
 
-  /// The prompt was canceled.
+  /// The turn was cancelled by the client via `session/cancel`.
+  ///
+  /// This stop reason MUST be returned when the client sends a `session/cancel`
+  /// notification, even if the cancellation causes exceptions in underlying operations.
+  /// Agents should catch these exceptions and return this semantically meaningful
+  /// response to confirm successful cancellation.
   cancelled('cancelled');
 
   /// The wire-format string value.
@@ -277,16 +324,18 @@ enum StopReason {
   ///
   /// Returns `null` for unknown values.
   static StopReason? fromString(String value) {
-    for (final reason in values) {
-      if (reason.value == value) return reason;
+    for (final v in values) {
+      if (v.value == value) return v;
     }
     return null;
   }
 }
 
-/// Response to the `session/prompt` method.
+/// Response from processing a user prompt.
+///
+/// See protocol docs: [Check for Completion](https://agentclientprotocol.com/protocol/prompt-turn#4-check-for-completion)
 final class PromptResponse implements HasMeta {
-  /// Why the prompt turn ended (wire-format string).
+  /// Indicates why the agent stopped processing the turn.
   final String stopReason;
 
   @override
@@ -301,9 +350,6 @@ final class PromptResponse implements HasMeta {
     this.meta,
     this.extensionData,
   });
-
-  /// The parsed [StopReason], or `null` if the value is unknown.
-  StopReason? get stopReasonEnum => StopReason.fromString(stopReason);
 
   /// Deserializes from JSON.
   factory PromptResponse.fromJson(Map<String, dynamic> json) {
@@ -326,9 +372,11 @@ final class PromptResponse implements HasMeta {
   };
 }
 
-/// Parameters for the `session/cancel` notification.
+/// Notification to cancel ongoing operations for a session.
+///
+/// See protocol docs: [Cancellation](https://agentclientprotocol.com/protocol/prompt-turn#cancellation)
 final class CancelNotification implements HasMeta {
-  /// The session ID to cancel.
+  /// The ID of the session to cancel operations for.
   final String sessionId;
 
   @override
@@ -365,13 +413,13 @@ final class CancelNotification implements HasMeta {
   };
 }
 
-/// Request parameters for `session/set_mode`.
+/// Request parameters for setting a session mode.
 final class SetSessionModeRequest implements HasMeta {
-  /// The session ID.
-  final String sessionId;
-
-  /// The mode ID to switch to.
+  /// The ID of the mode to set.
   final String modeId;
+
+  /// The ID of the session to set the mode for.
+  final String sessionId;
 
   @override
   final Map<String, Object?>? meta;
@@ -381,21 +429,21 @@ final class SetSessionModeRequest implements HasMeta {
 
   /// Creates a [SetSessionModeRequest].
   const SetSessionModeRequest({
-    required this.sessionId,
     required this.modeId,
+    required this.sessionId,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory SetSessionModeRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'modeId', '_meta'};
+    final known = {'modeId', 'sessionId', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return SetSessionModeRequest(
-      sessionId: json['sessionId'] as String,
       modeId: json['modeId'] as String,
+      sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -403,14 +451,14 @@ final class SetSessionModeRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
     'modeId': modeId,
+    'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `session/set_mode`.
+/// Response to `session/set_mode` method.
 final class SetSessionModeResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -423,7 +471,7 @@ final class SetSessionModeResponse implements HasMeta {
 
   /// Deserializes from JSON.
   factory SetSessionModeResponse.fromJson(Map<String, dynamic> json) {
-    final known = <String>{'_meta'};
+    final known = {'_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
@@ -440,15 +488,15 @@ final class SetSessionModeResponse implements HasMeta {
   };
 }
 
-/// Request parameters for `session/set_config_option`.
+/// Request parameters for setting a session configuration option.
 final class SetSessionConfigOptionRequest implements HasMeta {
-  /// The session ID.
-  final String sessionId;
-
-  /// The config option ID.
+  /// The ID of the configuration option to set.
   final String configId;
 
-  /// The new value.
+  /// The ID of the session to set the configuration option for.
+  final String sessionId;
+
+  /// The ID of the configuration option value to set.
   final String value;
 
   @override
@@ -459,8 +507,8 @@ final class SetSessionConfigOptionRequest implements HasMeta {
 
   /// Creates a [SetSessionConfigOptionRequest].
   const SetSessionConfigOptionRequest({
-    required this.sessionId,
     required this.configId,
+    required this.sessionId,
     required this.value,
     this.meta,
     this.extensionData,
@@ -468,13 +516,13 @@ final class SetSessionConfigOptionRequest implements HasMeta {
 
   /// Deserializes from JSON.
   factory SetSessionConfigOptionRequest.fromJson(Map<String, dynamic> json) {
-    final known = {'sessionId', 'configId', 'value', '_meta'};
+    final known = {'configId', 'sessionId', 'value', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return SetSessionConfigOptionRequest(
-      sessionId: json['sessionId'] as String,
       configId: json['configId'] as String,
+      sessionId: json['sessionId'] as String,
       value: json['value'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
@@ -483,15 +531,15 @@ final class SetSessionConfigOptionRequest implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'sessionId': sessionId,
     'configId': configId,
+    'sessionId': sessionId,
     'value': value,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-/// Response to `session/set_config_option`.
+/// Response to `session/set_config_option` method.
 final class SetSessionConfigOptionResponse implements HasMeta {
   /// The full set of configuration options and their current values.
   final List<Map<String, dynamic>> configOptions;
@@ -504,7 +552,7 @@ final class SetSessionConfigOptionResponse implements HasMeta {
 
   /// Creates a [SetSessionConfigOptionResponse].
   const SetSessionConfigOptionResponse({
-    required this.configOptions,
+    this.configOptions = const [],
     this.meta,
     this.extensionData,
   });
@@ -517,7 +565,9 @@ final class SetSessionConfigOptionResponse implements HasMeta {
     );
     return SetSessionConfigOptionResponse(
       configOptions:
-          (json['configOptions'] as List<dynamic>).cast<Map<String, dynamic>>(),
+          (json['configOptions'] as List<dynamic>?)
+              ?.cast<Map<String, dynamic>>() ??
+          const [],
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -531,14 +581,16 @@ final class SetSessionConfigOptionResponse implements HasMeta {
   };
 }
 
-/// Session update notification envelope.
+/// Notification containing a session update from the agent.
 ///
-/// Wraps a session update with the session ID it belongs to.
+/// Used to stream real-time progress and results during prompt processing.
+///
+/// See protocol docs: [Agent Reports Output](https://agentclientprotocol.com/protocol/prompt-turn#3-agent-reports-output)
 final class SessionNotification implements HasMeta {
-  /// The session this update belongs to.
+  /// The ID of the session this update pertains to.
   final String sessionId;
 
-  /// The update payload (raw JSON for the SessionUpdate).
+  /// The actual update content.
   final Map<String, dynamic> update;
 
   @override

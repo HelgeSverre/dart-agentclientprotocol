@@ -1,4 +1,4 @@
-/// The lifecycle state of a [Connection].
+/// The lifecycle state of a connection.
 ///
 /// Connections follow a strict state machine:
 /// [idle] → [opening] → [open] → [closing] → [closed].
@@ -12,7 +12,7 @@ enum ConnectionState {
   /// Normal operation; requests and notifications flow.
   open,
 
-  /// [close] called; draining write queue; rejecting new sends.
+  /// Close called; draining write queue; rejecting new sends.
   closing,
 
   /// Terminal state; all streams completed; all pending requests failed.
