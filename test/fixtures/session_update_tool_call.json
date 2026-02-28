@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"sess-abc-123","update":{"sessionUpdate":"tool_call","toolCallId":"tc-1","name":"read_file","args":{"path":"/etc/hosts"}}}}
