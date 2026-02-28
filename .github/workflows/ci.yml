@@ -41,6 +41,7 @@ jobs:
           sdk: '3.7.0'
       - run: dart pub get
       - run: dart run tool/generate/generate.dart
+      - run: dart format lib/src/schema/
       - name: Check for uncommitted codegen changes
         run: |
           if ! git diff --exit-code lib/src/schema/; then
