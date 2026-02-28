@@ -109,10 +109,9 @@ void main() {
       expect(sentReq.method, 'initialize');
 
       // Simulate response
-      transport.receive(JsonRpcResponse(
-        id: sentReq.id,
-        result: {'protocolVersion': 1},
-      ));
+      transport.receive(
+        JsonRpcResponse(id: sentReq.id, result: {'protocolVersion': 1}),
+      );
 
       final result = await future;
       expect(result['protocolVersion'], 1);
@@ -120,29 +119,33 @@ void main() {
       await conn.close();
     });
 
-    test('sendRequest rejects with RpcErrorException on error response',
-        () async {
-      final transport = MockTransport();
-      final conn = Connection(transport);
-      conn.start();
-      conn.markOpen();
+    test(
+      'sendRequest rejects with RpcErrorException on error response',
+      () async {
+        final transport = MockTransport();
+        final conn = Connection(transport);
+        conn.start();
+        conn.markOpen();
 
-      final future = conn.sendRequest('bad_method', null);
-      await Future<void>.delayed(Duration.zero);
+        final future = conn.sendRequest('bad_method', null);
+        await Future<void>.delayed(Duration.zero);
 
-      final sentReq = transport.sent.first as JsonRpcRequest;
-      transport.receive(JsonRpcResponse(
-        id: sentReq.id,
-        error: const JsonRpcError(
-          code: -32601,
-          message: 'Method not found',
-        ),
-      ));
+        final sentReq = transport.sent.first as JsonRpcRequest;
+        transport.receive(
+          JsonRpcResponse(
+            id: sentReq.id,
+            error: const JsonRpcError(
+              code: -32601,
+              message: 'Method not found',
+            ),
+          ),
+        );
 
-      await expectLater(future, throwsA(isA<RpcErrorException>()));
+        await expectLater(future, throwsA(isA<RpcErrorException>()));
 
-      await conn.close();
-    });
+        await conn.close();
+      },
+    );
 
     test('pending requests fail on close', () async {
       final transport = MockTransport();
@@ -196,11 +199,13 @@ void main() {
       conn.start();
       conn.markOpen();
 
-      transport.receive(const JsonRpcRequest(
-        id: 1,
-        method: 'test/echo',
-        params: {'hello': 'world'},
-      ));
+      transport.receive(
+        const JsonRpcRequest(
+          id: 1,
+          method: 'test/echo',
+          params: {'hello': 'world'},
+        ),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -219,10 +224,7 @@ void main() {
       conn.start();
       conn.markOpen();
 
-      transport.receive(const JsonRpcRequest(
-        id: 1,
-        method: 'nonexistent',
-      ));
+      transport.receive(const JsonRpcRequest(id: 1, method: 'nonexistent'));
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -245,11 +247,13 @@ void main() {
       conn.start();
       conn.markOpen();
 
-      transport.receive(const JsonRpcRequest(
-        id: 1,
-        method: '_vendor/custom',
-        params: {'data': 42},
-      ));
+      transport.receive(
+        const JsonRpcRequest(
+          id: 1,
+          method: '_vendor/custom',
+          params: {'data': 42},
+        ),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -331,6 +335,132 @@ void main() {
       expect(warnings.first, isA<LateResponseWarning>());
 
       await conn.close();
+    });
+  });
+
+  group('Keepalive', () {
+    test('sends ping at keepalive interval', () async {
+      final transport = MockTransport();
+      final conn = Connection(
+        transport,
+        keepaliveInterval: const Duration(milliseconds: 50),
+      );
+      conn.start();
+      conn.markOpen();
+
+      // Wait for at least 2 pings
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+
+      final pings =
+          transport.sent
+              .whereType<JsonRpcNotification>()
+              .where((n) => n.method == r'$/ping')
+              .toList();
+      expect(pings.length, greaterThanOrEqualTo(2));
+
+      await conn.close();
+    });
+
+    test('responds to incoming ping with pong', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+
+      transport.receive(const JsonRpcNotification(method: r'$/ping'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final pongs =
+          transport.sent
+              .whereType<JsonRpcNotification>()
+              .where((n) => n.method == r'$/pong')
+              .toList();
+      expect(pongs, hasLength(1));
+
+      await conn.close();
+    });
+
+    test('updates lastPong on pong receipt', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+
+      expect(conn.lastPong, isNull);
+
+      transport.receive(const JsonRpcNotification(method: r'$/pong'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(conn.lastPong, isNotNull);
+
+      await conn.close();
+    });
+
+    test('closes connection on keepalive timeout', () async {
+      final transport = MockTransport();
+      final conn = Connection(
+        transport,
+        keepaliveInterval: const Duration(milliseconds: 50),
+        keepaliveTimeout: const Duration(milliseconds: 30),
+      );
+      conn.start();
+      conn.markOpen();
+
+      // Don't respond to pings — timeout (30ms) fires before next ping (50ms)
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(conn.state, ConnectionState.closed);
+    });
+
+    test('does not start keepalive when interval is null', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.start();
+      conn.markOpen();
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      final pings =
+          transport.sent
+              .whereType<JsonRpcNotification>()
+              .where((n) => n.method == r'$/ping')
+              .toList();
+      expect(pings, isEmpty);
+
+      await conn.close();
+    });
+
+    test('keepalive stops on close', () async {
+      final transport = MockTransport();
+      final conn = Connection(
+        transport,
+        keepaliveInterval: const Duration(milliseconds: 30),
+      );
+      conn.start();
+      conn.markOpen();
+
+      // Wait for at least 1 ping
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await conn.close();
+
+      final countAfterClose =
+          transport.sent
+              .whereType<JsonRpcNotification>()
+              .where((n) => n.method == r'$/ping')
+              .length;
+
+      // Wait a bit more to ensure no new pings
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      final countLater =
+          transport.sent
+              .whereType<JsonRpcNotification>()
+              .where((n) => n.method == r'$/ping')
+              .length;
+
+      // No new pings should have been sent after close
+      expect(countLater, countAfterClose);
+      expect(conn.state, ConnectionState.closed);
     });
   });
 }

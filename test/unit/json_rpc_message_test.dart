@@ -19,11 +19,7 @@ void main() {
     });
 
     test('parses request with string id', () {
-      final json = {
-        'jsonrpc': '2.0',
-        'id': 'abc-123',
-        'method': 'session/new',
-      };
+      final json = {'jsonrpc': '2.0', 'id': 'abc-123', 'method': 'session/new'};
       final msg = JsonRpcMessage.fromJson(json);
       expect(msg, isA<JsonRpcRequest>());
       expect((msg as JsonRpcRequest).id, 'abc-123');
@@ -90,10 +86,7 @@ void main() {
       final json = {
         'jsonrpc': '2.0',
         'id': 1,
-        'error': {
-          'code': -32601,
-          'message': 'Method not found',
-        },
+        'error': {'code': -32601, 'message': 'Method not found'},
       };
       final msg = JsonRpcMessage.fromJson(json);
       expect(msg, isA<JsonRpcResponse>());
@@ -142,6 +135,73 @@ void main() {
         () => JsonRpcMessage.fromJson({'jsonrpc': '2.0', 'id': 1}),
         throwsFormatException,
       );
+    });
+  });
+
+  group('batch parsing', () {
+    test('parseBatch with single object returns single-element list', () {
+      final json = <String, dynamic>{
+        'jsonrpc': '2.0',
+        'id': 1,
+        'method': 'initialize',
+      };
+      final messages = JsonRpcMessage.parseBatch(json);
+      expect(messages, hasLength(1));
+      expect(messages[0], isA<JsonRpcRequest>());
+      expect((messages[0] as JsonRpcRequest).method, 'initialize');
+    });
+
+    test('parseBatch with array returns multiple messages', () {
+      final json = <Object>[
+        <String, dynamic>{'jsonrpc': '2.0', 'id': 1, 'method': 'initialize'},
+        <String, dynamic>{'jsonrpc': '2.0', 'id': 2, 'method': 'shutdown'},
+      ];
+      final messages = JsonRpcMessage.parseBatch(json);
+      expect(messages, hasLength(2));
+      expect((messages[0] as JsonRpcRequest).method, 'initialize');
+      expect((messages[1] as JsonRpcRequest).method, 'shutdown');
+    });
+
+    test('parseBatch with empty array throws FormatException', () {
+      expect(
+        () => JsonRpcMessage.parseBatch(<Object>[]),
+        throwsFormatException,
+      );
+    });
+
+    test('parseBatch with non-object/array throws FormatException', () {
+      expect(
+        () => JsonRpcMessage.parseBatch('not valid'),
+        throwsFormatException,
+      );
+    });
+
+    test('parseBatch skips non-map items in array', () {
+      final json = <Object>[
+        <String, dynamic>{'jsonrpc': '2.0', 'id': 1, 'method': 'initialize'},
+        42,
+        'garbage',
+      ];
+      final messages = JsonRpcMessage.parseBatch(json);
+      expect(messages, hasLength(1));
+      expect(messages[0], isA<JsonRpcRequest>());
+    });
+
+    test('parseBatch handles mixed request/notification/response array', () {
+      final json = <Object>[
+        <String, dynamic>{'jsonrpc': '2.0', 'id': 1, 'method': 'initialize'},
+        <String, dynamic>{'jsonrpc': '2.0', 'method': 'session/update'},
+        <String, dynamic>{
+          'jsonrpc': '2.0',
+          'id': 2,
+          'result': <String, dynamic>{'status': 'ok'},
+        },
+      ];
+      final messages = JsonRpcMessage.parseBatch(json);
+      expect(messages, hasLength(3));
+      expect(messages[0], isA<JsonRpcRequest>());
+      expect(messages[1], isA<JsonRpcNotification>());
+      expect(messages[2], isA<JsonRpcResponse>());
     });
   });
 }

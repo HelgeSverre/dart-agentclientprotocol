@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:acp/src/protocol/acp_methods.dart';
 import 'package:acp/src/protocol/cancellation.dart';
 import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
@@ -38,6 +39,11 @@ final class Connection {
   final AcpTransport _transport;
   final RequestIdAllocator _idAllocator = RequestIdAllocator();
   final Duration _defaultTimeout;
+  final Duration? _keepaliveInterval;
+  final Duration? _keepaliveTimeout;
+  Timer? _keepaliveTimer;
+  DateTime? _lastPong;
+  Timer? _keepaliveTimeoutTimer;
 
   // State machine
   ConnectionState _state = ConnectionState.idle;
@@ -79,10 +85,24 @@ final class Connection {
   ///
   /// [defaultTimeout] controls how long [sendRequest] waits for a response
   /// before throwing [RequestTimeoutException]. Defaults to 60 seconds.
+  ///
+  /// [keepaliveInterval] enables periodic ping notifications when set.
+  /// [keepaliveTimeout] sets the maximum time to wait for a pong before
+  /// closing the connection.
   Connection(
     this._transport, {
     Duration defaultTimeout = const Duration(seconds: 60),
-  }) : _defaultTimeout = defaultTimeout;
+    Duration? keepaliveInterval,
+    Duration? keepaliveTimeout,
+  }) : _defaultTimeout = defaultTimeout,
+       _keepaliveInterval = keepaliveInterval,
+       _keepaliveTimeout = keepaliveTimeout {
+    _notificationHandlers[AcpMethods.ping] = _handlePing;
+    _notificationHandlers[AcpMethods.pong] = _handlePong;
+  }
+
+  /// The timestamp of the last received pong, or `null` if no pong received.
+  DateTime? get lastPong => _lastPong;
 
   /// The current connection state.
   ConnectionState get state => _state;
@@ -141,6 +161,7 @@ final class Connection {
       );
     }
     _transition(ConnectionState.open);
+    _startKeepalive();
   }
 
   /// Sends a JSON-RPC request and waits for the response.
@@ -430,8 +451,47 @@ final class Connection {
     unawaited(_cleanup());
   }
 
+  void _startKeepalive() {
+    final interval = _keepaliveInterval;
+    if (interval == null) return;
+    _keepaliveTimer = Timer.periodic(interval, (_) {
+      if (_state != ConnectionState.open) return;
+      unawaited(notify(AcpMethods.ping));
+      _startKeepaliveTimeout();
+    });
+  }
+
+  void _startKeepaliveTimeout() {
+    final timeout = _keepaliveTimeout;
+    if (timeout == null) return;
+    _keepaliveTimeoutTimer?.cancel();
+    _keepaliveTimeoutTimer = Timer(timeout, () {
+      _log.warning('Keepalive timeout — no pong received');
+      unawaited(_cleanup());
+    });
+  }
+
+  void _stopKeepalive() {
+    _keepaliveTimer?.cancel();
+    _keepaliveTimer = null;
+    _keepaliveTimeoutTimer?.cancel();
+    _keepaliveTimeoutTimer = null;
+  }
+
+  Future<void> _handlePing(JsonRpcNotification notification) async {
+    await notify(AcpMethods.pong);
+  }
+
+  Future<void> _handlePong(JsonRpcNotification notification) async {
+    _lastPong = DateTime.now();
+    _keepaliveTimeoutTimer?.cancel();
+    _keepaliveTimeoutTimer = null;
+  }
+
   Future<void> _cleanup() async {
     if (_state == ConnectionState.closed) return;
+
+    _stopKeepalive();
 
     await _transportSubscription?.cancel();
     _transportSubscription = null;

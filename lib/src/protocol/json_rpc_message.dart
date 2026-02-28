@@ -45,6 +45,32 @@ sealed class JsonRpcMessage {
     return JsonRpcNotification.fromJson(json);
   }
 
+  /// Parses a JSON value that may be a single message or a batch array.
+  ///
+  /// Returns a list of [JsonRpcMessage] objects. A single message object
+  /// returns a list with one element. A batch array returns one element
+  /// per valid message in the array.
+  ///
+  /// Throws [FormatException] if [json] is neither a Map nor a List,
+  /// or if a List is empty.
+  static List<JsonRpcMessage> parseBatch(Object json) {
+    if (json is Map<String, dynamic>) {
+      return [JsonRpcMessage.fromJson(json)];
+    }
+    if (json is List) {
+      if (json.isEmpty) {
+        throw const FormatException('Empty JSON-RPC batch array');
+      }
+      return [
+        for (final item in json)
+          if (item is Map<String, dynamic>) JsonRpcMessage.fromJson(item),
+      ];
+    }
+    throw FormatException(
+      'Expected JSON object or array, got ${json.runtimeType}',
+    );
+  }
+
   /// Serializes this message to a JSON map.
   Map<String, dynamic> toJson();
 }

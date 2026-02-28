@@ -74,4 +74,10 @@ abstract final class AcpMethods {
 
   /// Cancel a pending request (JSON-RPC extension).
   static const String cancelRequest = r'$/cancelRequest';
+
+  /// Keepalive ping (JSON-RPC extension notification).
+  static const String ping = r'$/ping';
+
+  /// Keepalive pong response (JSON-RPC extension notification).
+  static const String pong = r'$/pong';
 }
