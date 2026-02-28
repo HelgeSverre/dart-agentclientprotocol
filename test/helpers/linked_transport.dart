@@ -24,8 +24,8 @@ class _LinkedTransport implements AcpTransport {
   _LinkedTransport({
     required Stream<JsonRpcMessage> inbound,
     required StreamController<JsonRpcMessage> outboundSink,
-  })  : _inbound = inbound,
-        _outboundSink = outboundSink;
+  }) : _inbound = inbound,
+       _outboundSink = outboundSink;
 
   @override
   Stream<JsonRpcMessage> get messages => _inbound;

@@ -56,49 +56,47 @@ Future<void> _performInitialize(
   final req = transport.sent.whereType<JsonRpcRequest>().first;
 
   // Simulate agent response
-  transport.receive(JsonRpcResponse(
-    id: req.id,
-    result: <String, dynamic>{
-      'protocolVersion': 1,
-      'agentCapabilities': <String, dynamic>{
-        'loadSession': loadSession,
-        'promptCapabilities': <String, dynamic>{},
-        'mcpCapabilities': <String, dynamic>{},
-        'sessionCapabilities': <String, dynamic>{},
+  transport.receive(
+    JsonRpcResponse(
+      id: req.id,
+      result: <String, dynamic>{
+        'protocolVersion': 1,
+        'agentCapabilities': <String, dynamic>{
+          'loadSession': loadSession,
+          'promptCapabilities': <String, dynamic>{},
+          'mcpCapabilities': <String, dynamic>{},
+          'sessionCapabilities': <String, dynamic>{},
+        },
+        'authMethods': <dynamic>[],
       },
-      'authMethods': <dynamic>[],
-    },
-  ));
+    ),
+  );
 
   await future;
 }
 
 void main() {
   group('ClientSideConnection', () {
-    test('sendInitialize sends request and stores remote capabilities',
-        () async {
-      final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+    test(
+      'sendInitialize sends request and stores remote capabilities',
+      () async {
+        final transport = MockTransport();
+        final conn = ClientSideConnection(transport, handler: _TestHandler());
 
-      expect(conn.remoteCapabilities, isNull);
+        expect(conn.remoteCapabilities, isNull);
 
-      await _performInitialize(transport, conn, loadSession: true);
+        await _performInitialize(transport, conn, loadSession: true);
 
-      expect(conn.remoteCapabilities, isNotNull);
-      expect(conn.remoteCapabilities!.loadSession, isTrue);
+        expect(conn.remoteCapabilities, isNotNull);
+        expect(conn.remoteCapabilities!.loadSession, isTrue);
 
-      await conn.close();
-    });
+        await conn.close();
+      },
+    );
 
     test('sendInitialize transitions to open', () async {
       final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
 
       expect(conn.state, ConnectionState.opening);
 
@@ -109,43 +107,41 @@ void main() {
       await conn.close();
     });
 
-    test('sendNewSession sends session/new request, returns typed response',
-        () async {
-      final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+    test(
+      'sendNewSession sends session/new request, returns typed response',
+      () async {
+        final transport = MockTransport();
+        final conn = ClientSideConnection(transport, handler: _TestHandler());
 
-      await _performInitialize(transport, conn);
-      transport.sent.clear();
+        await _performInitialize(transport, conn);
+        transport.sent.clear();
 
-      final future = conn.sendNewSession(cwd: '/tmp');
+        final future = conn.sendNewSession(cwd: '/tmp');
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
 
-      expect(transport.sent, hasLength(1));
-      final req = transport.sent.first as JsonRpcRequest;
-      expect(req.method, 'session/new');
-      expect(req.params!['cwd'], '/tmp');
+        expect(transport.sent, hasLength(1));
+        final req = transport.sent.first as JsonRpcRequest;
+        expect(req.method, 'session/new');
+        expect(req.params!['cwd'], '/tmp');
 
-      transport.receive(JsonRpcResponse(
-        id: req.id,
-        result: const <String, dynamic>{'sessionId': 's1'},
-      ));
+        transport.receive(
+          JsonRpcResponse(
+            id: req.id,
+            result: const <String, dynamic>{'sessionId': 's1'},
+          ),
+        );
 
-      final response = await future;
-      expect(response.sessionId, 's1');
+        final response = await future;
+        expect(response.sessionId, 's1');
 
-      await conn.close();
-    });
+        await conn.close();
+      },
+    );
 
     test('sendPrompt sends session/prompt request', () async {
       final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
 
       await _performInitialize(transport, conn);
       transport.sent.clear();
@@ -164,10 +160,12 @@ void main() {
       final prompt = req.params!['prompt'] as List<dynamic>;
       expect(prompt, hasLength(1));
 
-      transport.receive(JsonRpcResponse(
-        id: req.id,
-        result: const <String, dynamic>{'stopReason': 'end_turn'},
-      ));
+      transport.receive(
+        JsonRpcResponse(
+          id: req.id,
+          result: const <String, dynamic>{'stopReason': 'end_turn'},
+        ),
+      );
 
       final response = await future;
       expect(response.stopReason, 'end_turn');
@@ -175,80 +173,79 @@ void main() {
       await conn.close();
     });
 
-    test('sendCancel sends session/cancel notification (not a request)',
-        () async {
-      final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+    test(
+      'sendCancel sends session/cancel notification (not a request)',
+      () async {
+        final transport = MockTransport();
+        final conn = ClientSideConnection(transport, handler: _TestHandler());
 
-      await _performInitialize(transport, conn);
-      transport.sent.clear();
+        await _performInitialize(transport, conn);
+        transport.sent.clear();
 
-      await conn.sendCancel(sessionId: 's1');
+        await conn.sendCancel(sessionId: 's1');
 
-      expect(transport.sent, hasLength(1));
-      final msg = transport.sent.first;
-      expect(msg, isA<JsonRpcNotification>());
-      final notif = msg as JsonRpcNotification;
-      expect(notif.method, 'session/cancel');
-      expect(notif.params!['sessionId'], 's1');
+        expect(transport.sent, hasLength(1));
+        final msg = transport.sent.first;
+        expect(msg, isA<JsonRpcNotification>());
+        final notif = msg as JsonRpcNotification;
+        expect(notif.method, 'session/cancel');
+        expect(notif.params!['sessionId'], 's1');
 
-      await conn.close();
-    });
+        await conn.close();
+      },
+    );
 
-    test('session/update notification dispatches to handler onSessionUpdate',
-        () async {
-      final transport = MockTransport();
-      final handler = _TestHandler();
-      final conn = ClientSideConnection(
-        transport,
-        handler: handler,
-      );
+    test(
+      'session/update notification dispatches to handler onSessionUpdate',
+      () async {
+        final transport = MockTransport();
+        final handler = _TestHandler();
+        final conn = ClientSideConnection(transport, handler: handler);
 
-      await _performInitialize(transport, conn);
+        await _performInitialize(transport, conn);
 
-      transport.receive(const JsonRpcNotification(
-        method: 'session/update',
-        params: {
-          'sessionId': 's1',
-          'update': {
-            'sessionUpdate': 'agent_message_chunk',
-            'content': {'type': 'text', 'text': 'hi'},
-          },
-        },
-      ));
+        transport.receive(
+          const JsonRpcNotification(
+            method: 'session/update',
+            params: {
+              'sessionId': 's1',
+              'update': {
+                'sessionUpdate': 'agent_message_chunk',
+                'content': {'type': 'text', 'text': 'hi'},
+              },
+            },
+          ),
+        );
 
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      expect(handler.calls, contains('sessionUpdate:s1'));
+        expect(handler.calls, contains('sessionUpdate:s1'));
 
-      await conn.close();
-    });
+        await conn.close();
+      },
+    );
 
     test('sessionUpdates stream emits parsed SessionUpdateEvent', () async {
       final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
 
       await _performInitialize(transport, conn);
 
       final events = <SessionUpdateEvent>[];
       final sub = conn.sessionUpdates.listen(events.add);
 
-      transport.receive(const JsonRpcNotification(
-        method: 'session/update',
-        params: {
-          'sessionId': 's2',
-          'update': {
-            'sessionUpdate': 'agent_message_chunk',
-            'content': {'type': 'text', 'text': 'hello'},
+      transport.receive(
+        const JsonRpcNotification(
+          method: 'session/update',
+          params: {
+            'sessionId': 's2',
+            'update': {
+              'sessionUpdate': 'agent_message_chunk',
+              'content': {'type': 'text', 'text': 'hello'},
+            },
           },
-        },
-      ));
+        ),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -263,22 +260,22 @@ void main() {
     test('incoming fs/read_text_file dispatches to handler', () async {
       final transport = MockTransport();
       final handler = _FsHandler();
-      final conn = ClientSideConnection(
-        transport,
-        handler: handler,
-      );
+      final conn = ClientSideConnection(transport, handler: handler);
 
       await _performInitialize(transport, conn);
       transport.sent.clear();
 
-      transport.receive(JsonRpcRequest(
-        id: 'read-1',
-        method: 'fs/read_text_file',
-        params: const ReadTextFileRequest(
-          sessionId: 's1',
-          path: '/tmp/test.txt',
-        ).toJson(),
-      ));
+      transport.receive(
+        JsonRpcRequest(
+          id: 'read-1',
+          method: 'fs/read_text_file',
+          params:
+              const ReadTextFileRequest(
+                sessionId: 's1',
+                path: '/tmp/test.txt',
+              ).toJson(),
+        ),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -295,22 +292,22 @@ void main() {
 
     test('unimplemented terminal/create returns METHOD_NOT_FOUND', () async {
       final transport = MockTransport();
-      final conn = ClientSideConnection(
-        transport,
-        handler: _TestHandler(),
-      );
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
 
       await _performInitialize(transport, conn);
       transport.sent.clear();
 
-      transport.receive(JsonRpcRequest(
-        id: 'term-1',
-        method: 'terminal/create',
-        params: const CreateTerminalRequest(
-          sessionId: 's1',
-          command: 'ls',
-        ).toJson(),
-      ));
+      transport.receive(
+        JsonRpcRequest(
+          id: 'term-1',
+          method: 'terminal/create',
+          params:
+              const CreateTerminalRequest(
+                sessionId: 's1',
+                command: 'ls',
+              ).toJson(),
+        ),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -322,8 +319,7 @@ void main() {
       await conn.close();
     });
 
-    test(
-        'strict capability enforcement blocks sendLoadSession '
+    test('strict capability enforcement blocks sendLoadSession '
         'when loadSession is false', () async {
       final transport = MockTransport();
       final conn = ClientSideConnection(

@@ -157,10 +157,11 @@ void main() {
       final update = SessionUpdate.fromJson(sessionNotif.update);
       expect(update, isA<ToolCallSessionUpdate>());
       final toolCall = update as ToolCallSessionUpdate;
-      expect(toolCall.rawJson['toolCallId'], 'tc-1');
-      expect(toolCall.rawJson['name'], 'read_file');
+      expect(toolCall.toolCallId, 'tc-1');
+      final toolCallJson = toolCall.toJson();
+      expect(toolCallJson['name'], 'read_file');
       expect(
-        (toolCall.rawJson['args'] as Map<String, dynamic>)['path'],
+        (toolCallJson['args'] as Map<String, dynamic>)['path'],
         '/etc/hosts',
       );
     });
@@ -242,6 +243,7 @@ void main() {
     test('tool_call', () {
       final json = <String, dynamic>{
         'sessionUpdate': 'tool_call',
+        'title': 'Writing file',
         'toolCallId': 'tc-2',
         'name': 'write_file',
         'args': <String, dynamic>{},

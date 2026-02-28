@@ -162,8 +162,7 @@ void main() {
         'sessionId': 'sess-1',
         'modeId': 'careful',
       };
-      expectRoundTrip(
-          SetSessionModeRequest.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(SetSessionModeRequest.fromJson, (r) => r.toJson(), json);
     });
 
     test('SetSessionConfigOptionRequest', () {
@@ -173,7 +172,10 @@ void main() {
         'value': '4096',
       };
       expectRoundTrip(
-          SetSessionConfigOptionRequest.fromJson, (r) => r.toJson(), json);
+        SetSessionConfigOptionRequest.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     test('SetSessionConfigOptionResponse', () {
@@ -183,7 +185,10 @@ void main() {
         ],
       };
       expectRoundTrip(
-          SetSessionConfigOptionResponse.fromJson, (r) => r.toJson(), json);
+        SetSessionConfigOptionResponse.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     test('SessionNotification', () {
@@ -309,6 +314,7 @@ void main() {
     test('ToolCallSessionUpdate preserves raw JSON', () {
       final json = <String, dynamic>{
         'sessionUpdate': 'tool_call',
+        'title': 'Reading file',
         'toolCallId': 'tc-1',
         'name': 'read_file',
         'args': {'path': '/tmp/x'},
@@ -333,7 +339,7 @@ void main() {
     test('PlanUpdate preserves raw JSON', () {
       final json = <String, dynamic>{
         'sessionUpdate': 'plan',
-        'steps': [
+        'entries': [
           {'title': 'Step 1', 'status': 'done'},
         ],
       };
@@ -345,7 +351,7 @@ void main() {
     test('AvailableCommandsSessionUpdate preserves raw JSON', () {
       final json = <String, dynamic>{
         'sessionUpdate': 'available_commands_update',
-        'commands': [
+        'availableCommands': [
           {'id': 'cmd1', 'label': 'Command 1'},
         ],
       };
@@ -368,8 +374,9 @@ void main() {
     test('ConfigOptionSessionUpdate preserves raw JSON', () {
       final json = <String, dynamic>{
         'sessionUpdate': 'config_option_update',
-        'configId': 'maxTokens',
-        'value': '8192',
+        'configOptions': [
+          {'id': 'maxTokens', 'value': '8192'},
+        ],
       };
       final update = SessionUpdate.fromJson(json);
       expect(update, isA<ConfigOptionSessionUpdate>());
@@ -388,9 +395,7 @@ void main() {
     });
 
     test('SessionUpdate with missing discriminator', () {
-      final json = <String, dynamic>{
-        'someField': 'value',
-      };
+      final json = <String, dynamic>{'someField': 'value'};
       final update = SessionUpdate.fromJson(json);
       expect(update, isA<UnknownSessionUpdate>());
       expect(update.toJson(), json);
@@ -454,8 +459,7 @@ void main() {
         'writeTextFile': false,
         '_meta': {'v': 1},
       };
-      expectRoundTrip(
-          FileSystemCapability.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(FileSystemCapability.fromJson, (r) => r.toJson(), json);
     });
 
     test('PromptCapabilities', () {
@@ -502,8 +506,7 @@ void main() {
         'content': 'file contents here',
         '_meta': {'bytes': 18},
       };
-      expectRoundTrip(
-          ReadTextFileResponse.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(ReadTextFileResponse.fromJson, (r) => r.toJson(), json);
     });
 
     test('WriteTextFileRequest', () {
@@ -513,8 +516,7 @@ void main() {
         'content': 'hello',
         '_meta': {'op': 'write'},
       };
-      expectRoundTrip(
-          WriteTextFileRequest.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(WriteTextFileRequest.fromJson, (r) => r.toJson(), json);
     });
 
     test('WriteTextFileResponse', () {
@@ -522,42 +524,44 @@ void main() {
         '_meta': {'ok': true},
         '_vendor': 'extra',
       };
-      expectRoundTrip(
-          WriteTextFileResponse.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(WriteTextFileResponse.fromJson, (r) => r.toJson(), json);
     });
 
     test('CreateTerminalRequest', () {
       final json = <String, dynamic>{
-        'sessionId': 'sess-1',
-        'command': 'ls',
         'args': ['-la'],
+        'command': 'ls',
         'cwd': '/home',
+        'env': <dynamic>[],
         'outputByteLimit': 10000,
+        'sessionId': 'sess-1',
       };
-      expectRoundTrip(
-          CreateTerminalRequest.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(CreateTerminalRequest.fromJson, (r) => r.toJson(), json);
     });
 
     test('WaitForTerminalExitResponse with values', () {
-      final json = <String, dynamic>{
-        'exitCode': 0,
-      };
+      final json = <String, dynamic>{'exitCode': 0};
       expectRoundTrip(
-          WaitForTerminalExitResponse.fromJson, (r) => r.toJson(), json);
+        WaitForTerminalExitResponse.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     test('WaitForTerminalExitResponse with signal', () {
-      final json = <String, dynamic>{
-        'exitCode': 137,
-        'signal': 'SIGKILL',
-      };
+      final json = <String, dynamic>{'exitCode': 137, 'signal': 'SIGKILL'};
       expectRoundTrip(
-          WaitForTerminalExitResponse.fromJson, (r) => r.toJson(), json);
+        WaitForTerminalExitResponse.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     test('WaitForTerminalExitResponse omits nulls', () {
-      final resp = WaitForTerminalExitResponse.fromJson(
-          <String, dynamic>{'exitCode': null, 'signal': null});
+      final resp = WaitForTerminalExitResponse.fromJson(<String, dynamic>{
+        'exitCode': null,
+        'signal': null,
+      });
       expect(resp.exitCode, isNull);
       expect(resp.signal, isNull);
       expect(resp.toJson(), <String, dynamic>{});
@@ -566,14 +570,20 @@ void main() {
     test('RequestPermissionRequest', () {
       final json = <String, dynamic>{
         'sessionId': 'sess-1',
-        'toolCall': {'name': 'write_file', 'args': {'path': '/tmp/x'}},
+        'toolCall': {
+          'name': 'write_file',
+          'args': {'path': '/tmp/x'},
+        },
         'options': [
           {'id': 'allow', 'label': 'Allow'},
           {'id': 'deny', 'label': 'Deny'},
         ],
       };
       expectRoundTrip(
-          RequestPermissionRequest.fromJson, (r) => r.toJson(), json);
+        RequestPermissionRequest.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     test('RequestPermissionResponse', () {
@@ -582,7 +592,10 @@ void main() {
         '_meta': {'decision': 'auto'},
       };
       expectRoundTrip(
-          RequestPermissionResponse.fromJson, (r) => r.toJson(), json);
+        RequestPermissionResponse.fromJson,
+        (r) => r.toJson(),
+        json,
+      );
     });
 
     // -- Unstable Methods --
@@ -592,8 +605,7 @@ void main() {
         '_meta': {'source': 'cli'},
         '_vendor': 'extra',
       };
-      expectRoundTrip(
-          ListSessionsRequest.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(ListSessionsRequest.fromJson, (r) => r.toJson(), json);
     });
 
     test('ListSessionsResponse', () {
@@ -604,12 +616,13 @@ void main() {
         ],
         '_meta': {'count': 2},
       };
-      expectRoundTrip(
-          ListSessionsResponse.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(ListSessionsResponse.fromJson, (r) => r.toJson(), json);
     });
 
     test('ForkSessionRequest', () {
       final json = <String, dynamic>{
+        'cwd': '/home/user',
+        'mcpServers': <dynamic>[],
         'sessionId': 'sess-original',
         '_meta': {'reason': 'branch'},
         '_vendor': 42,
@@ -622,8 +635,7 @@ void main() {
         'sessionId': 'sess-forked',
         '_meta': {'forkedFrom': 'sess-original'},
       };
-      expectRoundTrip(
-          ForkSessionResponse.fromJson, (r) => r.toJson(), json);
+      expectRoundTrip(ForkSessionResponse.fromJson, (r) => r.toJson(), json);
     });
 
     // -- Implementation Info --

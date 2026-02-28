@@ -20,38 +20,35 @@ class _TestAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'sess-1');
+  }) async => const NewSessionResponse(sessionId: 'sess-1');
 
   @override
   Future<PromptResponse> prompt(
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const PromptResponse(stopReason: 'end_turn');
+  }) async => const PromptResponse(stopReason: 'end_turn');
 
   @override
   Future<ListSessionsResponse> listSessions(
     ListSessionsRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      ListSessionsResponse(sessions: [
-        {'id': 'sess-1', 'cwd': '/home'},
-      ]);
+  }) async => ListSessionsResponse(
+    sessions: [
+      {'id': 'sess-1', 'cwd': '/home'},
+    ],
+  );
 
   @override
   Future<ForkSessionResponse> forkSession(
     ForkSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      ForkSessionResponse(sessionId: 'sess-forked');
+  }) async => ForkSessionResponse(sessionId: 'sess-forked');
 }
 
 class _TestClientHandler extends ClientHandler {
@@ -77,10 +74,7 @@ void main() {
 
       await clientConn.sendInitialize(protocolVersion: 1);
 
-      expect(
-        () => clientConn.sendListSessions(),
-        throwsUnsupportedError,
-      );
+      expect(() => clientConn.sendListSessions(), throwsUnsupportedError);
 
       await clientConn.close();
     });
@@ -102,7 +96,7 @@ void main() {
       await clientConn.sendInitialize(protocolVersion: 1);
 
       expect(
-        () => clientConn.sendForkSession(sessionId: 'sess-1'),
+        () => clientConn.sendForkSession(sessionId: 'sess-1', cwd: '/tmp'),
         throwsUnsupportedError,
       );
 
@@ -150,7 +144,10 @@ void main() {
 
       await clientConn.sendInitialize(protocolVersion: 1);
 
-      final response = await clientConn.sendForkSession(sessionId: 'sess-1');
+      final response = await clientConn.sendForkSession(
+        sessionId: 'sess-1',
+        cwd: '/tmp',
+      );
       expect(response.sessionId, 'sess-forked');
 
       await clientConn.close();
@@ -174,10 +171,7 @@ void main() {
       await clientConn.sendInitialize(protocolVersion: 1);
 
       // Agent should return an error (internal error wrapping UnsupportedError)
-      expect(
-        clientConn.sendListSessions(),
-        throwsA(anything),
-      );
+      expect(clientConn.sendListSessions(), throwsA(anything));
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
       await clientConn.close();
@@ -186,7 +180,9 @@ void main() {
 
   group('Unstable method schema round-trip', () {
     test('ListSessionsRequest round-trip', () {
-      final json = <String, dynamic>{'_meta': {'trace': '123'}};
+      final json = <String, dynamic>{
+        '_meta': {'trace': '123'},
+      };
       final req = ListSessionsRequest.fromJson(json);
       expect(req.meta?['trace'], '123');
       expect(req.toJson(), json);
@@ -204,9 +200,14 @@ void main() {
     });
 
     test('ForkSessionRequest round-trip', () {
-      final json = <String, dynamic>{'sessionId': 's1'};
+      final json = <String, dynamic>{
+        'cwd': '/tmp',
+        'mcpServers': <dynamic>[],
+        'sessionId': 's1',
+      };
       final req = ForkSessionRequest.fromJson(json);
       expect(req.sessionId, 's1');
+      expect(req.cwd, '/tmp');
       expect(req.toJson(), json);
     });
 
@@ -219,6 +220,8 @@ void main() {
 
     test('extensionData preserved', () {
       final json = <String, dynamic>{
+        'cwd': '/home',
+        'mcpServers': <dynamic>[],
         'sessionId': 's1',
         'customField': 42,
       };

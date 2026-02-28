@@ -11,22 +11,19 @@ class MinimalAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'test-session');
+  }) async => const NewSessionResponse(sessionId: 'test-session');
 
   @override
   Future<PromptResponse> prompt(
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const PromptResponse(stopReason: 'end_turn');
+  }) async => const PromptResponse(stopReason: 'end_turn');
 }
 
 void main() {
@@ -45,9 +42,7 @@ void main() {
           const AuthenticateRequest(methodId: 'test'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -57,9 +52,7 @@ void main() {
           const LoadSessionRequest(sessionId: 's1', cwd: '/tmp'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -69,9 +62,7 @@ void main() {
           const SetSessionModeRequest(sessionId: 's1', modeId: 'code'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -85,9 +76,7 @@ void main() {
           ),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
   });
@@ -98,11 +87,9 @@ void main() {
     });
 
     test('onExtMethod returns null', () async {
-      final result = await handler.onExtMethod(
-        '_vendor/custom',
-        {'key': 'value'},
-        cancelToken: token,
-      );
+      final result = await handler.onExtMethod('_vendor/custom', {
+        'key': 'value',
+      }, cancelToken: token);
       expect(result, isNull);
     });
 

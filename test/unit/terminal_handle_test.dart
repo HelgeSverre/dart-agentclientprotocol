@@ -24,22 +24,19 @@ class _TerminalAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'sess-1');
+  }) async => const NewSessionResponse(sessionId: 'sess-1');
 
   @override
   Future<PromptResponse> prompt(
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const PromptResponse(stopReason: 'end_turn');
+  }) async => const PromptResponse(stopReason: 'end_turn');
 }
 
 class _TerminalClientHandler extends ClientHandler {
@@ -63,7 +60,10 @@ class _TerminalClientHandler extends ClientHandler {
     required AcpCancellationToken cancelToken,
   }) async {
     calls.add('terminalOutput:${request.terminalId}');
-    return const TerminalOutputResponse(output: 'hello world', truncated: false);
+    return const TerminalOutputResponse(
+      output: 'hello world',
+      truncated: false,
+    );
   }
 
   @override

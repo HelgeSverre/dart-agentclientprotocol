@@ -50,9 +50,7 @@ class EchoAgentHandler extends AgentHandler {
     // Stream an agent message chunk back to the client.
     await _conn.notifySessionUpdate(
       request.sessionId,
-      AgentMessageChunk(
-        content: {'type': 'text', 'text': 'Echo: $promptText'},
-      ),
+      AgentMessageChunk(content: {'type': 'text', 'text': 'Echo: $promptText'}),
     );
 
     return const PromptResponse(stopReason: 'end_turn');

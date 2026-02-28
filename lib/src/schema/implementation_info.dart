@@ -1,17 +1,26 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
 import 'package:acp/src/schema/has_meta.dart';
 
-/// Metadata about a client or agent implementation.
-///
-/// Describes the name, version, and optional display title of an ACP
-/// client or agent.
+/// Metadata about the implementation of the client or agent.
+/// Describes the name and version of an MCP implementation, with an optional
+/// title for UI representation.
 final class ImplementationInfo implements HasMeta {
-  /// Programmatic name of the implementation.
+  /// Intended for programmatic or logical use, but can be used as a display
+  /// name fallback if title isn’t present.
   final String name;
 
-  /// Human-readable display title. Falls back to [name] if not provided.
+  /// Intended for UI and end-user contexts — optimized to be human-readable
+  /// and easily understood.
+  ///
+  /// If not provided, the name should be used for display.
   final String? title;
 
-  /// Version string (e.g. "1.0.0").
+  /// Version of the implementation. Can be displayed to the user or used
+  /// for debugging or metrics purposes. (e.g. "1.0.0").
   final String version;
 
   @override
@@ -31,8 +40,8 @@ final class ImplementationInfo implements HasMeta {
 
   /// Deserializes from JSON.
   factory ImplementationInfo.fromJson(Map<String, dynamic> json) {
-    final known = {'name', 'version', 'title', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'name', 'title', 'version', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ImplementationInfo(
@@ -40,7 +49,7 @@ final class ImplementationInfo implements HasMeta {
       title: json['title'] as String?,
       version: json['version'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 

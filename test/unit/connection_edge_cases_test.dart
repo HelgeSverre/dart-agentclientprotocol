@@ -11,36 +11,40 @@ import '../helpers/mock_transport.dart';
 
 void main() {
   group('Write queue serialization', () {
-    test('concurrent sendRequest calls produce messages in call order', () async {
-      final transport = MockTransport();
-      final conn = Connection(transport);
-      conn.start();
-      conn.markOpen();
-      addTearDown(() => conn.close());
+    test(
+      'concurrent sendRequest calls produce messages in call order',
+      () async {
+        final transport = MockTransport();
+        final conn = Connection(transport);
+        conn.start();
+        conn.markOpen();
+        addTearDown(() => conn.close());
 
-      final futureA = conn.sendRequest('method_a', null);
-      final futureB = conn.sendRequest('method_b', null);
-      final futureC = conn.sendRequest('method_c', null);
+        final futureA = conn.sendRequest('method_a', null);
+        final futureB = conn.sendRequest('method_b', null);
+        final futureC = conn.sendRequest('method_c', null);
 
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      expect(transport.sent, hasLength(3));
-      final methods = transport.sent
-          .cast<JsonRpcRequest>()
-          .map((JsonRpcRequest r) => r.method)
-          .toList();
-      expect(methods, ['method_a', 'method_b', 'method_c']);
+        expect(transport.sent, hasLength(3));
+        final methods =
+            transport.sent
+                .cast<JsonRpcRequest>()
+                .map((JsonRpcRequest r) => r.method)
+                .toList();
+        expect(methods, ['method_a', 'method_b', 'method_c']);
 
-      // Respond to all requests so they complete cleanly.
-      for (final msg in transport.sent) {
-        final req = msg as JsonRpcRequest;
-        transport.receive(
-          JsonRpcResponse(id: req.id, result: <String, dynamic>{}),
-        );
-      }
+        // Respond to all requests so they complete cleanly.
+        for (final msg in transport.sent) {
+          final req = msg as JsonRpcRequest;
+          transport.receive(
+            JsonRpcResponse(id: req.id, result: <String, dynamic>{}),
+          );
+        }
 
-      await Future.wait<Map<String, dynamic>>([futureA, futureB, futureC]);
-    });
+        await Future.wait<Map<String, dynamic>>([futureA, futureB, futureC]);
+      },
+    );
   });
 
   group('Request timeout', () {
@@ -134,7 +138,9 @@ void main() {
 
       final completer = Completer<Object>();
       unawaited(
-        conn.sendRequest('pending', null).then(
+        conn
+            .sendRequest('pending', null)
+            .then(
               (_) => completer.complete('no-error'),
               onError: (Object e) => completer.complete(e),
             ),
@@ -155,7 +161,9 @@ void main() {
         final completer = Completer<Object>();
         completers.add(completer);
         unawaited(
-          conn.sendRequest(method, null).then(
+          conn
+              .sendRequest(method, null)
+              .then(
                 (_) => completer.complete('no-error'),
                 onError: (Object e) => completer.complete(e),
               ),

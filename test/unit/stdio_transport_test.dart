@@ -154,15 +154,18 @@ void main() {
     test('multiple messages parsed in order', () async {
       final messages = <JsonRpcMessage>[];
       final gotTwo = Completer<void>();
-      startAndListen(onData: (JsonRpcMessage msg) {
-        messages.add(msg);
-        if (messages.length == 2) gotTwo.complete();
-      });
+      startAndListen(
+        onData: (JsonRpcMessage msg) {
+          messages.add(msg);
+          if (messages.length == 2) gotTwo.complete();
+        },
+      );
 
       final msg1 = {'jsonrpc': '2.0', 'method': 'test/first'};
       final msg2 = {'jsonrpc': '2.0', 'method': 'test/second'};
-      inputController
-          .add(utf8.encode('${jsonEncode(msg1)}\n${jsonEncode(msg2)}\n'));
+      inputController.add(
+        utf8.encode('${jsonEncode(msg1)}\n${jsonEncode(msg2)}\n'),
+      );
 
       await gotTwo.future;
       expect(messages, hasLength(2));

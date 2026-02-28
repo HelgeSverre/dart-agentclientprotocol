@@ -29,12 +29,12 @@ import '../helpers/linked_transport.dart';
 class _TestAgentHandler extends AgentHandler {
   final AgentSideConnection conn;
 
-  Future<PromptResponse> Function(PromptRequest, AgentSideConnection)?
-      onPrompt;
+  Future<PromptResponse> Function(PromptRequest, AgentSideConnection)? onPrompt;
   Future<SetSessionModeResponse> Function(SetSessionModeRequest)? onSetMode;
   Future<SetSessionConfigOptionResponse> Function(
     SetSessionConfigOptionRequest,
-  )? onSetConfigOption;
+  )?
+  onSetConfigOption;
 
   _TestAgentHandler(this.conn);
 
@@ -42,15 +42,13 @@ class _TestAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'sess-1');
+  }) async => const NewSessionResponse(sessionId: 'sess-1');
 
   @override
   Future<PromptResponse> prompt(
@@ -91,12 +89,13 @@ class _TestAgentHandler extends AgentHandler {
 class _TestClientHandler extends ClientHandler {
   final List<SessionUpdateEvent> receivedUpdates = [];
   final List<({String method, Map<String, dynamic>? params})>
-      receivedExtNotifications = [];
+  receivedExtNotifications = [];
 
   Future<Map<String, dynamic>?> Function(
     String method,
     Map<String, dynamic>? params,
-  )? extMethodHandler;
+  )?
+  extMethodHandler;
 
   String? lastWrittenPath;
   String? lastWrittenContent;
@@ -174,12 +173,13 @@ class _TestClientHandler extends ClientHandler {
 // Helper
 // ---------------------------------------------------------------------------
 
-typedef _Pair = ({
-  AgentSideConnection agent,
-  ClientSideConnection client,
-  _TestAgentHandler agentHandler,
-  _TestClientHandler clientHandler,
-});
+typedef _Pair =
+    ({
+      AgentSideConnection agent,
+      ClientSideConnection client,
+      _TestAgentHandler agentHandler,
+      _TestClientHandler clientHandler,
+    });
 
 Future<_Pair> _setupPair({
   ClientCapabilities clientCapabilities = const ClientCapabilities(
@@ -239,10 +239,9 @@ void main() {
         return null;
       };
 
-      final result = await pair.agent.extMethod(
-        '_vendor/ping',
-        {'message': 'hello'},
-      );
+      final result = await pair.agent.extMethod('_vendor/ping', {
+        'message': 'hello',
+      });
 
       expect(result['pong'], isTrue);
       expect(result['echo'], 'hello');
@@ -255,10 +254,10 @@ void main() {
         await pair.agent.close();
       });
 
-      await pair.agent.extNotification(
-        '_vendor/log',
-        {'level': 'info', 'text': 'something happened'},
-      );
+      await pair.agent.extNotification('_vendor/log', {
+        'level': 'info',
+        'text': 'something happened',
+      });
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
@@ -283,9 +282,7 @@ void main() {
       pair.agentHandler.onPrompt = (request, conn) async {
         await conn.notifySessionUpdate(
           request.sessionId,
-          const AgentMessageChunk(
-            content: {'type': 'text', 'text': 'Hello'},
-          ),
+          const AgentMessageChunk(content: {'type': 'text', 'text': 'Hello'}),
         );
         await conn.notifySessionUpdate(
           request.sessionId,
@@ -295,12 +292,10 @@ void main() {
         );
         await conn.notifySessionUpdate(
           request.sessionId,
-          ToolCallSessionUpdate(
-            rawJson: {
-              'sessionUpdate': 'tool_call',
-              'toolName': 'read_file',
-              'status': 'running',
-            },
+          const ToolCallSessionUpdate(
+            title: 'read_file',
+            toolCallId: 'tc-1',
+            status: 'running',
           ),
         );
         return const PromptResponse(stopReason: 'end_turn');
@@ -435,9 +430,7 @@ void main() {
 
       // Now subscribe to catch the close transition.
       final clientClosedStates = <ConnectionState>[];
-      final clientSub = clientConn.onStateChange.listen(
-        clientClosedStates.add,
-      );
+      final clientSub = clientConn.onStateChange.listen(clientClosedStates.add);
 
       await clientConn.close();
       await clientSub.cancel();
@@ -477,31 +470,19 @@ void main() {
 
       // Client should have sent the initialize request.
       expect(clientSent, isNotEmpty);
-      expect(
-        clientSent.any((m) => m['method'] == 'initialize'),
-        isTrue,
-      );
+      expect(clientSent.any((m) => m['method'] == 'initialize'), isTrue);
 
       // Agent should have received the initialize request.
       expect(agentReceived, isNotEmpty);
-      expect(
-        agentReceived.any((m) => m['method'] == 'initialize'),
-        isTrue,
-      );
+      expect(agentReceived.any((m) => m['method'] == 'initialize'), isTrue);
 
       // Agent should have sent the response.
       expect(agentSent, isNotEmpty);
-      expect(
-        agentSent.any((m) => m.containsKey('result')),
-        isTrue,
-      );
+      expect(agentSent.any((m) => m.containsKey('result')), isTrue);
 
       // Client should have received the response.
       expect(clientReceived, isNotEmpty);
-      expect(
-        clientReceived.any((m) => m.containsKey('result')),
-        isTrue,
-      );
+      expect(clientReceived.any((m) => m.containsKey('result')), isTrue);
     });
 
     test('terminal create → output → release flow', () async {

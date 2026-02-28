@@ -24,9 +24,7 @@ void main() {
       // Wait for initial connection.
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      mock.receive(
-        const JsonRpcNotification(method: 'test/hello'),
-      );
+      mock.receive(const JsonRpcNotification(method: 'test/hello'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       expect(messages, hasLength(1));
@@ -57,9 +55,7 @@ void main() {
       expect(factoryCalls, 1);
 
       // Send a message on first transport.
-      mocks[0].receive(
-        const JsonRpcNotification(method: 'test/first'),
-      );
+      mocks[0].receive(const JsonRpcNotification(method: 'test/first'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Simulate close — should trigger reconnection.
@@ -69,9 +65,7 @@ void main() {
       expect(factoryCalls, 2);
 
       // Send a message on second transport.
-      mocks[1].receive(
-        const JsonRpcNotification(method: 'test/second'),
-      );
+      mocks[1].receive(const JsonRpcNotification(method: 'test/second'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       expect(messages, hasLength(2));
@@ -126,9 +120,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       expect(
-        () => transport.send(
-          const JsonRpcNotification(method: 'test/fail'),
-        ),
+        () => transport.send(const JsonRpcNotification(method: 'test/fail')),
         throwsStateError,
       );
 
@@ -157,14 +149,8 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 500));
 
       expect(factoryCalls, 3);
-      expect(
-        events.whereType<ReconnectionFailed>().toList(),
-        hasLength(1),
-      );
-      expect(
-        events.whereType<ReconnectionFailed>().first.attempts,
-        3,
-      );
+      expect(events.whereType<ReconnectionFailed>().toList(), hasLength(1));
+      expect(events.whereType<ReconnectionFailed>().first.attempts, 3);
     });
 
     test('close stops reconnection attempts', () async {
@@ -279,9 +265,7 @@ void main() {
       await transport.close();
 
       expect(
-        () => transport.send(
-          const JsonRpcNotification(method: 'test/closed'),
-        ),
+        () => transport.send(const JsonRpcNotification(method: 'test/closed')),
         throwsStateError,
       );
     });

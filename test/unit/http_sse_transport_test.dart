@@ -13,9 +13,7 @@ import 'package:test/test.dart';
 /// Starts a local HTTP server with SSE (GET /sse) and POST (/message)
 /// endpoints. Returns a record with the server, transport, and a function
 /// to push SSE events.
-Future<_SseFixture> _startFixture({
-  Map<String, String>? headers,
-}) async {
+Future<_SseFixture> _startFixture({Map<String, String>? headers}) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
   final postedBodies = <String>[];
   final postCompleters = <Completer<void>>[];
@@ -77,8 +75,8 @@ class _SseFixture {
     required this.postedBodies,
     required List<Completer<void>> postCompleters,
     required HttpResponse? Function() getSseResponse,
-  })  : _postCompleters = postCompleters,
-        _getSseResponse = getSseResponse;
+  }) : _postCompleters = postCompleters,
+       _getSseResponse = getSseResponse;
 
   /// Returns a future that completes when the next POST is received.
   Future<void> get nextPost {
@@ -168,9 +166,7 @@ void main() {
         addTearDown(sub.cancel);
 
         final msg = {'jsonrpc': '2.0', 'method': 'test/comment'};
-        await f.sendSse(
-          ': this is a comment\ndata: ${jsonEncode(msg)}\n\n',
-        );
+        await f.sendSse(': this is a comment\ndata: ${jsonEncode(msg)}\n\n');
 
         final message = await received.future;
         expect(message, isA<JsonRpcNotification>());
@@ -274,8 +270,10 @@ void main() {
     group('custom headers', () {
       test('custom headers are sent on SSE and POST requests', () async {
         // Set up a separate server that captures request headers.
-        final headerServer =
-            await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final headerServer = await HttpServer.bind(
+          InternetAddress.loopbackIPv4,
+          0,
+        );
         addTearDown(() => headerServer.close(force: true));
 
         final sseHeaders = Completer<HttpHeaders>();
@@ -308,9 +306,7 @@ void main() {
         final receivedSseHeaders = await sseHeaders.future;
         expect(receivedSseHeaders.value('X-Custom'), 'test-value');
 
-        await customTransport.send(
-          JsonRpcNotification(method: 'test/headers'),
-        );
+        await customTransport.send(JsonRpcNotification(method: 'test/headers'));
         final receivedPostHeaders = await postHeaders.future;
         expect(receivedPostHeaders.value('X-Custom'), 'test-value');
 

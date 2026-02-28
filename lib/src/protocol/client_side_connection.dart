@@ -271,9 +271,10 @@ final class ClientSideConnection {
   @experimental
   Future<ForkSessionResponse> sendForkSession({
     required String sessionId,
+    required String cwd,
   }) async {
     _ensureUnstable(AcpMethods.sessionFork);
-    final request = ForkSessionRequest(sessionId: sessionId);
+    final request = ForkSessionRequest(sessionId: sessionId, cwd: cwd);
     final result = await _connection.sendRequest(
       AcpMethods.sessionFork,
       request.toJson(),

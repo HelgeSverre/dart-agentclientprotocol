@@ -136,10 +136,7 @@ void main() {
     });
 
     test('unknown sessionUpdate type becomes UnknownSessionUpdate', () {
-      final json = {
-        'sessionUpdate': 'future_update_type',
-        'data': 42,
-      };
+      final json = {'sessionUpdate': 'future_update_type', 'data': 42};
       final update = SessionUpdate.fromJson(json);
       expect(update, isA<UnknownSessionUpdate>());
       final unknown = update as UnknownSessionUpdate;
@@ -283,11 +280,7 @@ void main() {
     });
 
     test('round-trips with extensionData', () {
-      final json = {
-        'id': 'custom',
-        'name': 'Custom',
-        '_vendor_flag': true,
-      };
+      final json = {'id': 'custom', 'name': 'Custom', '_vendor_flag': true};
       final method = AuthMethod.fromJson(json);
       expect(method.extensionData!['_vendor_flag'], true);
       expect(method.toJson()['_vendor_flag'], true);
@@ -315,12 +308,12 @@ void main() {
 
     test('PromptResponse exposes parsed stopReason', () {
       final resp = PromptResponse(stopReason: 'end_turn');
-      expect(resp.stopReasonEnum, StopReason.endTurn);
+      expect(StopReason.fromString(resp.stopReason), StopReason.endTurn);
     });
 
     test('PromptResponse with unknown stopReason', () {
       final resp = PromptResponse(stopReason: 'future_reason');
-      expect(resp.stopReasonEnum, isNull);
+      expect(StopReason.fromString(resp.stopReason), isNull);
       expect(resp.stopReason, 'future_reason');
     });
   });

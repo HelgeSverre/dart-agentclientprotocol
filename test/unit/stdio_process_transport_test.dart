@@ -45,10 +45,9 @@ void main() {
 }
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       final message = await transport.messages.first;
       expect(message, isA<JsonRpcNotification>());
@@ -71,10 +70,9 @@ void main() {
 }
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       await transport.send(
         JsonRpcRequest(id: 1, method: 'test/echo', params: {}),
@@ -99,10 +97,9 @@ void main() async {
 }
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       expect(transport.process, isA<Process>());
       expect(transport.process.pid, isPositive);
@@ -119,10 +116,9 @@ void main() async {
 }
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       await transport.close();
       final code = await transport.exitCode;
@@ -137,10 +133,9 @@ void main() {
 }
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       final code = await transport.exitCode;
       expect(code, 42);
@@ -153,10 +148,9 @@ void main() {
 void main() {}
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       // Wait for the process to exit naturally first.
       await transport.exitCode;
@@ -169,17 +163,14 @@ void main() {}
 void main() {}
 ''');
 
-      final transport = await StdioProcessTransport.start(
-        Platform.executable,
-        [scriptPath],
-      );
+      final transport = await StdioProcessTransport.start(Platform.executable, [
+        scriptPath,
+      ]);
 
       await transport.close();
 
       expect(
-        () => transport.send(
-          JsonRpcNotification(method: 'test/noop'),
-        ),
+        () => transport.send(JsonRpcNotification(method: 'test/noop')),
         throwsStateError,
       );
     });

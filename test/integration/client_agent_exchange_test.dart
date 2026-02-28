@@ -75,15 +75,13 @@ class _FileReadingAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'sess-1');
+  }) async => const NewSessionResponse(sessionId: 'sess-1');
 
   @override
   Future<PromptResponse> prompt(
@@ -140,70 +138,80 @@ class _FileServingClientHandler extends ClientHandler {
 
 void main() {
   group('Client ↔ Agent integration', () {
-    test('full flow: initialize → session/new → prompt with streaming → cancel',
-        () async {
-      final (agentTransport, clientTransport) = createLinkedTransports();
+    test(
+      'full flow: initialize → session/new → prompt with streaming → cancel',
+      () async {
+        final (agentTransport, clientTransport) = createLinkedTransports();
 
-      late final _StreamingAgentHandler agentHandler;
-      final agentConn = AgentSideConnection(
-        agentTransport,
-        handlerFactory: (conn) {
-          agentHandler = _StreamingAgentHandler(conn);
-          return agentHandler;
-        },
-      );
+        late final _StreamingAgentHandler agentHandler;
+        final agentConn = AgentSideConnection(
+          agentTransport,
+          handlerFactory: (conn) {
+            agentHandler = _StreamingAgentHandler(conn);
+            return agentHandler;
+          },
+        );
 
-      final clientHandler = _BasicClientHandler();
-      final clientConn = ClientSideConnection(
-        clientTransport,
-        handler: clientHandler,
-      );
+        final clientHandler = _BasicClientHandler();
+        final clientConn = ClientSideConnection(
+          clientTransport,
+          handler: clientHandler,
+        );
 
-      // Listen for session updates on the stream.
-      final streamUpdates = <SessionUpdateEvent>[];
-      final updateSub = clientConn.sessionUpdates.listen(streamUpdates.add);
+        // Listen for session updates on the stream.
+        final streamUpdates = <SessionUpdateEvent>[];
+        final updateSub = clientConn.sessionUpdates.listen(streamUpdates.add);
 
-      // 1. Initialize
-      final initResponse = await clientConn.sendInitialize(protocolVersion: 1);
-      expect(initResponse.protocolVersion, 1);
+        // 1. Initialize
+        final initResponse = await clientConn.sendInitialize(
+          protocolVersion: 1,
+        );
+        expect(initResponse.protocolVersion, 1);
 
-      // 2. New session
-      final sessionResponse = await clientConn.sendNewSession(cwd: '/home');
-      expect(sessionResponse.sessionId, 'sess-1');
+        // 2. New session
+        final sessionResponse = await clientConn.sendNewSession(cwd: '/home');
+        expect(sessionResponse.sessionId, 'sess-1');
 
-      // 3. Prompt (agent streams an update before responding)
-      final promptResponse = await clientConn.sendPrompt(
-        sessionId: 'sess-1',
-        prompt: [const TextContent(text: 'Hello agent')],
-      );
-      expect(promptResponse.stopReason, 'end_turn');
+        // 3. Prompt (agent streams an update before responding)
+        final promptResponse = await clientConn.sendPrompt(
+          sessionId: 'sess-1',
+          prompt: [const TextContent(text: 'Hello agent')],
+        );
+        expect(promptResponse.stopReason, 'end_turn');
 
-      // Give notifications time to arrive.
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        // Give notifications time to arrive.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      // Verify session updates arrived via both handler and stream.
-      expect(clientHandler.receivedUpdates, hasLength(1));
-      expect(clientHandler.receivedUpdates.first.sessionId, 'sess-1');
-      expect(clientHandler.receivedUpdates.first.update,
-          isA<AgentMessageChunk>());
+        // Verify session updates arrived via both handler and stream.
+        expect(clientHandler.receivedUpdates, hasLength(1));
+        expect(clientHandler.receivedUpdates.first.sessionId, 'sess-1');
+        expect(
+          clientHandler.receivedUpdates.first.update,
+          isA<AgentMessageChunk>(),
+        );
 
-      expect(streamUpdates, hasLength(1));
-      expect(streamUpdates.first.sessionId, 'sess-1');
+        expect(streamUpdates, hasLength(1));
+        expect(streamUpdates.first.sessionId, 'sess-1');
 
-      // 4. Cancel
-      await clientConn.sendCancel(sessionId: 'sess-1');
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-      expect(agentHandler.calls, contains('cancel:sess-1'));
+        // 4. Cancel
+        await clientConn.sendCancel(sessionId: 'sess-1');
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(agentHandler.calls, contains('cancel:sess-1'));
 
-      // 5. Verify handler call sequence.
-      expect(agentHandler.calls,
-          ['initialize', 'newSession', 'prompt', 'cancel:sess-1']);
+        // 5. Verify handler call sequence.
+        expect(agentHandler.calls, [
+          'initialize',
+          'newSession',
+          'prompt',
+          'cancel:sess-1',
+        ]);
 
-      // Cleanup
-      await updateSub.cancel();
-      await clientConn.close();
-      await agentConn.close();
-    });
+        // Cleanup
+        await updateSub.cancel();
+        await clientConn.close();
+        await agentConn.close();
+      },
+    );
 
     test('agent reads file from client via fs/read_text_file', () async {
       final (agentTransport, clientTransport) = createLinkedTransports();
@@ -249,47 +257,46 @@ void main() {
       await agentConn.close();
     });
 
-    test('capability negotiation — client advertises fs capabilities',
-        () async {
-      final (agentTransport, clientTransport) = createLinkedTransports();
+    test(
+      'capability negotiation — client advertises fs capabilities',
+      () async {
+        final (agentTransport, clientTransport) = createLinkedTransports();
 
-      final agentConn = AgentSideConnection(
-        agentTransport,
-        handlerFactory: (conn) => _FileReadingAgentHandler(conn),
-        capabilityEnforcement: CapabilityEnforcement.strict,
-      );
+        final agentConn = AgentSideConnection(
+          agentTransport,
+          handlerFactory: (conn) => _FileReadingAgentHandler(conn),
+          capabilityEnforcement: CapabilityEnforcement.strict,
+        );
 
-      final clientConn = ClientSideConnection(
-        clientTransport,
-        handler: _BasicClientHandler(),
-        clientCapabilities: const ClientCapabilities(
-          fs: FileSystemCapability(
-            readTextFile: true,
-            writeTextFile: false,
+        final clientConn = ClientSideConnection(
+          clientTransport,
+          handler: _BasicClientHandler(),
+          clientCapabilities: const ClientCapabilities(
+            fs: FileSystemCapability(readTextFile: true, writeTextFile: false),
           ),
-        ),
-      );
+        );
 
-      await clientConn.sendInitialize(protocolVersion: 1);
-      await clientConn.sendNewSession(cwd: '/home');
+        await clientConn.sendInitialize(protocolVersion: 1);
+        await clientConn.sendNewSession(cwd: '/home');
 
-      // Agent sees client capabilities after initialize.
-      expect(agentConn.remoteCapabilities, isNotNull);
-      expect(agentConn.remoteCapabilities!.fs.readTextFile, isTrue);
-      expect(agentConn.remoteCapabilities!.fs.writeTextFile, isFalse);
+        // Agent sees client capabilities after initialize.
+        expect(agentConn.remoteCapabilities, isNotNull);
+        expect(agentConn.remoteCapabilities!.fs.readTextFile, isTrue);
+        expect(agentConn.remoteCapabilities!.fs.writeTextFile, isFalse);
 
-      // Agent cannot call sendWriteTextFile in strict mode.
-      expect(
-        () => agentConn.sendWriteTextFile(
-          sessionId: 'sess-1',
-          path: '/tmp/out.txt',
-          content: 'data',
-        ),
-        throwsA(isA<CapabilityException>()),
-      );
+        // Agent cannot call sendWriteTextFile in strict mode.
+        expect(
+          () => agentConn.sendWriteTextFile(
+            sessionId: 'sess-1',
+            path: '/tmp/out.txt',
+            content: 'data',
+          ),
+          throwsA(isA<CapabilityException>()),
+        );
 
-      await clientConn.close();
-      await agentConn.close();
-    });
+        await clientConn.close();
+        await agentConn.close();
+      },
+    );
   });
 }

@@ -32,9 +32,7 @@ void main() {
           const ReadTextFileRequest(sessionId: 's1', path: '/tmp/f.txt'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -48,9 +46,7 @@ void main() {
           ),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -60,9 +56,7 @@ void main() {
           const CreateTerminalRequest(sessionId: 's1', command: 'ls'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -72,9 +66,7 @@ void main() {
           const TerminalOutputRequest(sessionId: 's1', terminalId: 't1'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -84,9 +76,7 @@ void main() {
           const ReleaseTerminalRequest(sessionId: 's1', terminalId: 't1'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -96,9 +86,7 @@ void main() {
           const KillTerminalCommandRequest(sessionId: 's1', terminalId: 't1'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -108,9 +96,7 @@ void main() {
           const WaitForTerminalExitRequest(sessionId: 's1', terminalId: 't1'),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
 
@@ -126,9 +112,7 @@ void main() {
           ),
           cancelToken: token,
         ),
-        throwsA(
-          isA<RpcErrorException>().having((e) => e.code, 'code', -32601),
-        ),
+        throwsA(isA<RpcErrorException>().having((e) => e.code, 'code', -32601)),
       );
     });
   });
@@ -148,11 +132,9 @@ void main() {
 
   group('ClientHandler default extension handlers', () {
     test('onExtMethod returns null', () async {
-      final result = await handler.onExtMethod(
-        '_vendor/custom',
-        {'key': 'value'},
-        cancelToken: token,
-      );
+      final result = await handler.onExtMethod('_vendor/custom', {
+        'key': 'value',
+      }, cancelToken: token);
       expect(result, isNull);
     });
 

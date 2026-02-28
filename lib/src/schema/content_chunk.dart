@@ -1,9 +1,14 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
 import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
-/// A streamed item of content, used in session update variants.
+/// A streamed item of content
 final class ContentChunk implements HasMeta {
-  /// The content block.
+  /// A single item of content
   final ContentBlock content;
 
   @override
@@ -18,13 +23,13 @@ final class ContentChunk implements HasMeta {
   /// Deserializes from JSON.
   factory ContentChunk.fromJson(Map<String, dynamic> json) {
     final known = {'content', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return ContentChunk(
       content: ContentBlock.fromJson(json['content'] as Map<String, dynamic>),
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 

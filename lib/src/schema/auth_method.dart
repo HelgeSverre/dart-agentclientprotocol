@@ -1,19 +1,20 @@
+// GENERATED CODE — DO NOT EDIT.
+//
+// Source: tool/upstream/schema/schema.json
+// Run `dart run tool/generate/generate.dart` to regenerate.
+
 import 'package:acp/src/schema/has_meta.dart';
 
-/// An authentication method advertised by the agent.
-///
-/// Auth methods are plain structs identified by their [id] string.
-/// The type of authentication (agent-managed, environment variable, terminal)
-/// is determined by the [id] convention, not by a discriminator field.
+/// Describes an available authentication method.
 final class AuthMethod implements HasMeta {
-  /// Unique identifier for this auth method.
+  /// Optional description providing more details about this authentication method.
+  final String? description;
+
+  /// Unique identifier for this authentication method.
   final String id;
 
-  /// Human-readable name.
+  /// Human-readable name of the authentication method.
   final String name;
-
-  /// Optional description.
-  final String? description;
 
   @override
   final Map<String, Object?>? meta;
@@ -23,33 +24,33 @@ final class AuthMethod implements HasMeta {
 
   /// Creates an [AuthMethod].
   const AuthMethod({
+    this.description,
     required this.id,
     required this.name,
-    this.description,
     this.meta,
     this.extensionData,
   });
 
   /// Deserializes from JSON.
   factory AuthMethod.fromJson(Map<String, dynamic> json) {
-    final known = {'id', 'name', 'description', '_meta'};
-    final extension = Map<String, Object?>.fromEntries(
+    final known = {'description', 'id', 'name', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return AuthMethod(
+      description: json['description'] as String?,
       id: json['id'] as String,
       name: json['name'] as String,
-      description: json['description'] as String?,
       meta: json['_meta'] as Map<String, Object?>?,
-      extensionData: extension.isEmpty ? null : extension,
+      extensionData: ext.isEmpty ? null : ext,
     );
   }
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
+    if (description != null) 'description': description,
     'id': id,
     'name': name,
-    if (description != null) 'description': description,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

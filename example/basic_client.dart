@@ -33,8 +33,8 @@ class _LinkedTransport implements AcpTransport {
   _LinkedTransport({
     required Stream<JsonRpcMessage> inbound,
     required StreamController<JsonRpcMessage> outboundSink,
-  })  : _inbound = inbound,
-        _outboundSink = outboundSink;
+  }) : _inbound = inbound,
+       _outboundSink = outboundSink;
 
   @override
   Stream<JsonRpcMessage> get messages => _inbound;
@@ -63,15 +63,13 @@ class _EchoAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(protocolVersion: 1);
 
   @override
   Future<NewSessionResponse> newSession(
     NewSessionRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async =>
-      const NewSessionResponse(sessionId: 'session-1');
+  }) async => const NewSessionResponse(sessionId: 'session-1');
 
   @override
   Future<PromptResponse> prompt(
@@ -85,9 +83,7 @@ class _EchoAgentHandler extends AgentHandler {
 
     await _conn.notifySessionUpdate(
       request.sessionId,
-      AgentMessageChunk(
-        content: {'type': 'text', 'text': 'Echo: $text'},
-      ),
+      AgentMessageChunk(content: {'type': 'text', 'text': 'Echo: $text'}),
     );
     return const PromptResponse(stopReason: 'end_turn');
   }

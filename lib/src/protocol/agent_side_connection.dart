@@ -163,8 +163,8 @@ final class AgentSideConnection {
     final request = CreateTerminalRequest(
       sessionId: sessionId,
       command: command,
-      args: args,
-      env: env,
+      args: args ?? const [],
+      env: env ?? const [],
       cwd: cwd,
       outputByteLimit: outputByteLimit,
     );
