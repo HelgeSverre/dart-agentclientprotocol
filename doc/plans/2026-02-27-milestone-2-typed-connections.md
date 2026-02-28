@@ -24,6 +24,7 @@
 ### Task 1: CapabilityEnforcement Enum
 
 **Files:**
+
 - Create: `lib/src/protocol/capability_enforcement.dart`
 
 **Step 1: Create the enum**
@@ -58,6 +59,7 @@ git commit -m "feat: add CapabilityEnforcement enum"
 ### Task 2: AgentHandler Interface
 
 **Files:**
+
 - Create: `lib/src/protocol/agent_handler.dart`
 - Test: `test/unit/agent_handler_test.dart`
 
@@ -319,6 +321,7 @@ git commit -m "feat: add AgentHandler interface with default method behavior"
 ### Task 3: ClientHandler Interface
 
 **Files:**
+
 - Create: `lib/src/protocol/client_handler.dart`
 - Test: `test/unit/client_handler_test.dart`
 
@@ -643,6 +646,7 @@ git commit -m "feat: add ClientHandler interface with default method behavior"
 ### Task 4: AgentSideConnection
 
 **Files:**
+
 - Create: `lib/src/protocol/agent_side_connection.dart`
 - Test: `test/unit/agent_side_connection_test.dart`
 
@@ -651,6 +655,7 @@ This is the largest task. `AgentSideConnection` wraps `Connection`, accepts a ha
 **Step 1: Write tests**
 
 Key tests to cover:
+
 1. Constructor wires up handlers and starts connection.
 2. `initialize` request dispatches to handler and stores capabilities.
 3. `authenticate` request dispatches to handler.
@@ -711,11 +716,13 @@ class MockTransport implements AcpTransport {
 ```
 
 Then update `test/unit/connection_test.dart` to import from `test/helpers/mock_transport.dart` instead of defining `MockTransport` inline. Remove the `MockTransport` class definition from that file and add:
+
 ```dart
 import 'package:acp/test/helpers/mock_transport.dart';
 ```
 
 Wait — test helpers can't be imported via package imports. Use relative import instead:
+
 ```dart
 import '../helpers/mock_transport.dart';
 ```
@@ -1646,12 +1653,14 @@ git commit -m "feat: add AgentSideConnection with typed dispatch and capability 
 ### Task 5: ClientSideConnection
 
 **Files:**
+
 - Create: `lib/src/protocol/client_side_connection.dart`
 - Test: `test/unit/client_side_connection_test.dart`
 
 **Step 1: Write tests**
 
 Key tests:
+
 1. `sendInitialize` sends initialize request and stores capabilities.
 2. `sendAuthenticate` sends authenticate request.
 3. `sendNewSession` sends session/new request.
@@ -1969,6 +1978,7 @@ git commit -m "feat: add ClientSideConnection with typed send methods and handle
 ### Task 6: Update Export Files
 
 **Files:**
+
 - Modify: `lib/agent.dart`
 - Modify: `lib/client.dart`
 
@@ -2025,6 +2035,7 @@ git commit -m "feat: update agent.dart and client.dart exports with typed connec
 ### Task 7: Integration Test — Full Client↔Agent Exchange
 
 **Files:**
+
 - Create: `test/integration/client_agent_exchange_test.dart`
 
 This test wires `ClientSideConnection` and `AgentSideConnection` together via a pair of in-memory transports (a "pipe" where one side's sends appear as the other's messages) and runs a full protocol exchange.
@@ -2330,20 +2341,20 @@ git commit -m "milestone 2: typed connection facades, handler interfaces, capabi
 
 ## Summary of files created/modified
 
-| Action | File |
-|--------|------|
-| Create | `lib/src/protocol/capability_enforcement.dart` |
-| Create | `lib/src/protocol/agent_handler.dart` |
-| Create | `lib/src/protocol/client_handler.dart` |
-| Create | `lib/src/protocol/agent_side_connection.dart` |
-| Create | `lib/src/protocol/client_side_connection.dart` |
-| Create | `test/helpers/mock_transport.dart` |
-| Create | `test/helpers/linked_transport.dart` |
-| Create | `test/unit/agent_handler_test.dart` |
-| Create | `test/unit/client_handler_test.dart` |
-| Create | `test/unit/agent_side_connection_test.dart` |
-| Create | `test/unit/client_side_connection_test.dart` |
-| Create | `test/integration/client_agent_exchange_test.dart` |
+| Action | File                                                     |
+| ------ | -------------------------------------------------------- |
+| Create | `lib/src/protocol/capability_enforcement.dart`           |
+| Create | `lib/src/protocol/agent_handler.dart`                    |
+| Create | `lib/src/protocol/client_handler.dart`                   |
+| Create | `lib/src/protocol/agent_side_connection.dart`            |
+| Create | `lib/src/protocol/client_side_connection.dart`           |
+| Create | `test/helpers/mock_transport.dart`                       |
+| Create | `test/helpers/linked_transport.dart`                     |
+| Create | `test/unit/agent_handler_test.dart`                      |
+| Create | `test/unit/client_handler_test.dart`                     |
+| Create | `test/unit/agent_side_connection_test.dart`              |
+| Create | `test/unit/client_side_connection_test.dart`             |
+| Create | `test/integration/client_agent_exchange_test.dart`       |
 | Modify | `test/unit/connection_test.dart` (extract MockTransport) |
-| Modify | `lib/agent.dart` (add new exports) |
-| Modify | `lib/client.dart` (add new exports) |
+| Modify | `lib/agent.dart` (add new exports)                       |
+| Modify | `lib/client.dart` (add new exports)                      |

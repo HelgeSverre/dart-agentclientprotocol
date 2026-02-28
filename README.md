@@ -149,11 +149,11 @@ Future<void> main() async {
 
 ### Transports
 
-| Transport | Use case |
-| --- | --- |
-| `StdioTransport` | Agent-side: communicate over stdin/stdout via NDJSON |
-| `StdioProcessTransport` | Client-side: spawn an agent subprocess |
-| `AcpTransport` | Interface for implementing custom transports |
+| Transport               | Use case                                             |
+| ----------------------- | ---------------------------------------------------- |
+| `StdioTransport`        | Agent-side: communicate over stdin/stdout via NDJSON |
+| `StdioProcessTransport` | Client-side: spawn an agent subprocess               |
+| `AcpTransport`          | Interface for implementing custom transports         |
 
 ### Key Concepts
 
