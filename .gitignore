@@ -3,10 +3,18 @@
 .packages
 build/
 pubspec.lock
+pubspec_overrides.yaml
+
+# Generated documentation
+doc/api/
+
+# Coverage
+coverage/
 
 # IDE
 .idea/
 *.iml
+.vscode/
 
 # macOS
 .DS_Store

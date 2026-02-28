@@ -3,8 +3,8 @@ description: >-
   Dart SDK for the Agent Client Protocol (ACP) — connect any editor to any
   coding agent.
 version: 0.1.0
-repository: https://github.com/helge/dart-agentclientprotocol
-issue_tracker: https://github.com/helge/dart-agentclientprotocol/issues
+repository: https://github.com/HelgeSverre/dart-agentclientprotocol
+issue_tracker: https://github.com/HelgeSverre/dart-agentclientprotocol/issues
 topics:
   - acp
   - agent
