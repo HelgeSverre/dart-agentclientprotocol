@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>acp | Dart SDK for the Agent Client Protocol</title>
+    <meta
+      name="description"
+      content="A Dart SDK for the Agent Client Protocol. Build typed ACP agents and clients with JSON-RPC, capability checks, cancellation, and built-in transports."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #ffffff;
+        --surface: #f8fafb;
+        --surface-2: #eef4f8;
+        --text: #202124;
+        --text-soft: #3c4043;
+        --muted: #5f6368;
+        --muted-2: #80868b;
+        --line: #dadce0;
+        --line-soft: #e8eaed;
+        --dart: #0175c2;
+        --dart-hover: #01579b;
+        --dart-light: #13b9fd;
+        --dart-bg: #e3f2fd;
+        --code-bg: #f6f8fa;
+        --code-text: #24292e;
+
+        --font-ui:
+          "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+          Arial, sans-serif;
+        --font-mono: "Roboto Mono", "SF Mono", Menlo, Consolas, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--dart);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .wrap {
+        width: min(1040px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      /* ---------- Hero ---------- */
+      .hero {
+        padding: 96px 0 56px;
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0 0 24px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+
+      .hero-tag b {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(36px, 5vw, 48px);
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        max-width: 720px;
+      }
+
+      .lead {
+        max-width: 680px;
+        margin: 20px 0 0;
+        color: var(--text-soft);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .lead code {
+        padding: 1px 6px;
+        border-radius: 3px;
+        background: var(--surface);
+        color: var(--dart-hover);
+        font-family: var(--font-mono);
+        font-size: 0.88em;
+      }
+
+      .install-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 32px;
+      }
+
+      .install {
+        display: inline-flex;
+        align-items: stretch;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 14px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .install:hover {
+        border-color: var(--muted-2);
+      }
+
+      .install .prompt {
+        padding: 10px 4px 10px 14px;
+        color: var(--muted-2);
+        user-select: none;
+      }
+
+      .install .cmd {
+        padding: 10px 14px 10px 8px;
+        color: var(--text);
+      }
+
+      .install .copy {
+        padding: 0 14px;
+        display: grid;
+        place-items: center;
+        border-left: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .install:hover .copy {
+        color: var(--dart);
+      }
+
+      .install.copied .copy {
+        color: #137333;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 18px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        border-color: var(--dart);
+        color: var(--dart);
+        text-decoration: none;
+      }
+
+      .button.primary {
+        border-color: var(--dart);
+        background: var(--dart);
+        color: #fff;
+      }
+
+      .button.primary:hover {
+        background: var(--dart-hover);
+        border-color: var(--dart-hover);
+        color: #fff;
+      }
+
+      .button svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 36px;
+        margin-top: 36px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line-soft);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .hero-meta span b {
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-weight: 500;
+      }
+
+      /* ---------- Sections ---------- */
+      section {
+        padding: 64px 0;
+      }
+
+      section + section {
+        border-top: 1px solid var(--line-soft);
+      }
+
+      h2 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      .section-desc {
+        margin: 0 0 32px;
+        max-width: 680px;
+        color: var(--text-soft);
+        font-size: 16px;
+      }
+
+      /* ---------- Code snippets ---------- */
+      .snippet {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+
+      .snippet-head {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .snippet-tabs {
+        display: flex;
+      }
+
+      .snippet-tab {
+        padding: 10px 18px;
+        border: none;
+        border-right: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .snippet-tab:hover {
+        color: var(--text);
+      }
+
+      .snippet-tab[aria-selected="true"] {
+        background: var(--bg);
+        color: var(--dart);
+        box-shadow: inset 0 -2px 0 var(--dart);
+      }
+
+      .snippet-file {
+        margin-left: auto;
+        padding: 0 16px;
+        color: var(--muted-2);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      pre.code {
+        margin: 0;
+        padding: 20px 22px;
+        background: var(--code-bg);
+        color: var(--code-text);
+        font-family: var(--font-mono);
+        font-size: 13.5px;
+        line-height: 1.65;
+        overflow-x: auto;
+        tab-size: 2;
+      }
+
+      /* Subtle syntax colors, tasteful like pub.dev */
+      .kw  { color: #a626a4; } /* keyword */
+      .typ { color: #c18401; } /* type */
+      .str { color: #50a14f; } /* string */
+      .num { color: #986801; } /* number */
+      .fn  { color: #4078f2; } /* function */
+      .anno{ color: #a626a4; } /* annotation */
+      .cmt { color: #a0a1a7; font-style: italic; } /* comment */
+      .pun { color: #383a42; } /* punctuation */
+      .dir { color: #a626a4; } /* yaml key */
+      .val { color: #50a14f; } /* yaml value */
+
+      .code-panel[hidden] { display: none; }
+
+      /* ---------- Two-col quickstart ---------- */
+      .two-col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .code-block-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .code-block-title h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .code-block-title .run {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* ---------- Feature list ---------- */
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 40px;
+      }
+
+      .feature {
+        padding-left: 16px;
+        border-left: 2px solid var(--dart-light);
+      }
+
+      .feature h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .feature p {
+        margin: 0;
+        color: var(--text-soft);
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+
+      .feature code {
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        color: var(--dart-hover);
+      }
+
+      /* ---------- Transports table ---------- */
+      .table-wrap {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      table.transports {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14.5px;
+      }
+
+      table.transports thead th {
+        padding: 12px 16px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-align: left;
+      }
+
+      table.transports td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line-soft);
+        vertical-align: top;
+      }
+
+      table.transports tr:last-child td {
+        border-bottom: none;
+      }
+
+      table.transports td:first-child {
+        font-family: var(--font-mono);
+        font-size: 13.5px;
+        color: var(--dart-hover);
+        white-space: nowrap;
+      }
+
+      table.transports td:nth-child(2) {
+        color: var(--text-soft);
+      }
+
+      table.transports td:last-child {
+        width: 90px;
+      }
+
+      .env-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+      }
+
+      /* ---------- Resources ---------- */
+      .resources {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .resource {
+        display: block;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .resource:hover {
+        border-color: var(--dart);
+        text-decoration: none;
+      }
+
+      .resource b {
+        display: block;
+        color: var(--dart);
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .resource span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      /* ---------- Footer ---------- */
+      footer {
+        padding: 24px 0;
+        margin-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+
+      /* ---------- Responsive ---------- */
+      @media (max-width: 820px) {
+        .two-col,
+        .feature-grid,
+        .resources {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding: 56px 0 40px;
+        }
+        section {
+          padding: 48px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- ================ HERO ================ -->
+      <section class="hero">
+        <div class="wrap">
+          <p class="hero-tag"><b>acp</b> <span>v0.1.0</span></p>
+          <h1>
+            A Dart SDK for the<br />
+            <strong style="color: var(--dart); font-weight: 700">Agent Client Protocol</strong>.
+          </h1>
+          <p class="lead">
+            Build typed ACP agents and clients. Ships generated
+            <a href="https://agentclientprotocol.com/">ACP v0.12.0</a>
+            schema models, JSON-RPC connection management, capability
+            enforcement, cooperative cancellation, and built-in transports
+            for <code>stdio</code>, <code>HTTP</code>, and <code>WebSocket</code>.
+          </p>
+
+          <div class="install-row">
+            <button type="button" class="install" id="install" aria-label="Copy install snippet">
+              <span class="prompt">$</span>
+              <span class="cmd">dart pub add acp</span>
+              <span class="copy" id="copyLabel">Copy</span>
+            </button>
+            <div class="actions">
+              <a class="button primary" href="https://pub.dev/packages/acp">
+                View on pub.dev
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a class="button" href="docs/">
+                API docs
+              </a>
+              <a class="button" href="https://github.com/HelgeSverre/dart-agentclientprotocol">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.77 1.06.77 2.14v3.17c0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
+                  />
+                </svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-meta">
+            <span>Dart SDK <b>^3.7.0</b></span>
+            <span>ACP schema <b>v0.12.0</b></span>
+            <span><b>8</b> transports</span>
+            <span>License <b>MIT</b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================ QUICK START ================ -->
+      <section id="quickstart">
+        <div class="wrap">
+          <h2>Quick start</h2>
+          <p class="section-desc">
+            Implement a handler on either side and connect it to a transport.
+            Every method is typed against the ACP schema.
+          </p>
+
+          <div class="two-col">
+            <div>
+              <div class="code-block-title">
+                <h3>Agent</h3>
+                <span class="run">dart run example/basic_agent.dart</span>
+              </div>
+              <div class="snippet">
+                <div class="snippet-head">
+                  <div class="snippet-tabs">
+                    <button class="snippet-tab" aria-selected="true">agent.dart</button>
+                  </div>
+                </div>
+<pre class="code"><span class="kw">import</span> <span class="str">'package:acp/agent.dart'</span><span class="pun">;</span>
+<span class="kw">import</span> <span class="str">'package:acp/schema.dart'</span><span class="pun">;</span>
+<span class="kw">import</span> <span class="str">'package:acp/transport.dart'</span><span class="pun">;</span>
+
+<span class="kw">final class</span> <span class="typ">EchoAgent</span> <span class="kw">extends</span> <span class="typ">AgentHandler</span> <span class="pun">{</span>
+  <span class="kw">final</span> <span class="typ">AgentSideConnection</span> conn<span class="pun">;</span>
+  <span class="typ">EchoAgent</span><span class="pun">(</span><span class="kw">this</span><span class="pun">.</span>conn<span class="pun">);</span>
+
+  <span class="anno">@override</span>
+  <span class="typ">Future</span><span class="pun">&lt;</span><span class="typ">InitializeResponse</span><span class="pun">&gt;</span> <span class="fn">initialize</span><span class="pun">(</span>
+    <span class="typ">InitializeRequest</span> req<span class="pun">,</span> <span class="pun">{</span>
+    <span class="kw">required</span> <span class="typ">AcpCancellationToken</span> cancelToken<span class="pun">,</span>
+  <span class="pun">})</span> <span class="kw">async</span> <span class="pun">=&gt;</span>
+      <span class="kw">const</span> <span class="typ">InitializeResponse</span><span class="pun">(</span>protocolVersion<span class="pun">:</span> <span class="num">1</span><span class="pun">);</span>
+
+  <span class="anno">@override</span>
+  <span class="typ">Future</span><span class="pun">&lt;</span><span class="typ">PromptResponse</span><span class="pun">&gt;</span> <span class="fn">prompt</span><span class="pun">(</span>
+    <span class="typ">PromptRequest</span> req<span class="pun">,</span> <span class="pun">{</span>
+    <span class="kw">required</span> <span class="typ">AcpCancellationToken</span> cancelToken<span class="pun">,</span>
+  <span class="pun">})</span> <span class="kw">async</span> <span class="pun">{</span>
+    <span class="kw">await</span> conn<span class="pun">.</span><span class="fn">notifySessionUpdate</span><span class="pun">(</span>
+      req<span class="pun">.</span>sessionId<span class="pun">,</span>
+      <span class="typ">AgentMessageChunk</span><span class="pun">(</span>
+        content<span class="pun">:</span> <span class="kw">const</span> <span class="typ">TextContent</span><span class="pun">(</span>
+          text<span class="pun">:</span> <span class="str">'Hello from Dart'</span><span class="pun">,</span>
+        <span class="pun">).</span><span class="fn">toJson</span><span class="pun">(),</span>
+      <span class="pun">),</span>
+    <span class="pun">);</span>
+    <span class="kw">return const</span> <span class="typ">PromptResponse</span><span class="pun">(</span>stopReason<span class="pun">:</span> <span class="str">'end_turn'</span><span class="pun">);</span>
+  <span class="pun">}</span>
+<span class="pun">}</span>
+
+<span class="kw">void</span> <span class="fn">main</span><span class="pun">()</span> <span class="pun">{</span>
+  <span class="kw">final</span> transport <span class="pun">=</span> <span class="typ">StdioTransport</span><span class="pun">()..</span><span class="fn">start</span><span class="pun">();</span>
+  <span class="typ">AgentSideConnection</span><span class="pun">(</span>transport<span class="pun">,</span> handlerFactory<span class="pun">:</span> <span class="typ">EchoAgent</span><span class="pun">.</span><span class="fn">new</span><span class="pun">);</span>
+<span class="pun">}</span>
+</pre>
+              </div>
+            </div>
+
+            <div>
+              <div class="code-block-title">
+                <h3>Client</h3>
+                <span class="run">dart run example/basic_client.dart</span>
+              </div>
+              <div class="snippet">
+                <div class="snippet-head">
+                  <div class="snippet-tabs">
+                    <button class="snippet-tab" aria-selected="true">client.dart</button>
+                  </div>
+                </div>
+<pre class="code"><span class="kw">import</span> <span class="str">'package:acp/client.dart'</span><span class="pun">;</span>
+<span class="kw">import</span> <span class="str">'package:acp/schema.dart'</span><span class="pun">;</span>
+<span class="kw">import</span> <span class="str">'package:acp/transport.dart'</span><span class="pun">;</span>
+
+<span class="kw">final class</span> <span class="typ">Printer</span> <span class="kw">extends</span> <span class="typ">ClientHandler</span> <span class="pun">{</span>
+  <span class="anno">@override</span>
+  <span class="kw">void</span> <span class="fn">onSessionUpdate</span><span class="pun">(</span><span class="typ">String</span> id<span class="pun">,</span> <span class="typ">SessionUpdate</span> update<span class="pun">)</span> <span class="pun">{</span>
+    <span class="kw">if</span> (update <span class="kw">case</span> <span class="typ">AgentMessageChunk</span><span class="pun">(:</span><span class="kw">final</span> content<span class="pun">))</span> <span class="pun">{</span>
+      <span class="fn">print</span><span class="pun">(</span>content<span class="pun">[</span><span class="str">'text'</span><span class="pun">]);</span>
+    <span class="pun">}</span>
+  <span class="pun">}</span>
+<span class="pun">}</span>
+
+<span class="typ">Future</span><span class="pun">&lt;</span><span class="kw">void</span><span class="pun">&gt;</span> <span class="fn">main</span><span class="pun">()</span> <span class="kw">async</span> <span class="pun">{</span>
+  <span class="kw">final</span> transport <span class="pun">=</span> <span class="kw">await</span> <span class="typ">StdioProcessTransport</span><span class="pun">.</span><span class="fn">start</span><span class="pun">(</span>
+    <span class="str">'dart'</span><span class="pun">,</span> <span class="pun">[</span><span class="str">'run'</span><span class="pun">,</span> <span class="str">'example/basic_agent.dart'</span><span class="pun">],</span>
+  <span class="pun">);</span>
+
+  <span class="kw">final</span> client <span class="pun">=</span> <span class="typ">ClientSideConnection</span><span class="pun">(</span>
+    transport<span class="pun">,</span>
+    handler<span class="pun">:</span> <span class="typ">Printer</span><span class="pun">(),</span>
+    clientCapabilities<span class="pun">:</span> <span class="kw">const</span> <span class="typ">ClientCapabilities</span><span class="pun">(</span>
+      fs<span class="pun">:</span> <span class="typ">FileSystemCapability</span><span class="pun">(</span>
+        readTextFile<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span>
+        writeTextFile<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span>
+      <span class="pun">),</span>
+      terminal<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span>
+    <span class="pun">),</span>
+  <span class="pun">);</span>
+
+  <span class="kw">await</span> client<span class="pun">.</span><span class="fn">sendInitialize</span><span class="pun">(</span>protocolVersion<span class="pun">:</span> <span class="num">1</span><span class="pun">);</span>
+  <span class="kw">final</span> s <span class="pun">=</span> <span class="kw">await</span> client<span class="pun">.</span><span class="fn">sendNewSession</span><span class="pun">(</span>cwd<span class="pun">:</span> <span class="str">'.'</span><span class="pun">);</span>
+  <span class="kw">await</span> client<span class="pun">.</span><span class="fn">sendPrompt</span><span class="pun">(</span>
+    sessionId<span class="pun">:</span> s<span class="pun">.</span>sessionId<span class="pun">,</span>
+    prompt<span class="pun">:</span> <span class="kw">const</span> <span class="pun">[</span><span class="typ">TextContent</span><span class="pun">(</span>text<span class="pun">:</span> <span class="str">'hi'</span><span class="pun">)],</span>
+  <span class="pun">);</span>
+<span class="pun">}</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================ COMMON PATTERNS ================ -->
+      <section id="patterns">
+        <div class="wrap">
+          <h2>Common patterns</h2>
+          <p class="section-desc">
+            Streaming, cancellation, and capability checks — the pieces you
+            write once and forget about.
+          </p>
+
+          <div class="snippet">
+            <div class="snippet-head">
+              <div class="snippet-tabs" role="tablist">
+                <button class="snippet-tab" role="tab" aria-selected="true" data-tab="stream">
+                  stream updates
+                </button>
+                <button class="snippet-tab" role="tab" aria-selected="false" data-tab="cancel">
+                  cancellation
+                </button>
+                <button class="snippet-tab" role="tab" aria-selected="false" data-tab="caps">
+                  capabilities
+                </button>
+                <button class="snippet-tab" role="tab" aria-selected="false" data-tab="pubspec">
+                  pubspec.yaml
+                </button>
+              </div>
+              <span class="snippet-file" id="snippetFile">lib/agent/streaming.dart</span>
+            </div>
+
+            <div class="code-panel" data-panel="stream">
+<pre class="code"><span class="cmt">// Agent side: stream tokens, plans, and tool calls as they happen.</span>
+<span class="anno">@override</span>
+<span class="typ">Future</span><span class="pun">&lt;</span><span class="typ">PromptResponse</span><span class="pun">&gt;</span> <span class="fn">prompt</span><span class="pun">(</span>
+  <span class="typ">PromptRequest</span> req<span class="pun">,</span> <span class="pun">{</span>
+  <span class="kw">required</span> <span class="typ">AcpCancellationToken</span> cancelToken<span class="pun">,</span>
+<span class="pun">})</span> <span class="kw">async</span> <span class="pun">{</span>
+  <span class="kw">await for</span> <span class="pun">(</span><span class="kw">final</span> token <span class="kw">in</span> <span class="fn">generate</span><span class="pun">(</span>req<span class="pun">.</span>prompt<span class="pun">))</span> <span class="pun">{</span>
+    <span class="kw">if</span> <span class="pun">(</span>cancelToken<span class="pun">.</span>isCancelled<span class="pun">)</span> <span class="kw">break</span><span class="pun">;</span>
+    <span class="kw">await</span> conn<span class="pun">.</span><span class="fn">notifySessionUpdate</span><span class="pun">(</span>
+      req<span class="pun">.</span>sessionId<span class="pun">,</span>
+      <span class="typ">AgentMessageChunk</span><span class="pun">(</span>content<span class="pun">:</span> <span class="typ">TextContent</span><span class="pun">(</span>text<span class="pun">:</span> token<span class="pun">).</span><span class="fn">toJson</span><span class="pun">()),</span>
+    <span class="pun">);</span>
+  <span class="pun">}</span>
+  <span class="kw">return const</span> <span class="typ">PromptResponse</span><span class="pun">(</span>stopReason<span class="pun">:</span> <span class="str">'end_turn'</span><span class="pun">);</span>
+<span class="pun">}</span>
+
+<span class="cmt">// Client side: destructure updates with pattern matching.</span>
+<span class="anno">@override</span>
+<span class="kw">void</span> <span class="fn">onSessionUpdate</span><span class="pun">(</span><span class="typ">String</span> sessionId<span class="pun">,</span> <span class="typ">SessionUpdate</span> update<span class="pun">)</span> <span class="pun">{</span>
+  <span class="kw">switch</span> <span class="pun">(</span>update<span class="pun">)</span> <span class="pun">{</span>
+    <span class="typ">AgentMessageChunk</span><span class="pun">(:</span><span class="kw">final</span> content<span class="pun">) =&gt;</span> <span class="fn">emit</span><span class="pun">(</span>content<span class="pun">[</span><span class="str">'text'</span><span class="pun">]),</span>
+    <span class="typ">PlanUpdate</span><span class="pun">(:</span><span class="kw">final</span> entries<span class="pun">) =&gt;</span> <span class="fn">renderPlan</span><span class="pun">(</span>entries<span class="pun">),</span>
+    <span class="typ">ToolCallUpdate</span><span class="pun">(:</span><span class="kw">final</span> status<span class="pun">) =&gt;</span> <span class="fn">showStatus</span><span class="pun">(</span>status<span class="pun">),</span>
+    _ <span class="pun">=&gt;</span> <span class="kw">null</span><span class="pun">,</span>
+  <span class="pun">};</span>
+<span class="pun">}</span>
+</pre>
+            </div>
+
+            <div class="code-panel" data-panel="cancel" hidden>
+<pre class="code"><span class="cmt">// Every handler receives an AcpCancellationToken.</span>
+<span class="anno">@override</span>
+<span class="typ">Future</span><span class="pun">&lt;</span><span class="typ">PromptResponse</span><span class="pun">&gt;</span> <span class="fn">prompt</span><span class="pun">(</span>
+  <span class="typ">PromptRequest</span> req<span class="pun">,</span> <span class="pun">{</span>
+  <span class="kw">required</span> <span class="typ">AcpCancellationToken</span> cancelToken<span class="pun">,</span>
+<span class="pun">})</span> <span class="kw">async</span> <span class="pun">{</span>
+  <span class="kw">final</span> sub <span class="pun">=</span> cancelToken<span class="pun">.</span>onCancel<span class="pun">.</span><span class="fn">listen</span><span class="pun">((</span>_<span class="pun">)</span> <span class="pun">{</span>
+    <span class="fn">log</span><span class="pun">.</span><span class="fn">info</span><span class="pun">(</span><span class="str">'client cancelled ${req.sessionId}'</span><span class="pun">);</span>
+  <span class="pun">});</span>
+
+  <span class="kw">try</span> <span class="pun">{</span>
+    <span class="kw">final</span> result <span class="pun">=</span> <span class="kw">await</span> <span class="fn">runModel</span><span class="pun">(</span>
+      req<span class="pun">.</span>prompt<span class="pun">,</span>
+      cancelWhen<span class="pun">:</span> cancelToken<span class="pun">.</span>future<span class="pun">,</span>
+    <span class="pun">);</span>
+    <span class="kw">return</span> <span class="typ">PromptResponse</span><span class="pun">(</span>stopReason<span class="pun">:</span> result<span class="pun">.</span>reason<span class="pun">);</span>
+  <span class="pun">}</span> <span class="kw">on</span> <span class="typ">AcpCancelled</span> <span class="pun">{</span>
+    <span class="kw">return const</span> <span class="typ">PromptResponse</span><span class="pun">(</span>stopReason<span class="pun">:</span> <span class="str">'cancelled'</span><span class="pun">);</span>
+  <span class="pun">}</span> <span class="kw">finally</span> <span class="pun">{</span>
+    <span class="kw">await</span> sub<span class="pun">.</span><span class="fn">cancel</span><span class="pun">();</span>
+  <span class="pun">}</span>
+<span class="pun">}</span>
+</pre>
+            </div>
+
+            <div class="code-panel" data-panel="caps" hidden>
+<pre class="code"><span class="cmt">// Declare capabilities once. The runtime enforces them on both sides.</span>
+<span class="kw">final</span> client <span class="pun">=</span> <span class="typ">ClientSideConnection</span><span class="pun">(</span>
+  transport<span class="pun">,</span>
+  handler<span class="pun">:</span> <span class="typ">MyClient</span><span class="pun">(),</span>
+  clientCapabilities<span class="pun">:</span> <span class="kw">const</span> <span class="typ">ClientCapabilities</span><span class="pun">(</span>
+    fs<span class="pun">:</span> <span class="typ">FileSystemCapability</span><span class="pun">(</span>
+      readTextFile<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span>
+      writeTextFile<span class="pun">:</span> <span class="kw">false</span><span class="pun">,</span>
+    <span class="pun">),</span>
+    terminal<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span>
+  <span class="pun">),</span>
+  capabilityEnforcement<span class="pun">:</span> <span class="typ">CapabilityEnforcement</span><span class="pun">.</span>strict<span class="pun">,</span>
+<span class="pun">);</span>
+
+<span class="cmt">// Agent side: respond to initialize with what you support.</span>
+<span class="anno">@override</span>
+<span class="typ">Future</span><span class="pun">&lt;</span><span class="typ">InitializeResponse</span><span class="pun">&gt;</span> <span class="fn">initialize</span><span class="pun">(...)</span> <span class="kw">async</span> <span class="pun">{</span>
+  <span class="kw">return const</span> <span class="typ">InitializeResponse</span><span class="pun">(</span>
+    protocolVersion<span class="pun">:</span> <span class="num">1</span><span class="pun">,</span>
+    agentCapabilities<span class="pun">:</span> <span class="typ">AgentCapabilities</span><span class="pun">(</span>
+      sessionCapabilities<span class="pun">:</span> <span class="typ">SessionCapabilities</span><span class="pun">(</span>list<span class="pun">:</span> <span class="pun">{</span><span class="str">'stable'</span><span class="pun">:</span> <span class="kw">true</span><span class="pun">}),</span>
+      promptCapabilities<span class="pun">:</span> <span class="typ">PromptCapabilities</span><span class="pun">(</span>image<span class="pun">:</span> <span class="kw">true</span><span class="pun">,</span> embeddedContext<span class="pun">:</span> <span class="kw">true</span><span class="pun">),</span>
+    <span class="pun">),</span>
+  <span class="pun">);</span>
+<span class="pun">}</span>
+</pre>
+            </div>
+
+            <div class="code-panel" data-panel="pubspec" hidden>
+<pre class="code"><span class="cmt"># pubspec.yaml</span>
+<span class="dir">name</span><span class="pun">:</span> <span class="val">my_agent</span>
+<span class="dir">description</span><span class="pun">:</span> <span class="val">An ACP agent built with the Dart SDK.</span>
+<span class="dir">publish_to</span><span class="pun">:</span> <span class="val">none</span>
+
+<span class="dir">environment</span><span class="pun">:</span>
+  <span class="dir">sdk</span><span class="pun">:</span> <span class="val">^3.7.0</span>
+
+<span class="dir">dependencies</span><span class="pun">:</span>
+  <span class="dir">acp</span><span class="pun">:</span> <span class="val">^0.1.0</span>
+
+<span class="cmt"># Then run</span>
+<span class="cmt">$ dart pub get</span>
+<span class="cmt">$ dart run bin/main.dart</span>
+</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================ FEATURES ================ -->
+      <section id="features">
+        <div class="wrap">
+          <h2>What's included</h2>
+          <p class="section-desc">
+            The package targets the ACP v0.12.0 schema and wraps the mechanics
+            you'd otherwise rewrite for every agent and every editor.
+          </p>
+
+          <div class="feature-grid">
+            <div class="feature">
+              <h3>Typed schema models</h3>
+              <p>
+                Generated request, response, notification, and content models.
+                Sealed unions with <code>extensionData</code> for forward compatibility.
+              </p>
+            </div>
+            <div class="feature">
+              <h3>Full JSON-RPC runtime</h3>
+              <p>
+                Requests, responses, notifications, batching, timeouts, and
+                connection state — plus <code>$/cancel_request</code> plumbing.
+              </p>
+            </div>
+            <div class="feature">
+              <h3>Capability enforcement</h3>
+              <p>
+                Calls blocked when the other side never advertised the capability.
+                Pick <code>strict</code> or <code>permissive</code> for integration work.
+              </p>
+            </div>
+            <div class="feature">
+              <h3>Cooperative cancellation</h3>
+              <p>
+                Every handler receives an <code>AcpCancellationToken</code>.
+                Unwind gracefully without leaking streams or orphaning work.
+              </p>
+            </div>
+            <div class="feature">
+              <h3>Streaming session updates</h3>
+              <p>
+                Push <code>AgentMessageChunk</code>, plan updates, tool calls,
+                and terminal events as they happen with a <code>TerminalHandle</code> helper.
+              </p>
+            </div>
+            <div class="feature">
+              <h3>Extension methods</h3>
+              <p>
+                Client-to-agent and agent-to-client custom methods with the
+                <code>_</code> prefix convention, round-tripped through <code>_meta</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================ TRANSPORTS ================ -->
+      <section id="transports">
+        <div class="wrap">
+          <h2>Transports</h2>
+          <p class="section-desc">
+            Start with stdio for local subprocess agents. Switch to HTTP or
+            WebSocket once the agent and client are separated by a network
+            boundary. Implement <code style="font-family:var(--font-mono);color:var(--dart-hover);font-size:.9em">AcpTransport</code> for anything else.
+          </p>
+
+          <div class="table-wrap">
+            <table class="transports">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Description</th>
+                  <th>Side</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>StdioTransport</td>
+                  <td>Agent-side NDJSON over stdin/stdout.</td>
+                  <td><span class="env-tag">agent</span></td>
+                </tr>
+                <tr>
+                  <td>StdioProcessTransport</td>
+                  <td>Client-side subprocess spawning and management.</td>
+                  <td><span class="env-tag">client</span></td>
+                </tr>
+                <tr>
+                  <td>HttpSseTransport</td>
+                  <td>HTTP POST plus Server-Sent Events.</td>
+                  <td><span class="env-tag">both</span></td>
+                </tr>
+                <tr>
+                  <td>StreamableHttpTransport</td>
+                  <td>Streamable HTTP transport, chunked both ways.</td>
+                  <td><span class="env-tag">both</span></td>
+                </tr>
+                <tr>
+                  <td>WebSocketTransport</td>
+                  <td>VM WebSocket text frames.</td>
+                  <td><span class="env-tag">vm</span></td>
+                </tr>
+                <tr>
+                  <td>BrowserWebSocketTransport</td>
+                  <td>Browser-side WebSocket text frames.</td>
+                  <td><span class="env-tag">web</span></td>
+                </tr>
+                <tr>
+                  <td>ReconnectingTransport</td>
+                  <td>Reconnect wrapper for reconnectable transports.</td>
+                  <td><span class="env-tag">wrapper</span></td>
+                </tr>
+                <tr>
+                  <td>AcpTransport</td>
+                  <td>Interface for implementing custom transports.</td>
+                  <td><span class="env-tag">byo</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================ RESOURCES ================ -->
+      <section id="resources">
+        <div class="wrap">
+          <h2>Resources</h2>
+          <p class="section-desc">
+            Generated API docs live on pub.dev. The protocol spec is on
+            agentclientprotocol.com. Source, issues, and CI are on GitHub.
+          </p>
+
+          <div class="resources">
+            <a class="resource" href="https://pub.dev/packages/acp">
+              <b>pub.dev/packages/acp</b>
+              <span>Package, install instructions, pub score.</span>
+            </a>
+            <a class="resource" href="docs/">
+              <b>API reference</b>
+              <span>dartdoc-generated, hosted here.</span>
+            </a>
+            <a class="resource" href="https://pub.dev/packages/acp/changelog">
+              <b>Changelog</b>
+              <span>Release notes and version history.</span>
+            </a>
+            <a class="resource" href="https://github.com/HelgeSverre/dart-agentclientprotocol">
+              <b>Source on GitHub</b>
+              <span>HelgeSverre/dart-agentclientprotocol</span>
+            </a>
+            <a class="resource" href="https://github.com/HelgeSverre/dart-agentclientprotocol/tree/main/example">
+              <b>Examples</b>
+              <span>basic_agent · basic_client · project_assistant</span>
+            </a>
+            <a class="resource" href="https://agentclientprotocol.com/">
+              <b>ACP protocol spec</b>
+              <span>agentclientprotocol.com</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        MIT License · Built by <a href="https://github.com/HelgeSverre">Helge Sverre</a>.
+      </div>
+    </footer>
+
+    <script>
+      // ---- Tabs (patterns section only) ----
+      const patterns = document.querySelector('#patterns');
+      if (patterns) {
+        const tabs = patterns.querySelectorAll('[data-tab]');
+        const panels = patterns.querySelectorAll('[data-panel]');
+        const fileLabel = document.getElementById('snippetFile');
+        const fileMap = {
+          stream: 'lib/agent/streaming.dart',
+          cancel: 'lib/agent/cancellation.dart',
+          caps: 'lib/connection/capabilities.dart',
+          pubspec: 'pubspec.yaml',
+        };
+        tabs.forEach((tab) => {
+          tab.addEventListener('click', () => {
+            const name = tab.dataset.tab;
+            tabs.forEach((t) =>
+              t.setAttribute('aria-selected', t === tab ? 'true' : 'false')
+            );
+            panels.forEach((p) =>
+              p.dataset.panel === name
+                ? p.removeAttribute('hidden')
+                : p.setAttribute('hidden', '')
+            );
+            if (fileLabel && fileMap[name]) fileLabel.textContent = fileMap[name];
+          });
+        });
+      }
+
+      // ---- Copy install command ----
+      const install = document.getElementById('install');
+      const copyLabel = document.getElementById('copyLabel');
+      if (install && copyLabel && navigator.clipboard) {
+        install.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText('dart pub add acp');
+            install.classList.add('copied');
+            copyLabel.textContent = 'Copied';
+            setTimeout(() => {
+              install.classList.remove('copied');
+              copyLabel.textContent = 'Copy';
+            }, 1800);
+          } catch (err) {
+            copyLabel.textContent = 'Failed';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

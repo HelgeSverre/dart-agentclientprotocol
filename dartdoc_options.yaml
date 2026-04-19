@@ -1,0 +1,10 @@
+dartdoc:
+  # Exclude generator tooling and tests from the API surface.
+  exclude:
+    - test
+    - tool
+
+  # Clicking a symbol's source link jumps to the line on GitHub.
+  linkToSource:
+    root: '.'
+    uriTemplate: 'https://github.com/HelgeSverre/dart-agentclientprotocol/blob/main/%f%#L%l%'

@@ -55,6 +55,15 @@ sync-schema version="v0.12.0":
 example:
     dart run example/project_assistant.dart
 
+[group('docs')]
+docs:
+    rm -rf website/docs
+    dart doc --output website/docs --validate-links
+
+[group('docs')]
+docs-serve: docs
+    npx serve website/docs
+
 [group('maintenance')]
 clean:
-    rm -rf .dart_tool build coverage
+    rm -rf .dart_tool build coverage website/docs
