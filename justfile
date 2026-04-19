@@ -40,6 +40,9 @@ website:
     rm -rf website/docs
     dart doc --output website/docs --validate-links
 
+website-dev: website
+    open website/index.html
+
 website-deploy: website
     cd website && vc --prod
 

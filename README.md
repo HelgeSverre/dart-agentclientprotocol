@@ -2,7 +2,10 @@
 
 [![Pub Version](https://img.shields.io/pub/v/acp.svg)](https://pub.dev/packages/acp)
 [![Pub Points](https://img.shields.io/pub/points/acp.svg)](https://pub.dev/packages/acp/score)
+[![Pub Likes](https://img.shields.io/pub/likes/acp.svg)](https://pub.dev/packages/acp)
 [![CI](https://img.shields.io/github/actions/workflow/status/HelgeSverre/dart-agentclientprotocol/ci.yml?branch=main&label=CI)](https://github.com/HelgeSverre/dart-agentclientprotocol/actions/workflows/ci.yml)
+
+Available on [pub.dev/packages/acp](https://pub.dev/packages/acp).
 
 Dart SDK for the [Agent Client Protocol (ACP)](https://agentclientprotocol.com/).
 
@@ -10,13 +13,16 @@ This package targets the official [ACP v0.12.0](https://github.com/agentclientpr
 
 ## Installation
 
-```yaml
-dependencies:
-  acp: ^0.1.0-rc.1
-```
+With Dart:
 
 ```bash
-dart pub get
+dart pub add acp
+```
+
+With Flutter:
+
+```bash
+flutter pub add acp
 ```
 
 ## Quick Start

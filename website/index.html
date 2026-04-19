@@ -132,6 +132,17 @@
         margin-top: 32px;
       }
 
+      .install-alt {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .install-alt code {
+        font-family: var(--font-mono);
+        color: var(--muted-2);
+      }
+
       .install {
         display: inline-flex;
         align-items: stretch;
@@ -563,6 +574,10 @@
               </a>
             </div>
           </div>
+
+          <p class="install-alt">
+            Using Flutter? <code>flutter pub add acp</code>
+          </p>
 
           <div class="hero-meta">
             <span>Dart SDK <b>^3.7.0</b></span>
