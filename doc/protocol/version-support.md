@@ -15,7 +15,7 @@ via `InitializeRequest.protocolVersion` and
 - When a new schema version is synced, the schema source at
   `tool/upstream/schema/schema.json` is updated and code is regenerated
   via `tool/generate/generate.dart`.
-- Primary reference snapshots are kept under `docs/references/`.
+- Primary reference snapshots are kept under `doc/references/`.
 - This document is updated on each sync to reflect the new target version.
 - Breaking protocol changes follow the library's semver policy: breaking
   changes only in major versions, with a deprecation window when practical.

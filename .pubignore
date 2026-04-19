@@ -17,7 +17,7 @@ doc/api/
 # Pub-specific exclusions — not needed at runtime by package consumers:
 
 # Upstream ACP spec reference copies (kept in repo for codegen review)
-docs/
+doc/references/
 
 # Marketing website (deployed separately)
 website/

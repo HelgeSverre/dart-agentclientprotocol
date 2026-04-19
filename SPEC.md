@@ -589,7 +589,6 @@ These are sufficient for structured logging, metrics, and debugging. A general-p
     extensions/
   tool/
     generate/
-    docs/
     schema_sync/
     lint/
   doc/

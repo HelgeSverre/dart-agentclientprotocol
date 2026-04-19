@@ -179,7 +179,7 @@ dart format .
 dart analyze && dart test
 ```
 
-The schema files live under `tool/upstream/schema/`. Official reference material fetched for the current review is stored under `docs/references/agent-client-protocol-v0.12.0/`.
+The schema files live under `tool/upstream/schema/`. Official reference material fetched for the current review is stored under `doc/references/agent-client-protocol-v0.12.0/`.
 
 ## Project Structure
 
@@ -208,6 +208,12 @@ tool/
   generate/
   schema_sync/
   upstream/schema/
-docs/references/
-  agent-client-protocol-v0.12.0/
+doc/
+  architecture/
+  decisions/
+  extensions/
+  plans/
+  protocol/
+  references/
+    agent-client-protocol-v0.12.0/
 ```
