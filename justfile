@@ -31,9 +31,11 @@ sync-schema version="v0.12.0":
     dart run tool/generate/generate.dart
 
 # Runs every self-contained example. `basic_agent.dart` is excluded because
-# it reads stdin as a spawned subprocess and blocks when run directly.
+# it's designed to be spawned by another process — `subprocess_client.dart`
+# launches and drives it, so it's exercised there.
 example:
-    dart run example/basic_client.dart
+    dart run example/subprocess_client.dart
+    dart run example/streaming_agent.dart
     dart run example/project_assistant.dart
 
 website:

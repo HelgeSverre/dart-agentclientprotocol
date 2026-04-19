@@ -1,6 +1,44 @@
-/// A realistic in-process ACP client and agent conversation.
+/// The full ACP experience in one file: a project assistant agent paired
+/// with a client that behaves like a small code editor.
 ///
-/// Run with: `dart run example/project_assistant.dart`
+/// If `basic_agent.dart` is ACP's "hello world" and `subprocess_client.dart`
+/// shows the real spawning pattern, this file shows you *every* non-trivial
+/// flow you'd want in a coding assistant:
+///
+///   1. **Initialize & capabilities**: the client advertises filesystem and
+///      terminal support; the agent advertises session listing and prompt
+///      features it can handle.
+///   2. **Session listing**: the client asks for previous sessions before
+///      starting a new one — the pattern a "history sidebar" uses.
+///   3. **Session creation**: the agent returns session-level config options
+///      (e.g. review depth) and modes (review / edit).
+///   4. **Plan updates**: the agent streams its checklist so the editor can
+///      render a live TODO.
+///   5. **Permission prompt**: before reading a file, the agent asks the
+///      user for permission via `session/request_permission`. The client
+///      responds with the chosen option.
+///   6. **Filesystem access**: after permission is granted, the agent calls
+///      back into the client with `fs/read_text_file`.
+///   7. **Terminal use**: the agent spawns a short command through the
+///      client (`terminal/create` + `terminal/wait_for_exit`).
+///   8. **Final message**: the agent summarises what it learned and returns
+///      a `PromptResponse` with a stop reason.
+///
+/// For this demo both peers live in-process and talk over linked in-memory
+/// transports so you don't need a subprocess. The same handler code works
+/// unchanged over stdio or WebSocket.
+///
+/// ## Running it
+///
+/// ```
+/// dart run example/project_assistant.dart
+/// ```
+///
+/// ## Real-world parallels
+///
+/// This mirrors what Zed does when a user chats with Claude Agent or Codex,
+/// and what JetBrains IDEs do when a user picks an agent from the ACP
+/// Registry. The editor is the client; the LLM-backed tool is the agent.
 library;
 
 import 'dart:async';
@@ -108,6 +146,10 @@ final class _LinkedTransport implements AcpTransport {
     await _outbound.close();
   }
 }
+
+// ---------------------------------------------------------------------------
+// The agent side: decides what to do, asks the client for help when needed.
+// ---------------------------------------------------------------------------
 
 final class _ProjectAssistantAgent extends AgentHandler {
   final AgentSideConnection _connection;
@@ -238,6 +280,10 @@ final class _ProjectAssistantAgent extends AgentHandler {
       ),
     );
 
+    // Ask the user (via the editor/client) for permission before touching
+    // the filesystem. This is the central safety feature of ACP: the agent
+    // can request capabilities at a specific moment, and the client decides
+    // how (and whether) to surface that to the user.
     final permission = await _connection.sendRequestPermission(
       sessionId: request.sessionId,
       toolCall: const {
@@ -254,6 +300,8 @@ final class _ProjectAssistantAgent extends AgentHandler {
     var packageName = 'unknown package';
     if (permission.outcome['outcome'] == 'selected' &&
         permission.outcome['optionId'] == 'allow_once') {
+      // Now we can call back into the client to read the file. The client's
+      // `readTextFile` handler runs with whatever permissions it has.
       final pubspec = await _connection.sendReadTextFile(
         sessionId: request.sessionId,
         path: '${session.cwd}/pubspec.yaml',
@@ -261,6 +309,8 @@ final class _ProjectAssistantAgent extends AgentHandler {
       packageName = _extractPackageName(pubspec.content);
     }
 
+    // Spawn a short command through the client. `TerminalHandle` wraps the
+    // raw `terminal/*` RPC calls so you can treat it almost like a Process.
     final terminal = await _connection.createTerminalHandle(
       sessionId: request.sessionId,
       command: Platform.resolvedExecutable,
@@ -311,6 +361,11 @@ final class _ProjectAssistantAgent extends AgentHandler {
     return const PromptResponse(stopReason: 'end_turn');
   }
 }
+
+// ---------------------------------------------------------------------------
+// The client side: acts like a small code editor. Reads files, runs
+// terminal commands, and decides how to respond to permission prompts.
+// ---------------------------------------------------------------------------
 
 final class _ProjectClient extends ClientHandler {
   final Map<String, _TerminalRun> _terminals = <String, _TerminalRun>{};
@@ -384,6 +439,9 @@ final class _ProjectClient extends ClientHandler {
     return const KillTerminalCommandResponse();
   }
 
+  /// A real editor would pop a dialog here and wait for the user. For the
+  /// demo we auto-select the "allow_once" option so the script runs to
+  /// completion.
   @override
   Future<RequestPermissionResponse> requestPermission(
     RequestPermissionRequest request, {
