@@ -1,0 +1,29 @@
+name: Publish
+
+# Publishes the package to pub.dev when a version tag is pushed.
+#
+# Triggered by tags matching the pattern:
+#   v0.1.0        — stable release
+#   v0.1.0-rc.1   — pre-release (release candidate)
+#
+# Uses OIDC via the official dart-lang reusable workflow — no secrets,
+# no long-lived tokens. Pub.dev verifies the GitHub OIDC claim against
+# the trusted-publisher configuration on the package.
+#
+# Setup required on pub.dev (one-time, per package):
+#   1. https://pub.dev/packages/acp/admin
+#   2. "Automated publishing" → "Enable publishing from GitHub Actions"
+#   3. Repository:       HelgeSverre/dart-agentclientprotocol
+#   4. Tag pattern:      v{{version}}
+#      (This maps tag "v0.1.0-rc.1" to package version "0.1.0-rc.1".)
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for OIDC authentication against pub.dev.
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
