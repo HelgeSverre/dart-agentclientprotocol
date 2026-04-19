@@ -1,49 +1,49 @@
-# acp
+# ACP for Dart
 
-[![pub package](https://img.shields.io/pub/v/acp.svg)](https://pub.dev/packages/acp)
-[![CI](https://github.com/HelgeSverre/dart-agentclientprotocol/actions/workflows/ci.yml/badge.svg)](https://github.com/HelgeSverre/dart-agentclientprotocol/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+[![Pub Version](https://img.shields.io/pub/v/acp.svg)](https://pub.dev/packages/acp)
+[![Pub Points](https://img.shields.io/pub/points/acp.svg)](https://pub.dev/packages/acp/score)
+[![CI](https://img.shields.io/github/actions/workflow/status/HelgeSverre/dart-agentclientprotocol/ci.yml?branch=main&label=CI)](https://github.com/HelgeSverre/dart-agentclientprotocol/actions/workflows/ci.yml)
 
-Dart SDK for the [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) — connect any editor to any coding agent.
+Dart SDK for the [Agent Client Protocol (ACP)](https://agentclientprotocol.com/).
 
-Implements [ACP v0.10.8](https://agentclientprotocol.com/protocol/overview) with typed schema models, pluggable transports, and connection management for both agent and client sides.
+This package targets the official [ACP v0.12.0](https://github.com/agentclientprotocol/agent-client-protocol/releases/tag/v0.12.0) schema. It provides generated typed schema models, JSON-RPC connection management, capability enforcement, request cancellation, and transports for building ACP agents and clients.
 
 ## Installation
-
-Add `acp` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   acp: ^0.1.0
 ```
 
-Then run:
-
 ```bash
 dart pub get
 ```
 
-## Usage
+## Quick Start
 
-### Building an Agent
-
-Implement `AgentHandler` and connect it to a transport:
+### Agent
 
 ```dart
 import 'package:acp/agent.dart';
 import 'package:acp/schema.dart';
 import 'package:acp/transport.dart';
 
-class MyAgent extends AgentHandler {
-  final AgentSideConnection _conn;
-  MyAgent(this._conn);
+final class MyAgent extends AgentHandler {
+  final AgentSideConnection _connection;
+
+  MyAgent(this._connection);
 
   @override
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
   }) async {
-    return const InitializeResponse(protocolVersion: 1);
+    return const InitializeResponse(
+      protocolVersion: 1,
+      agentCapabilities: AgentCapabilities(
+        sessionCapabilities: SessionCapabilities(list: <String, dynamic>{}),
+      ),
+    );
   }
 
   @override
@@ -59,253 +59,152 @@ class MyAgent extends AgentHandler {
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
   }) async {
-    final text = request.prompt
-        .whereType<TextContent>()
-        .map((c) => c.text)
-        .join('\n');
-
-    // Stream a response back to the client.
-    await _conn.notifySessionUpdate(
+    await _connection.notifySessionUpdate(
       request.sessionId,
       AgentMessageChunk(
-        content: {'type': 'text', 'text': 'You said: $text'},
+        content: const TextContent(text: 'Hello from the agent').toJson(),
       ),
     );
-
     return const PromptResponse(stopReason: 'end_turn');
   }
 }
 
 void main() {
-  final transport = StdioTransport();
-  transport.start();
-
+  final transport = StdioTransport()..start();
   AgentSideConnection(
     transport,
-    handlerFactory: (conn) => MyAgent(conn),
+    handlerFactory: (connection) => MyAgent(connection),
   );
 }
 ```
 
-### Building a Client
-
-Implement `ClientHandler` and spawn an agent process:
+### Client
 
 ```dart
+import 'dart:io';
+
 import 'package:acp/client.dart';
 import 'package:acp/schema.dart';
 import 'package:acp/transport.dart';
 
-class MyClientHandler extends ClientHandler {
+final class MyClientHandler extends ClientHandler {
   @override
   void onSessionUpdate(String sessionId, SessionUpdate update) {
-    switch (update) {
-      case AgentMessageChunk(:final content):
-        print('[session/$sessionId] Agent: ${content['text']}');
-      default:
-        print('[session/$sessionId] ${update.runtimeType}');
+    if (update case AgentMessageChunk(:final content)) {
+      stdout.writeln('[session/$sessionId] ${content['text']}');
     }
   }
 }
 
 Future<void> main() async {
-  // Spawn the agent as a subprocess.
   final transport = await StdioProcessTransport.start(
-    'dart', ['run', 'example/basic_agent.dart'],
+    'dart',
+    ['run', 'example/basic_agent.dart'],
   );
 
   final client = ClientSideConnection(
     transport,
     handler: MyClientHandler(),
-    clientCapabilities: ClientCapabilities(
-      fs: FileSystemCapability(readTextFile: true),
+    clientCapabilities: const ClientCapabilities(
+      fs: FileSystemCapability(readTextFile: true, writeTextFile: true),
       terminal: true,
     ),
   );
 
-  // Handshake.
   await client.sendInitialize(protocolVersion: 1);
-
-  // Create a session and send a prompt.
-  final session = await client.sendNewSession(cwd: '/home/user');
+  final session = await client.sendNewSession(cwd: Directory.current.path);
   final response = await client.sendPrompt(
     sessionId: session.sessionId,
-    prompt: [TextContent(text: 'Hello, agent!')],
+    prompt: const [TextContent(text: 'Hello, agent!')],
   );
-  print('Stop reason: ${response.stopReason}');
 
+  stdout.writeln('Stop reason: ${response.stopReason}');
   await client.close();
 }
 ```
 
-### Transports
+## Example
 
-| Transport               | Use case                                              |
-| ----------------------- | ----------------------------------------------------- |
-| `StdioTransport`        | Agent-side: communicate over stdin/stdout via NDJSON  |
-| `StdioProcessTransport` | Client-side: spawn an agent subprocess                |
-| `HttpSseTransport`      | HTTP POST + Server-Sent Events                        |
-| `WebSocketTransport`    | WebSocket text frames                                 |
-| `ReconnectingTransport` | Auto-reconnect wrapper with exponential backoff       |
-| `AcpTransport`          | Interface for implementing custom transports          |
+Run the project assistant example for a fuller in-process scenario:
 
-### Key Concepts
-
-- **Connection state machine** — idle, opening, open, closing, closed — with `onStateChange` stream.
-- **Capability negotiation** — both sides advertise capabilities during `initialize`. Strict mode (default) rejects unsupported operations.
-- **Cancellation** — every handler method receives an `AcpCancellationToken` for cooperative cancellation.
-- **Extension methods** — send and receive custom `_`-prefixed methods via `extMethod()` / `onExtMethod()`.
-- **Session updates** — agents stream `SessionUpdate` notifications (message chunks, tool calls, plan updates) to clients.
-- **Connection keepalive** — periodic `$/ping` notifications with automatic `$/pong` responses detect dead connections. Configure via `keepaliveInterval` (ping frequency) and `keepaliveTimeout` (max wait for pong before closing):
-  ```dart
-  final conn = Connection(transport,
-    keepaliveInterval: Duration(seconds: 30),
-    keepaliveTimeout: Duration(seconds: 10),
-  );
-  ```
-- **Message batching** — `JsonRpcMessage.parseBatch()` handles both single JSON-RPC objects and batch arrays per the JSON-RPC 2.0 spec. `WebSocketTransport` uses this automatically:
-  ```dart
-  final messages = JsonRpcMessage.parseBatch(jsonDecode(rawData));
-  ```
-
-## Real-World Examples
-
-### Editor Integration
-
-A client that launches an ACP-compatible coding agent and pipes prompts from an editor:
-
-```dart
-final transport = await StdioProcessTransport.start(
-  'my-coding-agent', ['--stdio'],
-);
-
-final client = ClientSideConnection(
-  transport,
-  handler: EditorClientHandler(editorPane),
-  clientCapabilities: ClientCapabilities(
-    fs: FileSystemCapability(readTextFile: true, writeTextFile: true),
-    terminal: true,
-  ),
-);
-
-await client.sendInitialize(
-  protocolVersion: 1,
-  clientInfo: ImplementationInfo(name: 'my-editor', version: '1.0.0'),
-);
+```bash
+dart run example/project_assistant.dart
 ```
 
-### File Operations (Agent-to-Client)
+It demonstrates initialization with implementation metadata, client filesystem and terminal capabilities, stable `session/list`, `session/new`, `session/prompt`, permission requests, file reads, terminal execution, plan updates, available commands, session info updates, and streamed agent message chunks.
 
-Agents can request file access from the client:
+## Transports
 
-```dart
-// Inside an AgentHandler.prompt() implementation:
-final fileContent = await _conn.sendReadTextFile(
-  sessionId: request.sessionId,
-  path: '/workspace/lib/main.dart',
-);
+| Transport | Use case |
+| --- | --- |
+| `StdioTransport` | Agent-side NDJSON over stdin/stdout |
+| `StdioProcessTransport` | Client-side subprocess spawning |
+| `HttpSseTransport` | HTTP POST plus Server-Sent Events |
+| `StreamableHttpTransport` | Streamable HTTP transport |
+| `WebSocketTransport` | VM WebSocket text frames |
+| `BrowserWebSocketTransport` | Browser WebSocket text frames |
+| `ReconnectingTransport` | Reconnect wrapper for reconnectable transports |
+| `AcpTransport` | Interface for custom transports |
 
-await _conn.sendWriteTextFile(
-  sessionId: request.sessionId,
-  path: '/workspace/lib/main.dart',
-  content: modifiedContent,
-);
-```
+## Protocol Features
 
-### Terminal Management
-
-Agents can create and manage terminals on the client:
-
-```dart
-final terminal = await _conn.createTerminal(
-  sessionId: request.sessionId,
-  command: 'dart test',
-);
-
-// Stream output, wait for completion, then release.
-final output = await terminal.output();
-final exitCode = await terminal.waitForExit();
-await terminal.release();
-```
+- Typed models generated from the checked-in ACP v0.12.0 schema.
+- JSON-RPC 2.0 requests, responses, notifications, and batch parsing.
+- Stable `session/list` support guarded by `sessionCapabilities.list`.
+- Unstable `session/fork` gated by `useUnstableProtocol`.
+- Cooperative request cancellation via `$/cancel_request` and `AcpCancellationToken`.
+- Client-to-agent and agent-to-client extension methods with `_` prefixes.
+- Strict capability enforcement by default, with a permissive mode for integration work.
+- Unknown-field round trips through `extensionData` and `_meta`.
+- Unknown union fallback models for forward compatibility.
+- Terminal lifecycle helper through `TerminalHandle`.
 
 ## Development
 
-### Prerequisites
-
-- Dart SDK `^3.7.0`
-
-### Running Tests
-
 ```bash
-dart test                        # All tests
-dart test -t unit                # Unit tests only
-dart test -t integration         # Integration tests only
-dart test -t compliance          # Wire format compliance tests
+dart analyze
+dart test
+dart run example/project_assistant.dart
 ```
 
-### Code Generation
-
-`lib/src/schema/` is generated from the official ACP JSON Schema files checked in at `tool/upstream/schema/`. To update:
+Schema sync and generation:
 
 ```bash
-# Download latest upstream schema
 dart run tool/schema_sync/sync.dart
-
-# Regenerate Dart models
 dart run tool/generate/generate.dart
-
-# Verify
+dart format .
 dart analyze && dart test
 ```
 
-CI verifies codegen freshness — if someone updates the schema but forgets to regenerate, the build fails.
+The schema files live under `tool/upstream/schema/`. Official reference material fetched for the current review is stored under `docs/references/agent-client-protocol-v0.12.0/`.
 
-### Linting & Formatting
+## Project Structure
 
-```bash
-dart analyze                     # Static analysis
-dart format --set-exit-if-changed .  # Check formatting
-```
-
-### Project Structure
-
-```
+```text
 lib/
-  acp.dart              # Barrel export (everything)
-  agent.dart            # Agent-side: AgentHandler, AgentSideConnection
-  client.dart           # Client-side: ClientHandler, ClientSideConnection
-  schema.dart           # All typed request/response/notification models
-  transport.dart        # AcpTransport, StdioTransport, StdioProcessTransport
+  acp.dart
+  agent.dart
+  client.dart
+  schema.dart
+  transport.dart
   src/
-    protocol/           # Connection, state machine, JSON-RPC, dispatch
-    schema/             # Individual schema model files
-    transport/          # Transport implementations
+    protocol/
+    schema/
+    transport/
 test/
-  unit/                 # Unit tests
-  integration/          # Integration tests (subprocess transports)
-  compliance/           # Wire format compliance tests
-  golden/               # Serialization golden tests
-  fixtures/             # JSON fixtures for tests
-  helpers/              # Test utilities (mock/linked transports)
+  unit/
+  integration/
+  compliance/
+  golden/
+  helpers/
 example/
-  basic_agent.dart      # Minimal echo agent
-  basic_client.dart     # Minimal client demo
+  basic_agent.dart
+  basic_client.dart
+  project_assistant.dart
 tool/
-  generate/              # Schema → Dart code generator
-  schema_sync/           # Downloads upstream JSON Schema files
-  upstream/schema/       # Checked-in copies of official ACP schema
+  generate/
+  schema_sync/
+  upstream/schema/
+docs/references/
+  agent-client-protocol-v0.12.0/
 ```
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Ensure all tests pass (`dart test`)
-4. Ensure code passes analysis (`dart analyze`) and formatting (`dart format --set-exit-if-changed .`)
-5. Open a pull request
-
-## License
-
-[MIT](LICENSE)
