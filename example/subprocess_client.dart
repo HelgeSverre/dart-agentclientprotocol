@@ -8,7 +8,7 @@
 ///
 /// Concretely:
 ///
-/// 1. `StdioProcessTransport.start` launches `example/basic_agent.dart` as
+/// 1. `StdioProcessTransport.start` launches `example/main.dart` as
 ///    a child process and pipes its stdin/stdout.
 /// 2. `ClientSideConnection` wraps the transport and gives you typed
 ///    `sendInitialize`, `sendNewSession`, `sendPrompt` methods.
@@ -21,7 +21,7 @@
 /// dart run example/subprocess_client.dart
 /// ```
 ///
-/// `basic_agent.dart` is resolved relative to *this script's* location
+/// `main.dart` is resolved relative to *this script's* location
 /// (via `Platform.script`), so the example works regardless of the
 /// directory you run it from.
 ///
@@ -73,16 +73,14 @@ Future<void> main() async {
   stdout.writeln('[client] spawning agent subprocess…');
 
   // `Platform.resolvedExecutable` is the `dart` binary currently running.
-  // We launch a sibling `dart run example/basic_agent.dart` — the exact
+  // We launch a sibling `dart run example/main.dart` — the exact
   // same dance Zed does when it spawns Gemini CLI or Claude Agent, just
   // without needing a separately installed CLI.
   //
   // Resolve the agent script relative to *this file's* location so the
   // example works regardless of the caller's CWD.
   final agentScript =
-      Uri.file(
-        Platform.script.toFilePath(),
-      ).resolve('basic_agent.dart').toFilePath();
+      Uri.file(Platform.script.toFilePath()).resolve('main.dart').toFilePath();
   final transport = await StdioProcessTransport.start(
     Platform.resolvedExecutable,
     ['run', agentScript],

@@ -105,7 +105,7 @@ final class MyClientHandler extends ClientHandler {
 Future<void> main() async {
   final transport = await StdioProcessTransport.start(
     'dart',
-    ['run', 'example/basic_agent.dart'],
+    ['run', 'example/main.dart'],
   );
 
   final client = ClientSideConnection(
@@ -207,7 +207,7 @@ test/
   golden/
   helpers/
 example/
-  basic_agent.dart
+  main.dart
   basic_client.dart
   project_assistant.dart
 tool/

@@ -31,7 +31,7 @@ void main() {
       () async {
         final transport = await StdioProcessTransport.start(
           Platform.resolvedExecutable,
-          ['run', 'example/basic_agent.dart'],
+          ['run', 'example/main.dart'],
         );
         addTearDown(() => transport.close());
 
@@ -86,7 +86,7 @@ void main() {
     test('process cleanup: closing transport kills subprocess', () async {
       final transport = await StdioProcessTransport.start(
         Platform.resolvedExecutable,
-        ['run', 'example/basic_agent.dart'],
+        ['run', 'example/main.dart'],
       );
       addTearDown(() => transport.close());
 

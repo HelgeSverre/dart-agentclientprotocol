@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc.3] - 2026-04-20
+
+Pub package layout polish. No code changes; only file moves and publish
+metadata.
+
+### Changed
+
+- `SPEC.md` moved to `doc/spec.md` (root reserved for README/CHANGELOG/LICENSE).
+- `example/basic_agent.dart` renamed to `example/main.dart` so pub.dev's
+  Example tab links to a runnable file directly.
+- `.pubignore` now excludes all of `doc/` and `justfile` from the published
+  package — internal architecture/decision/protocol/spec docs and the dev
+  task runner are not useful to consumers; the homepage links to the
+  rendered versions.
+
+### Removed
+
+- 13 stale `.gitkeep` files across `example/`, `test/*/`, `tool/*/`,
+  `doc/*/` (those directories now have real content).
+
+### Tooling
+
+- `actions/checkout` bumped from v4 to v5 in CI workflows.
+
 ## [0.1.0-rc.2] - 2026-04-20
 
 Pre-release code review pass. Fixes two crashes in normal lifecycle code,

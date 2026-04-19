@@ -10,7 +10,7 @@
 /// Standalone (it will sit and wait for JSON-RPC messages on stdin):
 ///
 /// ```
-/// dart run example/basic_agent.dart
+/// dart run example/main.dart
 /// ```
 ///
 /// Normally you don't run an agent by hand. You run it through a *client*

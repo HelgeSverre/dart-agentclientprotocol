@@ -1,7 +1,7 @@
 /// The full ACP experience in one file: a project assistant agent paired
 /// with a client that behaves like a small code editor.
 ///
-/// If `basic_agent.dart` is ACP's "hello world" and `subprocess_client.dart`
+/// If `main.dart` is ACP's "hello world" and `subprocess_client.dart`
 /// shows the real spawning pattern, this file shows you *every* non-trivial
 /// flow you'd want in a coding assistant:
 ///

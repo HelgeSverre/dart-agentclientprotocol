@@ -61,17 +61,17 @@ automatically.
 
 | # | File | Teaches |
 |---|---|---|
-| 1 | [`basic_agent.dart`](./basic_agent.dart) | The three methods every agent must implement. |
+| 1 | [`main.dart`](./main.dart) | The three methods every agent must implement. |
 | 2 | [`subprocess_client.dart`](./subprocess_client.dart) | How a client spawns an agent process and drives a full session. Mirrors what Zed/JetBrains do. |
 | 3 | [`streaming_agent.dart`](./streaming_agent.dart) | How agents stream progressive output — thoughts, plans, message chunks. |
 | 4 | [`project_assistant.dart`](./project_assistant.dart) | Permissions, filesystem, terminal. The full coding-assistant shape. |
 
 ## The examples
 
-### 1. `basic_agent.dart` — the minimum viable agent
+### 1. `main.dart` — the minimum viable agent
 
 ```bash
-dart run example/basic_agent.dart
+dart run example/main.dart
 ```
 
 Running it standalone will look like it hangs — that's correct. It's waiting
@@ -95,7 +95,7 @@ request to its stdin.
 dart run example/subprocess_client.dart
 ```
 
-This example launches `basic_agent.dart` as a child process via
+This example launches `main.dart` as a child process via
 `StdioProcessTransport`, drives the canonical `initialize → new session →
 prompt → close` flow, and prints each step. **This is the exact pattern Zed
 uses to run Gemini CLI or Claude Agent**, and the pattern JetBrains IDEs use

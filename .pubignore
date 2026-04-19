@@ -16,8 +16,10 @@ doc/api/
 
 # Pub-specific exclusions — not needed at runtime by package consumers:
 
-# Upstream ACP spec reference copies (kept in repo for codegen review)
-doc/references/
+# All internal docs (architecture decisions, planning, ACP spec mirror,
+# upstream references). The package homepage and pub.dev README link out
+# to the published versions.
+doc/
 
 # Marketing website (deployed separately)
 website/
@@ -25,9 +27,9 @@ website/
 # Codegen tooling and the bundled upstream schemas it consumes
 tool/
 
-# Historical planning and milestone docs
-doc/plans/
-
 # Test suite — not needed by package consumers
 test/
 dart_test.yaml
+
+# Developer task runner — not useful to consumers
+justfile

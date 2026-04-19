@@ -38,7 +38,7 @@ sync-schema version="v0.12.0":
 dry-run:
     dart pub publish --dry-run
 
-# Runs every self-contained example. `basic_agent.dart` is excluded because
+# Runs every self-contained example. `main.dart` is excluded because
 # it's designed to be spawned by another process — `subprocess_client.dart`
 # launches and drives it, so it's exercised there.
 example:
