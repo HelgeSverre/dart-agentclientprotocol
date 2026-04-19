@@ -47,7 +47,7 @@ class _TestHandler extends AgentHandler {
     required AcpCancellationToken cancelToken,
   }) async {
     calls.add('prompt');
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 
   @override
@@ -68,7 +68,7 @@ class _CancelablePromptHandler extends _TestHandler {
     promptStarted.complete();
     await cancelToken.whenCanceled;
     promptCanceled.complete();
-    return PromptResponse(stopReason: StopReason.cancelled.value);
+    return const PromptResponse(stopReason: StopReason.cancelled);
   }
 }
 
@@ -293,7 +293,7 @@ void main() {
 
       await conn.notifySessionUpdate(
         's1',
-        const AgentMessageChunk(content: {'type': 'text', 'text': 'hello'}),
+        const AgentMessageChunk(content: TextContent(text: 'hello')),
       );
 
       expect(transport.sent, hasLength(1));

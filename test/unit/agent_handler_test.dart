@@ -23,7 +23,7 @@ class MinimalAgentHandler extends AgentHandler {
   Future<PromptResponse> prompt(
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async => const PromptResponse(stopReason: 'end_turn');
+  }) async => const PromptResponse(stopReason: StopReason.endTurn);
 }
 
 void main() {

@@ -56,5 +56,27 @@ void main() {
         expect(e.toString(), contains('the reason'));
       }
     });
+
+    test(
+      'cooperative cancellation: whenCanceled wins a race with work',
+      () async {
+        // Simulates a long-running handler racing its work against the
+        // cancel signal — the canonical cooperative-cancel pattern. If the
+        // handler returns the result of `Future.any([work, cancel])`, the
+        // cancellation should resolve the future as soon as `cancel()` is
+        // called, not wait for `work` to complete.
+        final source = AcpCancellationSource();
+        final work = Completer<String>();
+        final racer = Future.any<Object?>([
+          work.future,
+          source.token.whenCanceled,
+        ]);
+
+        source.cancel();
+        await racer;
+        expect(source.token.isCanceled, isTrue);
+        expect(work.isCompleted, isFalse);
+      },
+    );
   });
 }

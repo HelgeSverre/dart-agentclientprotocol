@@ -229,6 +229,17 @@ final class JsonRpcResponse extends JsonRpcMessage {
     }
 
     final id = json['id'];
+    // Per JSON-RPC 2.0 §5: a response MUST have a non-null `id`. The only
+    // exception is an error response generated when the request id couldn't
+    // be parsed (e.g. parse error / invalid request) — in that case `id`
+    // may be null. Reject success responses with null id so they don't
+    // silently never match a pending request.
+    if (id == null && hasResult) {
+      throw const FormatException(
+        'JSON-RPC success response must have a non-null "id"',
+      );
+    }
+
     final error = json['error'];
     return JsonRpcResponse(
       id: id,

@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         sdk: ['3.7.0', 'stable']
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +42,7 @@ jobs:
       - run: dart pub get
       - run: dart run tool/generate/generate.dart
       - run: dart format lib/src/schema/
+      - run: dart analyze lib/src/schema/
       - name: Check for uncommitted codegen changes
         run: |
           if ! git diff --exit-code lib/src/schema/; then

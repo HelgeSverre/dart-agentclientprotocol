@@ -17,10 +17,14 @@ final class BrowserWebSocketTransport implements AcpTransport {
   final web.WebSocket _socket;
   final StreamController<JsonRpcMessage> _controller =
       StreamController<JsonRpcMessage>();
+  StreamSubscription<web.MessageEvent>? _messageSub;
+  StreamSubscription<web.CloseEvent>? _closeSub;
+  StreamSubscription<web.Event>? _errorSub;
   bool _closed = false;
 
   BrowserWebSocketTransport._(this._socket) {
-    _socket.onMessage.listen((web.MessageEvent event) {
+    _messageSub = _socket.onMessage.listen((web.MessageEvent event) {
+      if (_closed) return;
       final data = event.data;
       if (data.isA<JSString>()) {
         try {
@@ -34,12 +38,12 @@ final class BrowserWebSocketTransport implements AcpTransport {
       }
     });
 
-    _socket.onClose.listen((web.CloseEvent event) {
+    _closeSub = _socket.onClose.listen((web.CloseEvent event) {
       _log.fine('WebSocket closed: ${event.code} ${event.reason}');
       if (!_closed) unawaited(close());
     });
 
-    _socket.onError.listen((web.Event event) {
+    _errorSub = _socket.onError.listen((web.Event event) {
       if (!_closed) {
         _log.severe('WebSocket error');
         _controller.addError(Exception('WebSocket error'));
@@ -89,8 +93,14 @@ final class BrowserWebSocketTransport implements AcpTransport {
   Future<void> close() async {
     if (_closed) return;
     _closed = true;
+    await _messageSub?.cancel();
+    await _closeSub?.cancel();
+    await _errorSub?.cancel();
+    _messageSub = null;
+    _closeSub = null;
+    _errorSub = null;
     _socket.close();
-    unawaited(_controller.close());
+    await _controller.close();
     _log.fine('Browser transport closed');
   }
 }

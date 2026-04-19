@@ -8,6 +8,7 @@ import 'package:acp/src/protocol/json_rpc_message.dart';
 import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/client_methods.dart';
 import 'package:acp/src/schema/content_block.dart';
+import 'package:acp/src/schema/session.dart';
 import 'package:acp/src/schema/session_update.dart';
 import 'package:test/test.dart';
 
@@ -218,7 +219,7 @@ void main() {
       );
 
       final response = await future;
-      expect(response.stopReason, 'end_turn');
+      expect(response.stopReason, StopReason.endTurn);
 
       await conn.close();
     });
@@ -311,7 +312,7 @@ void main() {
       );
 
       final response = await future;
-      expect(response.stopReason, 'end_turn');
+      expect(response.stopReason, StopReason.endTurn);
 
       await conn.close();
     });

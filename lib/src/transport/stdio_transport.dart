@@ -98,7 +98,14 @@ final class StdioTransport implements AcpTransport {
     }
     final line = jsonEncode(message.toJson());
     _output.writeln(line);
-    await _output.flush();
+    try {
+      await _output.flush();
+    } on Object {
+      // Pipe broken (peer closed stdin). Mark transport closed so subsequent
+      // sends fail fast instead of silently buffering into a dead sink.
+      unawaited(close());
+      rethrow;
+    }
   }
 
   @override

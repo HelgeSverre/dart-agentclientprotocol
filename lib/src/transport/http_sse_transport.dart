@@ -16,10 +16,16 @@ final _log = Logger('acp.transport.http_sse');
 ///
 /// This transport is only available on `dart:io` platforms.
 final class HttpSseTransport implements AcpTransport {
+  /// Default cap on the size of a single SSE event's `data:` payload. A
+  /// malicious or buggy server that streams `data:` lines without ever
+  /// terminating an event would otherwise OOM the process.
+  static const int defaultMaxMessageBytes = 16 * 1024 * 1024;
+
   final Uri _sseUri;
   final Uri _messageUri;
   final Map<String, String>? _headers;
   final HttpClient _httpClient;
+  final int _maxMessageBytes;
   final StreamController<JsonRpcMessage> _controller =
       StreamController<JsonRpcMessage>();
   final HttpClientResponse _sseResponse;
@@ -35,11 +41,13 @@ final class HttpSseTransport implements AcpTransport {
     required Map<String, String>? headers,
     required HttpClient httpClient,
     required HttpClientResponse sseResponse,
+    required int maxMessageBytes,
   }) : _sseUri = sseUri,
        _messageUri = messageUri,
        _headers = headers,
        _httpClient = httpClient,
-       _sseResponse = sseResponse;
+       _sseResponse = sseResponse,
+       _maxMessageBytes = maxMessageBytes;
 
   /// Connects to a remote ACP agent.
   ///
@@ -50,6 +58,7 @@ final class HttpSseTransport implements AcpTransport {
     Uri sseUri,
     Uri messageUri, {
     Map<String, String>? headers,
+    int maxMessageBytes = defaultMaxMessageBytes,
   }) async {
     final httpClient = HttpClient();
     final request = await httpClient.getUrl(sseUri);
@@ -78,6 +87,7 @@ final class HttpSseTransport implements AcpTransport {
       headers: headers,
       httpClient: httpClient,
       sseResponse: response,
+      maxMessageBytes: maxMessageBytes,
     );
     transport._startListening();
     return transport;
@@ -138,6 +148,14 @@ final class HttpSseTransport implements AcpTransport {
 
     switch (field) {
       case 'data':
+        if (_dataBuffer.length + value.length + 1 > _maxMessageBytes) {
+          _log.warning(
+            'SSE event exceeds ${_maxMessageBytes}B size limit; dropping',
+          );
+          _dataBuffer.clear();
+          _eventId = null;
+          return;
+        }
         if (_dataBuffer.isNotEmpty) {
           _dataBuffer.write('\n');
         }

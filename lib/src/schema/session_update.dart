@@ -3,6 +3,7 @@
 // Source: tool/upstream/schema/schema.json
 // Run `dart run tool/generate/generate.dart` to regenerate.
 
+import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
 
 /// Different types of updates that can be sent during session processing.
@@ -49,7 +50,7 @@ sealed class SessionUpdate implements HasMeta {
 /// A chunk of the user's message being streamed.
 final class UserMessageChunk extends SessionUpdate {
   /// A single item of content
-  final Map<String, dynamic> content;
+  final ContentBlock content;
 
   @override
   final Map<String, Object?>? meta;
@@ -71,7 +72,7 @@ final class UserMessageChunk extends SessionUpdate {
       json.entries.where((e) => !known.contains(e.key)),
     );
     return UserMessageChunk(
-      content: json['content'] as Map<String, dynamic>,
+      content: ContentBlock.fromJson(json['content'] as Map<String, dynamic>),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -80,7 +81,7 @@ final class UserMessageChunk extends SessionUpdate {
   @override
   Map<String, dynamic> toJson() => {
     'sessionUpdate': 'user_message_chunk',
-    'content': content,
+    'content': content.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
@@ -89,7 +90,7 @@ final class UserMessageChunk extends SessionUpdate {
 /// A chunk of the agent's response being streamed.
 final class AgentMessageChunk extends SessionUpdate {
   /// A single item of content
-  final Map<String, dynamic> content;
+  final ContentBlock content;
 
   @override
   final Map<String, Object?>? meta;
@@ -111,7 +112,7 @@ final class AgentMessageChunk extends SessionUpdate {
       json.entries.where((e) => !known.contains(e.key)),
     );
     return AgentMessageChunk(
-      content: json['content'] as Map<String, dynamic>,
+      content: ContentBlock.fromJson(json['content'] as Map<String, dynamic>),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -120,7 +121,7 @@ final class AgentMessageChunk extends SessionUpdate {
   @override
   Map<String, dynamic> toJson() => {
     'sessionUpdate': 'agent_message_chunk',
-    'content': content,
+    'content': content.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
@@ -129,7 +130,7 @@ final class AgentMessageChunk extends SessionUpdate {
 /// A chunk of the agent's internal reasoning being streamed.
 final class AgentThoughtChunk extends SessionUpdate {
   /// A single item of content
-  final Map<String, dynamic> content;
+  final ContentBlock content;
 
   @override
   final Map<String, Object?>? meta;
@@ -151,7 +152,7 @@ final class AgentThoughtChunk extends SessionUpdate {
       json.entries.where((e) => !known.contains(e.key)),
     );
     return AgentThoughtChunk(
-      content: json['content'] as Map<String, dynamic>,
+      content: ContentBlock.fromJson(json['content'] as Map<String, dynamic>),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -160,7 +161,7 @@ final class AgentThoughtChunk extends SessionUpdate {
   @override
   Map<String, dynamic> toJson() => {
     'sessionUpdate': 'agent_thought_chunk',
-    'content': content,
+    'content': content.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

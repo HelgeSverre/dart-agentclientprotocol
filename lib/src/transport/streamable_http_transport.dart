@@ -18,13 +18,24 @@ final _log = Logger('acp.transport.streamable_http');
 ///
 /// This transport is only available on `dart:io` platforms.
 final class StreamableHttpTransport implements AcpTransport {
+  /// Default cap on the size of a single SSE event's accumulated `data:`
+  /// payload. A malicious or buggy server that streams `data:` lines
+  /// without ever terminating an event would otherwise OOM the process.
+  static const int defaultMaxMessageBytes = 16 * 1024 * 1024;
+
   final Uri _endpoint;
   final Map<String, String>? _headers;
   final HttpClient _httpClient;
+  final int _maxMessageBytes;
   final StreamController<JsonRpcMessage> _controller =
       StreamController<JsonRpcMessage>();
   bool _closed = false;
   String? _sessionId;
+
+  // Serialize concurrent send() calls so two requests can't race on the
+  // session-id write — the second otherwise goes out before the first
+  // sets `_sessionId`, and the server can fork the session.
+  Future<void> _sendChain = Future<void>.value();
 
   // Optional GET SSE stream for server-initiated messages.
   StreamSubscription<String>? _sseSubscription;
@@ -35,12 +46,17 @@ final class StreamableHttpTransport implements AcpTransport {
   /// Creates a Streamable HTTP transport to [endpoint].
   ///
   /// [headers] are optional additional HTTP headers (e.g. for auth).
+  ///
+  /// [maxMessageBytes] caps the in-memory size of a single SSE event's
+  /// `data:` payload (default: 16 MB). Exceeding this aborts the event.
   StreamableHttpTransport(
     this._endpoint, {
     Map<String, String>? headers,
     HttpClient? httpClient,
+    int maxMessageBytes = defaultMaxMessageBytes,
   }) : _headers = headers,
-       _httpClient = httpClient ?? HttpClient();
+       _httpClient = httpClient ?? HttpClient(),
+       _maxMessageBytes = maxMessageBytes;
 
   /// The session ID assigned by the server, if any.
   String? get sessionId => _sessionId;
@@ -49,7 +65,18 @@ final class StreamableHttpTransport implements AcpTransport {
   Stream<JsonRpcMessage> get messages => _controller.stream;
 
   @override
-  Future<void> send(JsonRpcMessage message) async {
+  Future<void> send(JsonRpcMessage message) {
+    if (_closed) throw StateError('Cannot send on a closed transport');
+    // Chain onto the previous send so concurrent calls execute serially
+    // and observe the server-assigned session id in arrival order.
+    final previous = _sendChain;
+    final next = previous.then((_) => _doSend(message));
+    // Ensure a failure in one send doesn't break the chain for later sends.
+    _sendChain = next.catchError((_) {});
+    return next;
+  }
+
+  Future<void> _doSend(JsonRpcMessage message) async {
     if (_closed) throw StateError('Cannot send on a closed transport');
 
     final body = jsonEncode(message.toJson());
@@ -224,6 +251,15 @@ final class StreamableHttpTransport implements AcpTransport {
 
       switch (field) {
         case 'data':
+          if (dataBuffer.length + value.length + 1 > _maxMessageBytes) {
+            dataBuffer.clear();
+            _controller.addError(
+              FormatException(
+                'SSE event exceeds ${_maxMessageBytes}B size limit; dropping',
+              ),
+            );
+            continue;
+          }
           if (dataBuffer.isNotEmpty) dataBuffer.write('\n');
           dataBuffer.write(value);
         case 'id':
@@ -277,6 +313,16 @@ final class StreamableHttpTransport implements AcpTransport {
 
             switch (field) {
               case 'data':
+                if (dataBuffer.length + value.length + 1 > _maxMessageBytes) {
+                  dataBuffer.clear();
+                  _controller.addError(
+                    FormatException(
+                      'SSE event exceeds ${_maxMessageBytes}B size limit; '
+                      'dropping',
+                    ),
+                  );
+                  return;
+                }
                 if (dataBuffer.isNotEmpty) dataBuffer.write('\n');
                 dataBuffer.write(value);
               case 'id':

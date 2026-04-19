@@ -27,3 +27,7 @@ tool/
 
 # Historical planning and milestone docs
 doc/plans/
+
+# Test suite — not needed by package consumers
+test/
+dart_test.yaml

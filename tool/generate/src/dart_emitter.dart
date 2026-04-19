@@ -83,17 +83,28 @@ String emitFile({
 
     if (i > 0) buf.writeln();
 
+    // Doc comment first, then `@experimental`, then the declaration.
+    // `dart doc` only attaches a `///` comment to the immediately following
+    // declaration — putting the annotation in between drops the doc.
+    final desc = switch (typeDef) {
+      StructType() => typeDef.description,
+      SealedType() => typeDef.description,
+      EnumType() => typeDef.description,
+    };
+    if (desc != null) {
+      _emitDocComment(buf, desc, '');
+    }
     if (config.experimental) {
       buf.writeln('@experimental');
     }
 
     switch (typeDef) {
       case StructType():
-        _emitStruct(buf, typeDef);
+        _emitStruct(buf, typeDef, emitDoc: false);
       case SealedType():
-        _emitSealed(buf, typeDef, config.experimental);
+        _emitSealed(buf, typeDef, config.experimental, emitDoc: false);
       case EnumType():
-        _emitEnum(buf, typeDef);
+        _emitEnum(buf, typeDef, emitDoc: false);
     }
   }
 
@@ -104,9 +115,9 @@ String emitFile({
 // Struct emission
 // ---------------------------------------------------------------------------
 
-void _emitStruct(StringBuffer buf, StructType type) {
-  // Doc comment.
-  if (type.description != null) {
+void _emitStruct(StringBuffer buf, StructType type, {bool emitDoc = true}) {
+  // Doc comment (skipped when caller already emitted it before annotations).
+  if (emitDoc && type.description != null) {
     _emitDocComment(buf, type.description!, '');
   }
 
@@ -191,8 +202,13 @@ void _emitStruct(StringBuffer buf, StructType type) {
 // Sealed type emission
 // ---------------------------------------------------------------------------
 
-void _emitSealed(StringBuffer buf, SealedType type, bool experimental) {
-  if (type.description != null) {
+void _emitSealed(
+  StringBuffer buf,
+  SealedType type,
+  bool experimental, {
+  bool emitDoc = true,
+}) {
+  if (emitDoc && type.description != null) {
     _emitDocComment(buf, type.description!, '');
   }
 
@@ -252,11 +268,14 @@ void _emitSealed(StringBuffer buf, SealedType type, bool experimental) {
   buf.writeln('  Map<String, dynamic> toJson();');
   buf.writeln('}');
 
-  // Emit variant classes.
+  // Emit variant classes. Doc comment first, then @experimental, then class.
   for (final variant in type.variants) {
     buf.writeln();
+    if (variant.description != null) {
+      _emitDocComment(buf, variant.description!, '');
+    }
     if (experimental) buf.writeln('@experimental');
-    _emitSealedVariant(buf, type, variant);
+    _emitSealedVariant(buf, type, variant, emitDoc: false);
   }
 
   // Emit Unknown fallback.
@@ -268,9 +287,10 @@ void _emitSealed(StringBuffer buf, SealedType type, bool experimental) {
 void _emitSealedVariant(
   StringBuffer buf,
   SealedType parent,
-  SealedVariant variant,
-) {
-  if (variant.description != null) {
+  SealedVariant variant, {
+  bool emitDoc = true,
+}) {
+  if (emitDoc && variant.description != null) {
     _emitDocComment(buf, variant.description!, '');
   }
 
@@ -413,8 +433,8 @@ void _emitUnknownVariant(StringBuffer buf, SealedType type) {
 // Enum emission
 // ---------------------------------------------------------------------------
 
-void _emitEnum(StringBuffer buf, EnumType type) {
-  if (type.description != null) {
+void _emitEnum(StringBuffer buf, EnumType type, {bool emitDoc = true}) {
+  if (emitDoc && type.description != null) {
     _emitDocComment(buf, type.description!, '');
   }
 
@@ -507,21 +527,20 @@ String _fromJsonExpr(FieldDef field) {
 }
 
 String _fromJsonForType(FieldType type, String accessor, FieldDef field) {
-  // Handle nullable wrapping.
-  if (type is NullableFieldType) {
-    return _fromJsonForType(type.inner, accessor, field);
-  }
+  // A required-but-nullable field (anyOf [..., null] in a `required` list)
+  // must be deserialised as nullable too — independent of `field.isRequired`.
+  final isExplicitlyNullable = type is NullableFieldType;
+  final inner = type is NullableFieldType ? type.inner : type;
+  // The field's deserialised value is nullable when either the schema
+  // marks it nullable, or the field is optional with no default.
+  final isNullable =
+      isExplicitlyNullable || (!field.isRequired && field.defaultValue == null);
 
-  switch (type) {
+  switch (inner) {
     case StringFieldType():
-      if (!field.isRequired && field.defaultValue == null) {
-        return '$accessor as String?';
-      }
-      return '$accessor as String';
+      return isNullable ? '$accessor as String?' : '$accessor as String';
     case IntFieldType():
-      if (!field.isRequired && field.defaultValue == null) {
-        return '$accessor as int?';
-      }
+      if (isNullable) return '$accessor as int?';
       if (field.defaultValue != null) {
         return '$accessor as int? ?? ${field.defaultValue}';
       }
@@ -530,27 +549,30 @@ String _fromJsonForType(FieldType type, String accessor, FieldDef field) {
       if (field.defaultValue != null) {
         return '$accessor as bool? ?? ${field.defaultValue}';
       }
-      if (!field.isRequired) return '$accessor as bool?';
-      return '$accessor as bool';
+      return isNullable ? '$accessor as bool?' : '$accessor as bool';
     case DoubleFieldType():
-      if (!field.isRequired && field.defaultValue == null) {
-        return '($accessor as num?)?.toDouble()';
-      }
+      if (isNullable) return '($accessor as num?)?.toDouble()';
       if (field.defaultValue != null) {
         return '($accessor as num?)?.toDouble() ?? ${field.defaultValue}';
       }
       return '($accessor as num).toDouble()';
     case ListFieldType():
-      return _fromJsonList(type, accessor, field);
+      return _fromJsonList(inner, accessor, field);
     case MapFieldType():
-      if (!field.isRequired && field.defaultValue == null) {
-        return '$accessor as Map<String, dynamic>?';
-      }
-      return '$accessor as Map<String, dynamic>';
+      return isNullable
+          ? '$accessor as Map<String, dynamic>?'
+          : '$accessor as Map<String, dynamic>';
     case RefFieldType():
-      return _fromJsonRef(type, accessor, field);
+      return _fromJsonRef(inner, accessor, field);
+    case EnumFieldType():
+      // Enums are always nullable: an unknown wire value (peer on a newer
+      // protocol version) decodes as `null` rather than throwing.
+      return '$accessor == null'
+          ' ? null'
+          ' : ${inner.dartClassName}.fromString($accessor as String)';
     case NullableFieldType():
-      return _fromJsonForType(type.inner, accessor, field);
+      // Already unwrapped above; unreachable.
+      return _fromJsonForType(inner.inner, accessor, field);
     case DynamicFieldType():
       return accessor;
   }
@@ -588,6 +610,18 @@ String _fromJsonList(ListFieldType type, String accessor, FieldDef field) {
       return '($accessor as List<dynamic>?)?.map($fromJson).toList() ?? const []';
     }
     return '($accessor as List<dynamic>).map($fromJson).toList()';
+  }
+
+  if (elem is EnumFieldType) {
+    // Element type is `EnumName?` so unknown values decode as null entries.
+    final parse = '(e) => ${elem.dartClassName}.fromString(e as String)';
+    if (isOptional) {
+      return '($accessor as List<dynamic>?)?.map($parse).toList()';
+    }
+    if (field.defaultValue == 'const []') {
+      return '($accessor as List<dynamic>?)?.map($parse).toList() ?? const []';
+    }
+    return '($accessor as List<dynamic>).map($parse).toList()';
   }
 
   // Fallback.
@@ -645,12 +679,21 @@ String _toJsonExpr(FieldDef field) {
         return '${field.dartName}!.toJson()';
       }
       return '${field.dartName}.toJson()';
+    case EnumFieldType():
+      // Enum fields are always nullable; extract the wire value with `?.value`.
+      // The enclosing `if (field != null)` guard on emit means `!.value` is
+      // safe — we only get here when the field is non-null.
+      return '${field.dartName}!.value';
     case ListFieldType():
       if (type.element is RefFieldType) {
         // For nullable/optional list fields, Dart can't promote public fields,
         // so we need the ! operator after the if-null guard.
         final accessor = isOptional ? '${field.dartName}!' : field.dartName;
         return '$accessor.map((e) => e.toJson()).toList()';
+      }
+      if (type.element is EnumFieldType) {
+        final accessor = isOptional ? '${field.dartName}!' : field.dartName;
+        return '$accessor.map((e) => e.value).toList()';
       }
       return field.dartName;
     default:

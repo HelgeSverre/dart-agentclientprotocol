@@ -21,8 +21,9 @@
 /// dart run example/subprocess_client.dart
 /// ```
 ///
-/// Make sure `example/basic_agent.dart` exists in the same folder — the
-/// client spawns it by relative path.
+/// `basic_agent.dart` is resolved relative to *this script's* location
+/// (via `Platform.script`), so the example works regardless of the
+/// directory you run it from.
 ///
 /// ## What you'll see
 ///
@@ -58,9 +59,9 @@ class PrintingClientHandler extends ClientHandler {
   @override
   void onSessionUpdate(String sessionId, SessionUpdate update) {
     switch (update) {
-      case AgentMessageChunk(:final content):
+      case AgentMessageChunk(content: final TextContent text):
         stdout.writeln(
-          '[client] <- session update (AgentMessageChunk): ${content['text']}',
+          '[client] <- session update (AgentMessageChunk): ${text.text}',
         );
       default:
         stdout.writeln('[client] <- session update (${update.runtimeType})');
@@ -75,9 +76,16 @@ Future<void> main() async {
   // We launch a sibling `dart run example/basic_agent.dart` — the exact
   // same dance Zed does when it spawns Gemini CLI or Claude Agent, just
   // without needing a separately installed CLI.
+  //
+  // Resolve the agent script relative to *this file's* location so the
+  // example works regardless of the caller's CWD.
+  final agentScript =
+      Uri.file(
+        Platform.script.toFilePath(),
+      ).resolve('basic_agent.dart').toFilePath();
   final transport = await StdioProcessTransport.start(
     Platform.resolvedExecutable,
-    const ['run', 'example/basic_agent.dart'],
+    ['run', agentScript],
   );
 
   final client = ClientSideConnection(
@@ -114,11 +122,9 @@ Future<void> main() async {
   stdout.writeln(
     '[client] prompt returned, stop reason: ${response.stopReason}',
   );
-
-  // Give any in-flight notifications a beat to arrive. In a long-running
-  // editor, updates stream as they happen — this delay is only here because
-  // our script exits immediately after.
-  await Future<void>.delayed(const Duration(milliseconds: 100));
+  // session/update notifications are guaranteed to be delivered before
+  // sendPrompt resolves — no `Future.delayed` is needed here. In a real
+  // editor, updates render as they arrive over the same stream.
 
   // 4. Close the client. `StdioProcessTransport` sends SIGTERM to the agent
   //    subprocess on close, waits briefly, and SIGKILLs if necessary.

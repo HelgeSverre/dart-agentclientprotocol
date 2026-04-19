@@ -92,12 +92,11 @@ class EchoAgentHandler extends AgentHandler {
     // fire repeatedly as tokens arrive from an LLM.
     await _connection.notifySessionUpdate(
       request.sessionId,
-      AgentMessageChunk(content: {'type': 'text', 'text': 'Echo: $promptText'}),
+      AgentMessageChunk(content: TextContent(text: 'Echo: $promptText')),
     );
 
-    // Signal that the turn is over. Common stop reasons: 'end_turn',
-    // 'max_tokens', 'tool_use_requested', 'cancelled'.
-    return const PromptResponse(stopReason: 'end_turn');
+    // Signal that the turn is over. See [StopReason] for the full list.
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 }
 

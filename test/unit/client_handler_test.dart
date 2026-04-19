@@ -2,6 +2,7 @@ import 'package:acp/src/protocol/cancellation.dart';
 import 'package:acp/src/protocol/client_handler.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/schema/client_methods.dart';
+import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/session_update.dart';
 import 'package:test/test.dart';
 
@@ -119,9 +120,7 @@ void main() {
 
   group('ClientHandler onSessionUpdate', () {
     test('records updates', () {
-      final update = AgentMessageChunk(
-        content: const {'type': 'text', 'text': 'hello'},
-      );
+      const update = AgentMessageChunk(content: TextContent(text: 'hello'));
       handler.onSessionUpdate('s1', update);
 
       expect(handler.updates, hasLength(1));

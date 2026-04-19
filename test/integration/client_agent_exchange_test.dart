@@ -53,11 +53,9 @@ class _StreamingAgentHandler extends AgentHandler {
     calls.add('prompt');
     await _conn.notifySessionUpdate(
       request.sessionId,
-      const AgentMessageChunk(
-        content: {'type': 'text', 'text': 'response text'},
-      ),
+      const AgentMessageChunk(content: TextContent(text: 'response text')),
     );
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 
   @override
@@ -94,11 +92,9 @@ class _FileReadingAgentHandler extends AgentHandler {
     );
     await _conn.notifySessionUpdate(
       request.sessionId,
-      AgentMessageChunk(
-        content: {'type': 'text', 'text': fileResponse.content},
-      ),
+      AgentMessageChunk(content: TextContent(text: fileResponse.content)),
     );
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 }
 
@@ -177,7 +173,7 @@ void main() {
           sessionId: 'sess-1',
           prompt: [const TextContent(text: 'Hello agent')],
         );
-        expect(promptResponse.stopReason, 'end_turn');
+        expect(promptResponse.stopReason, StopReason.endTurn);
 
         // Give notifications time to arrive.
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -243,14 +239,14 @@ void main() {
         sessionId: 'sess-1',
         prompt: [const TextContent(text: 'Read a file')],
       );
-      expect(promptResponse.stopReason, 'end_turn');
+      expect(promptResponse.stopReason, StopReason.endTurn);
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Verify the agent read the file and streamed the content back.
       expect(streamUpdates, hasLength(1));
       final chunk = streamUpdates.first.update as AgentMessageChunk;
-      expect(chunk.content['text'], 'Hello from /etc/hello.txt');
+      expect((chunk.content as TextContent).text, 'Hello from /etc/hello.txt');
 
       await updateSub.cancel();
       await clientConn.close();

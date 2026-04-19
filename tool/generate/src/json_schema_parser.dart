@@ -398,6 +398,8 @@ FieldType _resolveFieldType(
         nonNull.first as Map<String, dynamic>,
         allDefs,
       );
+      // EnumFieldType is already nullable; don't double-wrap.
+      if (inner.isNullable) return inner;
       return NullableFieldType(inner);
     }
     // Complex anyOf — use Map<String, dynamic>.
@@ -414,7 +416,8 @@ FieldType _resolveFieldType(
 
     if (nonNullTypes.length == 1) {
       final inner = _primitiveType(nonNullTypes.first, propDef, allDefs);
-      return isNullable ? NullableFieldType(inner) : inner;
+      if (!isNullable || inner.isNullable) return inner;
+      return NullableFieldType(inner);
     }
     return isNullable
         ? const NullableFieldType(MapFieldType())
@@ -474,15 +477,44 @@ FieldType _refToFieldType(String refName, Map<String, dynamic> allDefs) {
   if (refDef != null) {
     // Simple string enum via "enum" keyword (e.g. Role).
     if (refDef.containsKey('enum') && refDef['type'] == 'string') {
-      return const StringFieldType();
+      return EnumFieldType(_dartName(refName));
     }
 
-    // ErrorCode, anyOf with consts — use base type.
+    // String oneOf (enum modeled via oneOf with const strings, e.g. StopReason).
+    if (refDef.containsKey('oneOf') &&
+        !refDef.containsKey('properties') &&
+        !refDef.containsKey('discriminator')) {
+      final oneOf = refDef['oneOf'] as List<dynamic>;
+      if (_isStringEnum(oneOf)) {
+        return EnumFieldType(_dartName(refName));
+      }
+    }
+
+    // anyOf wrapper — typically a non-null variant + null, or a single-ref
+    // alias. Resolve to the wrapped type when possible; otherwise fall back
+    // to a map.
     if (!refDef.containsKey('properties') &&
         !refDef.containsKey('discriminator') &&
         refDef.containsKey('anyOf') &&
         !refDef.containsKey('oneOf')) {
-      // Complex union type — use Map.
+      final anyOf = refDef['anyOf'] as List<dynamic>;
+      final nonNull =
+          anyOf
+              .whereType<Map<String, dynamic>>()
+              .where((m) => m['type'] != 'null')
+              .toList();
+      if (nonNull.length == 1) {
+        final inner = nonNull.first;
+        // allOf-wrapped single $ref → follow the ref.
+        final innerRef = _findRef(inner);
+        if (innerRef != null) {
+          return _refToFieldType(innerRef, allDefs);
+        }
+        // Direct $ref already covered above; primitive types fall through.
+        if (inner['type'] is String) {
+          return _primitiveType(inner['type'] as String, inner, allDefs);
+        }
+      }
       return const MapFieldType();
     }
   }
@@ -501,7 +533,25 @@ String? _resolveDefault(
   if (defaultVal is bool) return defaultVal.toString();
   if (defaultVal is int) return defaultVal.toString();
   if (defaultVal is double) return defaultVal.toString();
-  if (defaultVal is String) return "'$defaultVal'";
+  if (defaultVal is String) {
+    // For enum-typed fields, look up the matching enum value so the
+    // default can be a const expression of the right type.
+    final inner = fieldType is NullableFieldType ? fieldType.inner : fieldType;
+    if (inner is EnumFieldType) {
+      final ref = _findRef(propDef);
+      if (ref != null) {
+        final refDef = allDefs[ref] as Map<String, dynamic>?;
+        if (refDef != null) {
+          final values = _enumWireValues(refDef);
+          if (values.contains(defaultVal)) {
+            return '${inner.dartClassName}.${_snakeToCamel(defaultVal)}';
+          }
+        }
+      }
+      return null;
+    }
+    return "'$defaultVal'";
+  }
 
   if (defaultVal is List && defaultVal.isEmpty) return 'const []';
   if (defaultVal is Map) {
@@ -515,6 +565,22 @@ String? _resolveDefault(
   }
 
   return null;
+}
+
+List<String> _enumWireValues(Map<String, dynamic> def) {
+  if (def['enum'] is List) {
+    return (def['enum'] as List).map((v) => v.toString()).toList();
+  }
+  if (def['oneOf'] is List) {
+    final result = <String>[];
+    for (final item in def['oneOf'] as List) {
+      if (item is Map<String, dynamic> && item['const'] is String) {
+        result.add(item['const'] as String);
+      }
+    }
+    return result;
+  }
+  return const [];
 }
 
 String? _findRef(Map<String, dynamic> propDef) {
@@ -533,15 +599,64 @@ String? _findRef(Map<String, dynamic> propDef) {
   return null;
 }
 
+/// Strict Dart reserved words that cannot appear as plain field names.
+/// Built-in identifiers (e.g. `required`, `dynamic`, `set`) are intentionally
+/// excluded — Dart permits them as field/parameter names.
+///
+/// Schema property names that collide with one of these are suffixed with
+/// `Value`, matching the existing convention for `const` → `constValue`,
+/// `default` → `defaultValue`, `enum` → `enumValues`.
+const _dartReserved = <String>{
+  'assert',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'default',
+  'do',
+  'else',
+  'enum',
+  'extends',
+  'false',
+  'final',
+  'finally',
+  'for',
+  'if',
+  'in',
+  'is',
+  'new',
+  'null',
+  'rethrow',
+  'return',
+  'super',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'var',
+  'void',
+  'while',
+  'with',
+};
+
 /// Converts a JSON key like "sessionId" to a Dart field name.
 /// Most keys are already camelCase, but some edge cases exist.
 String _jsonKeyToDartName(String key) {
-  return switch (key) {
-    'const' => 'constValue',
-    'default' => 'defaultValue',
-    'enum' => 'enumValues',
-    _ => key,
-  };
+  // Preserve the historical names for the three keys that already had
+  // explicit handling — generated code already references them.
+  switch (key) {
+    case 'const':
+      return 'constValue';
+    case 'default':
+      return 'defaultValue';
+    case 'enum':
+      return 'enumValues';
+  }
+  if (_dartReserved.contains(key)) return '${key}Value';
+  return key;
 }
 
 /// Replaces [RefFieldType] references to types not in [availableTypes] with
@@ -625,19 +740,26 @@ FieldType _resolveFieldTypeRef(
 ) {
   switch (type) {
     case RefFieldType():
-      // Enum types → use String (matching hand-written code pattern).
+      // Enum types → use the typed enum (always nullable for forward-compat).
       if (enums.contains(type.dartClassName)) {
-        return const StringFieldType();
+        return EnumFieldType(type.dartClassName);
       }
       // Types not available in this file → use Map<String, dynamic>.
       if (!available.contains(type.dartClassName)) {
         return const MapFieldType();
       }
       return type;
+    case EnumFieldType():
+      // Enum refs to types not available in the file fall back to String —
+      // the consumer can re-parse with `EnumName.fromString(...)`.
+      if (!available.contains(type.dartClassName)) {
+        return const StringFieldType();
+      }
+      return type;
     case NullableFieldType():
-      return NullableFieldType(
-        _resolveFieldTypeRef(type.inner, available, enums),
-      );
+      final inner = _resolveFieldTypeRef(type.inner, available, enums);
+      if (inner.isNullable) return inner;
+      return NullableFieldType(inner);
     case ListFieldType():
       return ListFieldType(
         _resolveFieldTypeRef(type.element, available, enums),

@@ -8,6 +8,10 @@ dev: format analyze test example
 
 build: deps generate format-check analyze test example
 
+# Verifies the package as it would be uploaded to pub.dev. Run before
+# tagging a release; expects a clean git state.
+release-check: build dry-run
+
 deps:
     dart pub get
 
@@ -25,10 +29,14 @@ test:
 
 generate:
     dart run tool/generate/generate.dart
+    dart format lib/src/schema/
 
 sync-schema version="v0.12.0":
     dart run -DACP_SCHEMA_VERSION={{version}} tool/schema_sync/sync.dart
     dart run tool/generate/generate.dart
+
+dry-run:
+    dart pub publish --dry-run
 
 # Runs every self-contained example. `basic_agent.dart` is excluded because
 # it's designed to be spawned by another process — `subprocess_client.dart`

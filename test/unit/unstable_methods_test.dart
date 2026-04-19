@@ -39,7 +39,7 @@ class _TestAgentHandler extends AgentHandler with UnstableAgentHandler {
   Future<PromptResponse> prompt(
     PromptRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async => const PromptResponse(stopReason: 'end_turn');
+  }) async => const PromptResponse(stopReason: StopReason.endTurn);
 
   @override
   Future<ListSessionsResponse> listSessions(

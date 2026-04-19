@@ -65,7 +65,11 @@ List<FileConfig> _fileConfigs(
         'AuthenticateRequest',
         'AuthenticateResponse',
       ],
-      imports: ['capabilities.dart', 'implementation_info.dart'],
+      imports: [
+        'auth_method.dart',
+        'capabilities.dart',
+        'implementation_info.dart',
+      ],
     ),
     FileConfig(
       fileName: 'session.dart',
@@ -87,9 +91,13 @@ List<FileConfig> _fileConfigs(
         'ListSessionsRequest',
         'ListSessionsResponse',
       ],
+      imports: ['content_block.dart', 'session_update.dart'],
+    ),
+    FileConfig(
+      fileName: 'session_update.dart',
+      typeNames: ['SessionUpdate'],
       imports: ['content_block.dart'],
     ),
-    FileConfig(fileName: 'session_update.dart', typeNames: ['SessionUpdate']),
     FileConfig(
       fileName: 'client_methods.dart',
       typeNames: [
@@ -128,9 +136,10 @@ List<FileConfig> _fileConfigs(
     FileConfig(
       fileName: 'unstable_methods.dart',
       typeNames:
-          unstable.types.keys
-              .where((name) => !stable.types.containsKey(name))
-              .toList(),
+          (unstable.types.keys
+                .where((name) => !stable.types.containsKey(name))
+                .toList())
+            ..sort(),
       experimental: true,
       sectionComments: [
         SectionComment(
@@ -194,6 +203,7 @@ void main() {
   }
 
   var filesWritten = 0;
+  var hadMissingTypes = false;
   for (final config in configs) {
     final source = config.experimental ? unstable : stable;
     final schemaPath =
@@ -221,9 +231,8 @@ void main() {
       }
     }
     if (missingTypes.isNotEmpty) {
-      stderr.writeln(
-        'WARNING: ${config.fileName}: missing types: $missingTypes',
-      );
+      stderr.writeln('ERROR: ${config.fileName}: missing types: $missingTypes');
+      hadMissingTypes = true;
     }
 
     final output = emitFile(
@@ -244,4 +253,11 @@ void main() {
   stdout.writeln('  dart analyze');
   stdout.writeln('  dart test');
   stdout.writeln('  git diff lib/src/schema/');
+
+  if (hadMissingTypes) {
+    stderr.writeln(
+      '\nFAILED: one or more configured types were absent from the schema.',
+    );
+    exit(1);
+  }
 }

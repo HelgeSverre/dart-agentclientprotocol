@@ -6,8 +6,8 @@
 import 'package:acp/src/schema/has_meta.dart';
 import 'package:meta/meta.dart';
 
-@experimental
 /// Notification sent when a suggestion is accepted.
+@experimental
 final class AcceptNesNotification implements HasMeta {
   /// The ID of the accepted suggestion.
   final String id;
@@ -52,12 +52,12 @@ final class AcceptNesNotification implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Authentication-related capabilities supported by the agent.
+@experimental
 final class AgentAuthCapabilities implements HasMeta {
   /// Whether the agent supports the logout method.
   ///
@@ -99,7 +99,6 @@ final class AgentAuthCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -109,6 +108,7 @@ final class AgentAuthCapabilities implements HasMeta {
 /// Advertised during initialization to inform the agent which authentication
 /// method types the client can handle. This governs opt-in types that require
 /// additional client-side support.
+@experimental
 final class AuthCapabilities implements HasMeta {
   /// Whether the client supports `terminal` authentication methods.
   ///
@@ -149,12 +149,12 @@ final class AuthCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Describes a single environment variable for an [`AuthMethodEnvVar`] authentication method.
+@experimental
 final class AuthEnvVar implements HasMeta {
   /// Human-readable label for this variable, displayed in client UI.
   final String? label;
@@ -216,7 +216,6 @@ final class AuthEnvVar implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -224,6 +223,7 @@ final class AuthEnvVar implements HasMeta {
 /// Environment variable authentication method.
 ///
 /// The user provides credentials that the client passes to the agent as environment variables.
+@experimental
 final class AuthMethodEnvVar implements HasMeta {
   /// Optional description providing more details about this authentication method.
   final String? description;
@@ -290,7 +290,6 @@ final class AuthMethodEnvVar implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -298,6 +297,7 @@ final class AuthMethodEnvVar implements HasMeta {
 /// Terminal-based authentication method.
 ///
 /// The client runs an interactive terminal for the user to authenticate via a TUI.
+@experimental
 final class AuthMethodTerminal implements HasMeta {
   /// Additional arguments to pass when running the agent binary for terminal auth.
   final List<String> args;
@@ -360,8 +360,8 @@ final class AuthMethodTerminal implements HasMeta {
   };
 }
 
-@experimental
 /// Schema for boolean properties in an elicitation form.
+@experimental
 final class BooleanPropertySchema {
   /// Default value.
   final bool? defaultValue;
@@ -406,7 +406,6 @@ final class BooleanPropertySchema {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -414,6 +413,7 @@ final class BooleanPropertySchema {
 /// Notification to cancel an ongoing request.
 ///
 /// See protocol docs: [Cancellation](https://agentclientprotocol.com/protocol/cancellation)
+@experimental
 final class CancelRequestNotification implements HasMeta {
   /// The ID of the request to cancel.
   final String requestId;
@@ -452,8 +452,8 @@ final class CancelRequestNotification implements HasMeta {
   };
 }
 
-@experimental
 /// NES capabilities advertised by the client during initialization.
+@experimental
 final class ClientNesCapabilities implements HasMeta {
   /// Whether the client supports the `jump` suggestion kind.
   final NesJumpCapabilities? jump;
@@ -520,11 +520,11 @@ final class ClientNesCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Request to close an NES session.
 ///
 /// The agent **must** cancel any ongoing work related to the NES session
 /// and then free up any resources associated with the session.
+@experimental
 final class CloseNesRequest implements HasMeta {
   /// The ID of the NES session to close.
   final String sessionId;
@@ -563,8 +563,8 @@ final class CloseNesRequest implements HasMeta {
   };
 }
 
-@experimental
 /// Response from closing an NES session.
+@experimental
 final class CloseNesResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -594,7 +594,6 @@ final class CloseNesResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -606,6 +605,7 @@ final class CloseNesResponse implements HasMeta {
 /// associated with the session.
 ///
 /// Only available if the Agent supports the `sessionCapabilities.close` capability.
+@experimental
 final class CloseSessionRequest implements HasMeta {
   /// The ID of the session to close.
   final String sessionId;
@@ -644,12 +644,12 @@ final class CloseSessionRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response from closing a session.
+@experimental
 final class CloseSessionResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -679,12 +679,12 @@ final class CloseSessionResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Notification sent by the agent when a URL-based elicitation is complete.
+@experimental
 final class CompleteElicitationNotification implements HasMeta {
   /// The ID of the elicitation that completed.
   final Map<String, dynamic> elicitationId;
@@ -723,12 +723,12 @@ final class CompleteElicitationNotification implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Cost information for a session.
+@experimental
 final class Cost {
   /// Total cumulative cost for session.
   final double amount;
@@ -769,7 +769,6 @@ final class Cost {
 
 // -- Elicitation (unstable) --
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -779,6 +778,7 @@ final class Cost {
 /// The agent sends this to the client to request information from the user,
 /// either via a form or by directing them to a URL.
 /// Elicitations are tied to a session (optionally a tool call) or a request.
+@experimental
 sealed class CreateElicitationRequest implements HasMeta {
   const CreateElicitationRequest();
 
@@ -805,8 +805,8 @@ sealed class CreateElicitationRequest implements HasMeta {
   Map<String, dynamic> toJson();
 }
 
-@experimental
 /// Form-based elicitation where the client renders a form from the provided schema.
+@experimental
 final class Form extends CreateElicitationRequest {
   /// A JSON Schema describing the form fields to present to the user.
   final ElicitationSchema requestedSchema;
@@ -844,8 +844,8 @@ final class Form extends CreateElicitationRequest {
   };
 }
 
-@experimental
 /// URL-based elicitation where the client directs the user to a URL.
+@experimental
 final class Url extends CreateElicitationRequest {
   /// The unique identifier for this elicitation.
   final Map<String, dynamic> elicitationId;
@@ -914,12 +914,12 @@ final class UnknownCreateElicitationRequest extends CreateElicitationRequest {
   Map<String, dynamic> toJson() => rawJson;
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response from the client to an elicitation request.
+@experimental
 sealed class CreateElicitationResponse implements HasMeta {
   const CreateElicitationResponse();
 
@@ -947,8 +947,8 @@ sealed class CreateElicitationResponse implements HasMeta {
   Map<String, dynamic> toJson();
 }
 
-@experimental
 /// The user accepted and provided content.
+@experimental
 final class Accept extends CreateElicitationResponse {
   /// The user-provided content, if any, as an object matching the requested schema.
   final Map<String, dynamic>? content;
@@ -984,8 +984,8 @@ final class Accept extends CreateElicitationResponse {
   };
 }
 
-@experimental
 /// The user declined the elicitation.
+@experimental
 final class Decline extends CreateElicitationResponse {
   /// The raw JSON payload.
   final Map<String, dynamic> rawJson;
@@ -1005,8 +1005,8 @@ final class Decline extends CreateElicitationResponse {
   Map<String, dynamic> toJson() => rawJson;
 }
 
-@experimental
 /// The elicitation was cancelled.
+@experimental
 final class Cancel extends CreateElicitationResponse {
   /// The raw JSON payload.
   final Map<String, dynamic> rawJson;
@@ -1049,8 +1049,8 @@ final class UnknownCreateElicitationResponse extends CreateElicitationResponse {
   Map<String, dynamic> toJson() => rawJson;
 }
 
-@experimental
 /// Notification sent when a file is edited.
+@experimental
 final class DidChangeDocumentNotification implements HasMeta {
   /// The content changes.
   final List<TextDocumentContentChangeEvent> contentChanges;
@@ -1115,8 +1115,8 @@ final class DidChangeDocumentNotification implements HasMeta {
   };
 }
 
-@experimental
 /// Notification sent when a file is closed.
+@experimental
 final class DidCloseDocumentNotification implements HasMeta {
   /// The session ID for this notification.
   final String sessionId;
@@ -1161,8 +1161,8 @@ final class DidCloseDocumentNotification implements HasMeta {
   };
 }
 
-@experimental
 /// Notification sent when a file becomes the active editor tab.
+@experimental
 final class DidFocusDocumentNotification implements HasMeta {
   /// The current cursor position.
   final Position position;
@@ -1236,8 +1236,8 @@ final class DidFocusDocumentNotification implements HasMeta {
 
 // -- Documents (unstable) --
 
-@experimental
 /// Notification sent when a file is opened in the editor.
+@experimental
 final class DidOpenDocumentNotification implements HasMeta {
   /// The language identifier of the document (e.g., "rust", "python").
   final String languageId;
@@ -1307,8 +1307,8 @@ final class DidOpenDocumentNotification implements HasMeta {
   };
 }
 
-@experimental
 /// Notification sent when a file is saved.
+@experimental
 final class DidSaveDocumentNotification implements HasMeta {
   /// The session ID for this notification.
   final String sessionId;
@@ -1353,12 +1353,12 @@ final class DidSaveDocumentNotification implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Request parameters for `providers/disable`.
+@experimental
 final class DisableProvidersRequest implements HasMeta {
   /// Provider id to disable.
   final String id;
@@ -1397,12 +1397,12 @@ final class DisableProvidersRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response to `providers/disable`.
+@experimental
 final class DisableProvidersResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -1432,12 +1432,12 @@ final class DisableProvidersResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// The user accepted the elicitation and provided content.
+@experimental
 final class ElicitationAcceptAction {
   /// The user-provided content, if any, as an object matching the requested schema.
   final Map<String, dynamic>? content;
@@ -1467,12 +1467,12 @@ final class ElicitationAcceptAction {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Elicitation capabilities supported by the client.
+@experimental
 final class ElicitationCapabilities implements HasMeta {
   /// Whether the client supports form-based elicitation.
   final ElicitationFormCapabilities? form;
@@ -1527,12 +1527,12 @@ final class ElicitationCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Form-based elicitation capabilities.
+@experimental
 final class ElicitationFormCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -1562,12 +1562,12 @@ final class ElicitationFormCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Form-based elicitation mode where the client renders a form from the provided schema.
+@experimental
 final class ElicitationFormMode {
   /// A JSON Schema describing the form fields to present to the user.
   final ElicitationSchema requestedSchema;
@@ -1602,12 +1602,12 @@ final class ElicitationFormMode {
   };
 }
 
-@experimental
 /// Property schema for elicitation form fields.
 ///
 /// Each variant corresponds to a JSON Schema `"type"` value.
 /// Single-select enums use the `String` variant with `enum` or `oneOf` set.
 /// Multi-select enums use the `Array` variant.
+@experimental
 sealed class ElicitationPropertySchema implements HasMeta {
   const ElicitationPropertySchema();
 
@@ -1637,8 +1637,8 @@ sealed class ElicitationPropertySchema implements HasMeta {
   Map<String, dynamic> toJson();
 }
 
-@experimental
 /// String property (or single-select enum when `enum`/`oneOf` is set).
+@experimental
 final class StringElicitationPropertySchema extends ElicitationPropertySchema {
   /// Default value.
   final String? defaultValue;
@@ -1650,7 +1650,7 @@ final class StringElicitationPropertySchema extends ElicitationPropertySchema {
   final List<String>? enumValues;
 
   /// String format.
-  final String? format;
+  final StringFormat? format;
 
   /// Maximum string length.
   final int? maxLength;
@@ -1710,7 +1710,10 @@ final class StringElicitationPropertySchema extends ElicitationPropertySchema {
       defaultValue: json['default'] as String?,
       description: json['description'] as String?,
       enumValues: (json['enum'] as List<dynamic>?)?.cast<String>(),
-      format: json['format'] as String?,
+      format:
+          json['format'] == null
+              ? null
+              : StringFormat.fromString(json['format'] as String),
       maxLength: json['maxLength'] as int?,
       minLength: json['minLength'] as int?,
       oneOf:
@@ -1730,7 +1733,7 @@ final class StringElicitationPropertySchema extends ElicitationPropertySchema {
     if (defaultValue != null) 'default': defaultValue,
     if (description != null) 'description': description,
     if (enumValues != null) 'enum': enumValues,
-    if (format != null) 'format': format,
+    if (format != null) 'format': format!.value,
     if (maxLength != null) 'maxLength': maxLength,
     if (minLength != null) 'minLength': minLength,
     if (oneOf != null) 'oneOf': oneOf!.map((e) => e.toJson()).toList(),
@@ -1741,8 +1744,8 @@ final class StringElicitationPropertySchema extends ElicitationPropertySchema {
   };
 }
 
-@experimental
 /// Number (floating-point) property.
+@experimental
 final class NumberElicitationPropertySchema extends ElicitationPropertySchema {
   /// Default value.
   final double? defaultValue;
@@ -1814,8 +1817,8 @@ final class NumberElicitationPropertySchema extends ElicitationPropertySchema {
   };
 }
 
-@experimental
 /// Integer property.
+@experimental
 final class IntegerElicitationPropertySchema extends ElicitationPropertySchema {
   /// Default value.
   final int? defaultValue;
@@ -1887,8 +1890,8 @@ final class IntegerElicitationPropertySchema extends ElicitationPropertySchema {
   };
 }
 
-@experimental
 /// Boolean property.
+@experimental
 final class BooleanElicitationPropertySchema extends ElicitationPropertySchema {
   /// Default value.
   final bool? defaultValue;
@@ -1940,8 +1943,8 @@ final class BooleanElicitationPropertySchema extends ElicitationPropertySchema {
   };
 }
 
-@experimental
 /// Multi-select array property.
+@experimental
 final class ArrayElicitationPropertySchema extends ElicitationPropertySchema {
   /// Default selected values.
   final List<String>? defaultValue;
@@ -2043,13 +2046,13 @@ final class UnknownElicitationPropertySchema extends ElicitationPropertySchema {
   Map<String, dynamic> toJson() => rawJson;
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Request-scoped elicitation, tied to a specific JSON-RPC request outside of a session
 /// (e.g., during auth/configuration phases before any session is started).
+@experimental
 final class ElicitationRequestScope {
   /// The request this elicitation is tied to.
   final String requestId;
@@ -2079,11 +2082,11 @@ final class ElicitationRequestScope {
   };
 }
 
-@experimental
 /// Type-safe elicitation schema for requesting structured user input.
 ///
 /// This represents a JSON Schema object with primitive-typed properties,
 /// as required by the elicitation specification.
+@experimental
 final class ElicitationSchema {
   /// Optional description of what this schema represents.
   final String? description;
@@ -2098,7 +2101,7 @@ final class ElicitationSchema {
   final String? title;
 
   /// Type discriminator. Always `"object"`.
-  final String type;
+  final ElicitationSchemaType? type;
 
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
@@ -2109,7 +2112,7 @@ final class ElicitationSchema {
     this.properties,
     this.required,
     this.title,
-    this.type = 'object',
+    this.type = ElicitationSchemaType.object,
     this.extensionData,
   });
 
@@ -2124,7 +2127,10 @@ final class ElicitationSchema {
       properties: json['properties'] as Map<String, dynamic>?,
       required: (json['required'] as List<dynamic>?)?.cast<String>(),
       title: json['title'] as String?,
-      type: json['type'] as String,
+      type:
+          json['type'] == null
+              ? null
+              : ElicitationSchemaType.fromString(json['type'] as String),
       extensionData: ext.isEmpty ? null : ext,
     );
   }
@@ -2135,13 +2141,13 @@ final class ElicitationSchema {
     if (properties != null) 'properties': properties,
     if (required != null) 'required': required,
     if (title != null) 'title': title,
-    'type': type,
+    if (type != null) 'type': type!.value,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-@experimental
 /// Type discriminator for elicitation schemas.
+@experimental
 enum ElicitationSchemaType {
   /// Object schema type.
   object('object');
@@ -2162,7 +2168,6 @@ enum ElicitationSchemaType {
   }
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -2172,6 +2177,7 @@ enum ElicitationSchemaType {
 /// When `tool_call_id` is set, the elicitation is tied to a specific tool call.
 /// This is useful when an agent receives an elicitation from an MCP server
 /// during a tool call and needs to redirect it to the user.
+@experimental
 final class ElicitationSessionScope {
   /// The session this elicitation is tied to.
   final String sessionId;
@@ -2210,8 +2216,8 @@ final class ElicitationSessionScope {
   };
 }
 
-@experimental
 /// Items definition for untitled multi-select enum properties.
+@experimental
 enum ElicitationStringType {
   /// String schema type.
   string('string');
@@ -2232,12 +2238,12 @@ enum ElicitationStringType {
   }
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// URL-based elicitation capabilities.
+@experimental
 final class ElicitationUrlCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -2267,12 +2273,12 @@ final class ElicitationUrlCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// URL-based elicitation mode where the client directs the user to a URL.
+@experimental
 final class ElicitationUrlMode {
   /// The unique identifier for this elicitation.
   final Map<String, dynamic> elicitationId;
@@ -2311,8 +2317,8 @@ final class ElicitationUrlMode {
   };
 }
 
-@experimental
 /// A titled enum option with a const value and human-readable title.
+@experimental
 final class EnumOption {
   /// The constant value for this option.
   final String constValue;
@@ -2353,7 +2359,6 @@ final class EnumOption {
 
 // -- Sessions (unstable) --
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -2364,6 +2369,7 @@ final class EnumOption {
 /// operations like generating summaries without affecting the original session's history.
 ///
 /// Only available if the Agent supports the `session.fork` capability.
+@experimental
 final class ForkSessionRequest implements HasMeta {
   /// **UNSTABLE**
   ///
@@ -2439,12 +2445,12 @@ final class ForkSessionRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response from forking an existing session.
+@experimental
 final class ForkSessionResponse implements HasMeta {
   /// Initial session configuration options if supported by the Agent.
   final List<Map<String, dynamic>>? configOptions;
@@ -2514,8 +2520,8 @@ final class ForkSessionResponse implements HasMeta {
   };
 }
 
-@experimental
 /// Schema for integer properties in an elicitation form.
+@experimental
 final class IntegerPropertySchema {
   /// Default value.
   final int? defaultValue;
@@ -2574,12 +2580,12 @@ final class IntegerPropertySchema {
 
 // -- Providers (unstable) --
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Request parameters for `providers/list`.
+@experimental
 final class ListProvidersRequest implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -2609,12 +2615,12 @@ final class ListProvidersRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response to `providers/list`.
+@experimental
 final class ListProvidersResponse implements HasMeta {
   /// Configurable providers with current routing info suitable for UI display.
   final List<ProviderInfo> providers;
@@ -2657,7 +2663,6 @@ final class ListProvidersResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -2665,6 +2670,7 @@ final class ListProvidersResponse implements HasMeta {
 /// Logout capabilities supported by the agent.
 ///
 /// By supplying `{}` it means that the agent supports the logout method.
+@experimental
 final class LogoutCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -2696,7 +2702,6 @@ final class LogoutCapabilities implements HasMeta {
 
 // -- Auth (unstable) --
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -2704,6 +2709,7 @@ final class LogoutCapabilities implements HasMeta {
 /// Request parameters for the logout method.
 ///
 /// Terminates the current authenticated session.
+@experimental
 final class LogoutRequest implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -2733,12 +2739,12 @@ final class LogoutRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response to the `logout` method.
+@experimental
 final class LogoutResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -2768,12 +2774,12 @@ final class LogoutResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Information about a selectable model.
+@experimental
 final class ModelInfo implements HasMeta {
   /// Optional description of the model.
   final String? description;
@@ -2824,8 +2830,8 @@ final class ModelInfo implements HasMeta {
   };
 }
 
-@experimental
 /// Schema for multi-select (array) properties in an elicitation form.
+@experimental
 final class MultiSelectPropertySchema {
   /// Default selected values.
   final List<String>? defaultValue;
@@ -2895,8 +2901,8 @@ final class MultiSelectPropertySchema {
   };
 }
 
-@experimental
 /// NES capabilities advertised by the agent during initialization.
+@experimental
 final class NesCapabilities implements HasMeta {
   /// Context the agent wants attached to each suggestion request.
   final NesContextCapabilities? context;
@@ -2951,8 +2957,8 @@ final class NesCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Context capabilities the agent wants attached to each suggestion request.
+@experimental
 final class NesContextCapabilities implements HasMeta {
   /// Whether the agent wants diagnostics context.
   final NesDiagnosticsCapabilities? diagnostics;
@@ -3059,8 +3065,8 @@ final class NesContextCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A diagnostic (error, warning, etc.).
+@experimental
 final class NesDiagnostic {
   /// The diagnostic message.
   final String message;
@@ -3069,7 +3075,7 @@ final class NesDiagnostic {
   final Range range;
 
   /// The severity of the diagnostic.
-  final String severity;
+  final NesDiagnosticSeverity? severity;
 
   /// The URI of the file containing the diagnostic.
   final String uri;
@@ -3095,7 +3101,10 @@ final class NesDiagnostic {
     return NesDiagnostic(
       message: json['message'] as String,
       range: Range.fromJson(json['range'] as Map<String, dynamic>),
-      severity: json['severity'] as String,
+      severity:
+          json['severity'] == null
+              ? null
+              : NesDiagnosticSeverity.fromString(json['severity'] as String),
       uri: json['uri'] as String,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -3105,14 +3114,14 @@ final class NesDiagnostic {
   Map<String, dynamic> toJson() => {
     'message': message,
     'range': range.toJson(),
-    'severity': severity,
+    if (severity != null) 'severity': severity!.value,
     'uri': uri,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-@experimental
 /// Severity of a diagnostic.
+@experimental
 enum NesDiagnosticSeverity {
   /// An error.
   error('error'),
@@ -3142,8 +3151,8 @@ enum NesDiagnosticSeverity {
   }
 }
 
-@experimental
 /// Capabilities for diagnostics context.
+@experimental
 final class NesDiagnosticsCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3173,11 +3182,11 @@ final class NesDiagnosticsCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Capabilities for `document/didChange` events.
+@experimental
 final class NesDocumentDidChangeCapabilities implements HasMeta {
   /// The sync kind the agent wants: `"full"` or `"incremental"`.
-  final String syncKind;
+  final TextDocumentSyncKind? syncKind;
 
   @override
   final Map<String, Object?>? meta;
@@ -3199,7 +3208,10 @@ final class NesDocumentDidChangeCapabilities implements HasMeta {
       json.entries.where((e) => !known.contains(e.key)),
     );
     return NesDocumentDidChangeCapabilities(
-      syncKind: json['syncKind'] as String,
+      syncKind:
+          json['syncKind'] == null
+              ? null
+              : TextDocumentSyncKind.fromString(json['syncKind'] as String),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -3207,14 +3219,14 @@ final class NesDocumentDidChangeCapabilities implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'syncKind': syncKind,
+    if (syncKind != null) 'syncKind': syncKind!.value,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-@experimental
 /// Marker for `document/didClose` capability support.
+@experimental
 final class NesDocumentDidCloseCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3244,8 +3256,8 @@ final class NesDocumentDidCloseCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Marker for `document/didFocus` capability support.
+@experimental
 final class NesDocumentDidFocusCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3275,8 +3287,8 @@ final class NesDocumentDidFocusCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Marker for `document/didOpen` capability support.
+@experimental
 final class NesDocumentDidOpenCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3306,8 +3318,8 @@ final class NesDocumentDidOpenCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Marker for `document/didSave` capability support.
+@experimental
 final class NesDocumentDidSaveCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3337,8 +3349,8 @@ final class NesDocumentDidSaveCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Document event capabilities the agent wants to receive.
+@experimental
 final class NesDocumentEventCapabilities implements HasMeta {
   /// Whether the agent wants `document/didChange` events, and the sync kind.
   final NesDocumentDidChangeCapabilities? didChange;
@@ -3433,8 +3445,8 @@ final class NesDocumentEventCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Capabilities for edit history context.
+@experimental
 final class NesEditHistoryCapabilities implements HasMeta {
   /// Maximum number of edit history entries the agent can use.
   final int? maxCount;
@@ -3473,8 +3485,8 @@ final class NesEditHistoryCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// An entry in the edit history.
+@experimental
 final class NesEditHistoryEntry {
   /// A diff representing the edit.
   final String diff;
@@ -3513,8 +3525,8 @@ final class NesEditHistoryEntry {
   };
 }
 
-@experimental
 /// A text edit suggestion.
+@experimental
 final class NesEditSuggestion {
   /// Optional suggested cursor position after applying edits.
   final Position? cursorPosition;
@@ -3574,8 +3586,8 @@ final class NesEditSuggestion {
   };
 }
 
-@experimental
 /// Event capabilities the agent can consume.
+@experimental
 final class NesEventCapabilities implements HasMeta {
   /// Document event capabilities.
   final NesDocumentEventCapabilities? document;
@@ -3615,8 +3627,8 @@ final class NesEventCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A code excerpt from a file.
+@experimental
 final class NesExcerpt {
   /// The end line of the excerpt (zero-based).
   final int endLine;
@@ -3661,8 +3673,8 @@ final class NesExcerpt {
   };
 }
 
-@experimental
 /// Marker for jump suggestion support.
+@experimental
 final class NesJumpCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3692,8 +3704,8 @@ final class NesJumpCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A jump-to-location suggestion.
+@experimental
 final class NesJumpSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -3738,8 +3750,8 @@ final class NesJumpSuggestion {
   };
 }
 
-@experimental
 /// An open file in the editor.
+@experimental
 final class NesOpenFile {
   /// The language identifier.
   final String languageId;
@@ -3793,8 +3805,8 @@ final class NesOpenFile {
   };
 }
 
-@experimental
 /// Capabilities for open files context.
+@experimental
 final class NesOpenFilesCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -3824,8 +3836,8 @@ final class NesOpenFilesCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A recently accessed file.
+@experimental
 final class NesRecentFile {
   /// The language identifier.
   final String languageId;
@@ -3870,8 +3882,8 @@ final class NesRecentFile {
   };
 }
 
-@experimental
 /// Capabilities for recent files context.
+@experimental
 final class NesRecentFilesCapabilities implements HasMeta {
   /// Maximum number of recent files the agent can use.
   final int? maxCount;
@@ -3910,8 +3922,8 @@ final class NesRecentFilesCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// The reason a suggestion was rejected.
+@experimental
 enum NesRejectReason {
   /// The user explicitly dismissed the suggestion.
   rejected('rejected'),
@@ -3941,8 +3953,8 @@ enum NesRejectReason {
   }
 }
 
-@experimental
 /// A related code snippet from a file.
+@experimental
 final class NesRelatedSnippet {
   /// The code excerpts.
   final List<NesExcerpt> excerpts;
@@ -3985,8 +3997,8 @@ final class NesRelatedSnippet {
   };
 }
 
-@experimental
 /// Capabilities for related snippets context.
+@experimental
 final class NesRelatedSnippetsCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -4016,8 +4028,8 @@ final class NesRelatedSnippetsCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Marker for rename suggestion support.
+@experimental
 final class NesRenameCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -4047,8 +4059,8 @@ final class NesRenameCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A rename symbol suggestion.
+@experimental
 final class NesRenameSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -4099,8 +4111,8 @@ final class NesRenameSuggestion {
   };
 }
 
-@experimental
 /// Repository metadata for an NES session.
+@experimental
 final class NesRepository {
   /// The repository name.
   final String name;
@@ -4145,8 +4157,8 @@ final class NesRepository {
   };
 }
 
-@experimental
 /// Marker for search and replace suggestion support.
+@experimental
 final class NesSearchAndReplaceCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -4176,8 +4188,8 @@ final class NesSearchAndReplaceCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A search-and-replace suggestion.
+@experimental
 final class NesSearchAndReplaceSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -4234,8 +4246,8 @@ final class NesSearchAndReplaceSuggestion {
   };
 }
 
-@experimental
 /// Context attached to a suggestion request.
+@experimental
 final class NesSuggestContext implements HasMeta {
   /// Current diagnostics (errors, warnings).
   final List<NesDiagnostic>? diagnostics;
@@ -4340,8 +4352,8 @@ final class NesSuggestContext implements HasMeta {
   };
 }
 
-@experimental
 /// A suggestion returned by the agent.
+@experimental
 sealed class NesSuggestion implements HasMeta {
   const NesSuggestion();
 
@@ -4370,8 +4382,8 @@ sealed class NesSuggestion implements HasMeta {
   Map<String, dynamic> toJson();
 }
 
-@experimental
 /// A text edit suggestion.
+@experimental
 final class Edit extends NesSuggestion {
   /// Optional suggested cursor position after applying edits.
   final Position? cursorPosition;
@@ -4437,8 +4449,8 @@ final class Edit extends NesSuggestion {
   };
 }
 
-@experimental
 /// A jump-to-location suggestion.
+@experimental
 final class Jump extends NesSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -4490,8 +4502,8 @@ final class Jump extends NesSuggestion {
   };
 }
 
-@experimental
 /// A rename symbol suggestion.
+@experimental
 final class Rename extends NesSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -4549,8 +4561,8 @@ final class Rename extends NesSuggestion {
   };
 }
 
-@experimental
 /// A search-and-replace suggestion.
+@experimental
 final class SearchAndReplace extends NesSuggestion {
   /// Unique identifier for accept/reject tracking.
   final String id;
@@ -4641,8 +4653,8 @@ final class UnknownNesSuggestion extends NesSuggestion {
   Map<String, dynamic> toJson() => rawJson;
 }
 
-@experimental
 /// A text edit within a suggestion.
+@experimental
 final class NesTextEdit {
   /// The replacement text.
   final String newText;
@@ -4681,8 +4693,8 @@ final class NesTextEdit {
   };
 }
 
-@experimental
 /// What triggered the suggestion request.
+@experimental
 enum NesTriggerKind {
   /// Triggered by user typing or cursor movement.
   automatic('automatic'),
@@ -4709,8 +4721,8 @@ enum NesTriggerKind {
   }
 }
 
-@experimental
 /// A user action (typing, cursor movement, etc.).
+@experimental
 final class NesUserAction {
   /// The kind of action (e.g., "insertChar", "cursorMovement").
   final String action;
@@ -4761,8 +4773,8 @@ final class NesUserAction {
   };
 }
 
-@experimental
 /// Capabilities for user actions context.
+@experimental
 final class NesUserActionsCapabilities implements HasMeta {
   /// Maximum number of user actions the agent can use.
   final int? maxCount;
@@ -4801,8 +4813,8 @@ final class NesUserActionsCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// Schema for number (floating-point) properties in an elicitation form.
+@experimental
 final class NumberPropertySchema {
   /// Default value.
   final double? defaultValue;
@@ -4859,10 +4871,10 @@ final class NumberPropertySchema {
   };
 }
 
-@experimental
 /// A zero-based position in a text document.
 ///
 /// The meaning of `character` depends on the negotiated position encoding.
+@experimental
 final class Position {
   /// Zero-based character offset (encoding-dependent).
   final int character;
@@ -4901,10 +4913,10 @@ final class Position {
   };
 }
 
-@experimental
 /// The encoding used for character offsets in positions.
 ///
 /// Follows the same conventions as LSP 3.17. The default is UTF-16.
+@experimental
 enum PositionEncodingKind {
   /// Character offsets count UTF-16 code units. This is the default.
   utf16('utf-16'),
@@ -4931,12 +4943,12 @@ enum PositionEncodingKind {
   }
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Current effective non-secret routing configuration for a provider.
+@experimental
 final class ProviderCurrentConfig {
   /// Protocol currently used by this provider.
   final Map<String, dynamic> apiType;
@@ -4975,12 +4987,12 @@ final class ProviderCurrentConfig {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Information about a configurable LLM provider.
+@experimental
 final class ProviderInfo implements HasMeta {
   /// Current effective non-secret routing config.
   /// Null means provider is disabled.
@@ -5043,7 +5055,6 @@ final class ProviderInfo implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5051,6 +5062,7 @@ final class ProviderInfo implements HasMeta {
 /// Provider configuration capabilities supported by the agent.
 ///
 /// By supplying `{}` it means that the agent supports provider configuration methods.
+@experimental
 final class ProvidersCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5080,8 +5092,8 @@ final class ProvidersCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// A range in a text document, expressed as start and end positions.
+@experimental
 final class Range {
   /// The end position (exclusive).
   final Position end;
@@ -5116,14 +5128,14 @@ final class Range {
   };
 }
 
-@experimental
 /// Notification sent when a suggestion is rejected.
+@experimental
 final class RejectNesNotification implements HasMeta {
   /// The ID of the rejected suggestion.
   final String id;
 
   /// The reason for rejection.
-  final String? reason;
+  final NesRejectReason? reason;
 
   /// The session ID for this notification.
   final String sessionId;
@@ -5151,7 +5163,10 @@ final class RejectNesNotification implements HasMeta {
     );
     return RejectNesNotification(
       id: json['id'] as String,
-      reason: json['reason'] as String?,
+      reason:
+          json['reason'] == null
+              ? null
+              : NesRejectReason.fromString(json['reason'] as String),
       sessionId: json['sessionId'] as String,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
@@ -5161,14 +5176,13 @@ final class RejectNesNotification implements HasMeta {
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
-    if (reason != null) 'reason': reason,
+    if (reason != null) 'reason': reason!.value,
     'sessionId': sessionId,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5179,6 +5193,7 @@ final class RejectNesNotification implements HasMeta {
 /// This is useful for agents that can resume sessions but don't implement full session loading.
 ///
 /// Only available if the Agent supports the `sessionCapabilities.resume` capability.
+@experimental
 final class ResumeSessionRequest implements HasMeta {
   /// **UNSTABLE**
   ///
@@ -5254,12 +5269,12 @@ final class ResumeSessionRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response from resuming an existing session.
+@experimental
 final class ResumeSessionResponse implements HasMeta {
   /// Initial session configuration options if supported by the Agent.
   final List<Map<String, dynamic>>? configOptions;
@@ -5323,7 +5338,6 @@ final class ResumeSessionResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5332,6 +5346,7 @@ final class ResumeSessionResponse implements HasMeta {
 ///
 /// By supplying `{}` it means that the agent supports the `additionalDirectories` field on
 /// supported session lifecycle requests and `session/list`.
+@experimental
 final class SessionAdditionalDirectoriesCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5366,7 +5381,6 @@ final class SessionAdditionalDirectoriesCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5374,6 +5388,7 @@ final class SessionAdditionalDirectoriesCapabilities implements HasMeta {
 /// Capabilities for the `session/close` method.
 ///
 /// By supplying `{}` it means that the agent supports closing of sessions.
+@experimental
 final class SessionCloseCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5403,12 +5418,12 @@ final class SessionCloseCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// A boolean on/off toggle session configuration option payload.
+@experimental
 final class SessionConfigBoolean {
   /// The current value of the boolean option.
   final bool currentValue;
@@ -5438,7 +5453,6 @@ final class SessionConfigBoolean {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5446,6 +5460,7 @@ final class SessionConfigBoolean {
 /// Capabilities for the `session/fork` method.
 ///
 /// By supplying `{}` it means that the agent supports forking of sessions.
+@experimental
 final class SessionForkCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5475,12 +5490,12 @@ final class SessionForkCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// The set of models and the one currently active.
+@experimental
 final class SessionModelState implements HasMeta {
   /// The set of models that the Agent can use
   final List<ModelInfo> availableModels;
@@ -5529,7 +5544,6 @@ final class SessionModelState implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5537,6 +5551,7 @@ final class SessionModelState implements HasMeta {
 /// Capabilities for the `session/resume` method.
 ///
 /// By supplying `{}` it means that the agent supports resuming of sessions.
+@experimental
 final class SessionResumeCapabilities implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5566,7 +5581,6 @@ final class SessionResumeCapabilities implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
@@ -5574,6 +5588,7 @@ final class SessionResumeCapabilities implements HasMeta {
 /// Request parameters for `providers/set`.
 ///
 /// Replaces the full configuration for one provider id.
+@experimental
 final class SetProvidersRequest implements HasMeta {
   /// Protocol type for this provider.
   final Map<String, dynamic> apiType;
@@ -5631,12 +5646,12 @@ final class SetProvidersRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response to `providers/set`.
+@experimental
 final class SetProvidersResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5666,12 +5681,12 @@ final class SetProvidersResponse implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Request parameters for setting a session model.
+@experimental
 final class SetSessionModelRequest implements HasMeta {
   /// The ID of the model to set.
   final Map<String, dynamic> modelId;
@@ -5716,12 +5731,12 @@ final class SetSessionModelRequest implements HasMeta {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Response to `session/set_model` method.
+@experimental
 final class SetSessionModelResponse implements HasMeta {
   @override
   final Map<String, Object?>? meta;
@@ -5753,8 +5768,8 @@ final class SetSessionModelResponse implements HasMeta {
 
 // -- Next Edit Suggestions (unstable) --
 
-@experimental
 /// Request to start an NES session.
+@experimental
 final class StartNesRequest implements HasMeta {
   /// Repository metadata, if the workspace is a git repository.
   final NesRepository? repository;
@@ -5814,8 +5829,8 @@ final class StartNesRequest implements HasMeta {
   };
 }
 
-@experimental
 /// Response to `nes/start`.
+@experimental
 final class StartNesResponse implements HasMeta {
   /// The session ID for the newly started NES session.
   final String sessionId;
@@ -5854,8 +5869,8 @@ final class StartNesResponse implements HasMeta {
   };
 }
 
-@experimental
 /// String format types for string properties in elicitation schemas.
+@experimental
 enum StringFormat {
   /// Email address format.
   email('email'),
@@ -5885,11 +5900,11 @@ enum StringFormat {
   }
 }
 
-@experimental
 /// Schema for string properties in an elicitation form.
 ///
 /// When `enum` or `oneOf` is set, this represents a single-select enum
 /// with `"type": "string"`.
+@experimental
 final class StringPropertySchema {
   /// Default value.
   final String? defaultValue;
@@ -5901,7 +5916,7 @@ final class StringPropertySchema {
   final List<String>? enumValues;
 
   /// String format.
-  final String? format;
+  final StringFormat? format;
 
   /// Maximum string length.
   final int? maxLength;
@@ -5955,7 +5970,10 @@ final class StringPropertySchema {
       defaultValue: json['default'] as String?,
       description: json['description'] as String?,
       enumValues: (json['enum'] as List<dynamic>?)?.cast<String>(),
-      format: json['format'] as String?,
+      format:
+          json['format'] == null
+              ? null
+              : StringFormat.fromString(json['format'] as String),
       maxLength: json['maxLength'] as int?,
       minLength: json['minLength'] as int?,
       oneOf:
@@ -5973,7 +5991,7 @@ final class StringPropertySchema {
     if (defaultValue != null) 'default': defaultValue,
     if (description != null) 'description': description,
     if (enumValues != null) 'enum': enumValues,
-    if (format != null) 'format': format,
+    if (format != null) 'format': format!.value,
     if (maxLength != null) 'maxLength': maxLength,
     if (minLength != null) 'minLength': minLength,
     if (oneOf != null) 'oneOf': oneOf!.map((e) => e.toJson()).toList(),
@@ -5983,8 +6001,8 @@ final class StringPropertySchema {
   };
 }
 
-@experimental
 /// Request for a code suggestion.
+@experimental
 final class SuggestNesRequest implements HasMeta {
   /// Context for the suggestion, included based on agent capabilities.
   final NesSuggestContext? context;
@@ -5999,7 +6017,7 @@ final class SuggestNesRequest implements HasMeta {
   final String sessionId;
 
   /// What triggered this suggestion request.
-  final String triggerKind;
+  final NesTriggerKind? triggerKind;
 
   /// The URI of the document to suggest for.
   final String uri;
@@ -6054,7 +6072,10 @@ final class SuggestNesRequest implements HasMeta {
               ? Range.fromJson(json['selection'] as Map<String, dynamic>)
               : null,
       sessionId: json['sessionId'] as String,
-      triggerKind: json['triggerKind'] as String,
+      triggerKind:
+          json['triggerKind'] == null
+              ? null
+              : NesTriggerKind.fromString(json['triggerKind'] as String),
       uri: json['uri'] as String,
       version: json['version'] as int,
       meta: json['_meta'] as Map<String, Object?>?,
@@ -6068,7 +6089,7 @@ final class SuggestNesRequest implements HasMeta {
     'position': position.toJson(),
     if (selection != null) 'selection': selection!.toJson(),
     'sessionId': sessionId,
-    'triggerKind': triggerKind,
+    if (triggerKind != null) 'triggerKind': triggerKind!.value,
     'uri': uri,
     'version': version,
     if (meta != null) '_meta': meta,
@@ -6076,8 +6097,8 @@ final class SuggestNesRequest implements HasMeta {
   };
 }
 
-@experimental
 /// Response to `nes/suggest`.
+@experimental
 final class SuggestNesResponse implements HasMeta {
   /// The list of suggestions.
   final List<NesSuggestion> suggestions;
@@ -6120,11 +6141,11 @@ final class SuggestNesResponse implements HasMeta {
   };
 }
 
-@experimental
 /// A content change event for a document.
 ///
 /// When `range` is `None`, `text` is the full content of the document.
 /// When `range` is `Some`, `text` replaces the given range.
+@experimental
 final class TextDocumentContentChangeEvent {
   /// The range of the document that changed. If `None`, the entire content is replaced.
   final Range? range;
@@ -6166,8 +6187,8 @@ final class TextDocumentContentChangeEvent {
   };
 }
 
-@experimental
 /// How the agent wants document changes delivered.
+@experimental
 enum TextDocumentSyncKind {
   /// Client sends the entire file content on each change.
   full('full'),
@@ -6191,8 +6212,8 @@ enum TextDocumentSyncKind {
   }
 }
 
-@experimental
 /// Items definition for titled multi-select enum properties.
+@experimental
 final class TitledMultiSelectItems {
   /// Titled enum options.
   final List<EnumOption> anyOf;
@@ -6226,14 +6247,14 @@ final class TitledMultiSelectItems {
   };
 }
 
-@experimental
 /// Items definition for untitled multi-select enum properties.
+@experimental
 final class UntitledMultiSelectItems {
   /// Allowed enum values.
   final List<String> enumValues;
 
   /// Item type discriminator. Must be `"string"`.
-  final String type;
+  final ElicitationStringType? type;
 
   /// Unknown fields preserved for round-trip fidelity.
   final Map<String, Object?>? extensionData;
@@ -6253,7 +6274,10 @@ final class UntitledMultiSelectItems {
     );
     return UntitledMultiSelectItems(
       enumValues: (json['enum'] as List<dynamic>?)?.cast<String>() ?? const [],
-      type: json['type'] as String,
+      type:
+          json['type'] == null
+              ? null
+              : ElicitationStringType.fromString(json['type'] as String),
       extensionData: ext.isEmpty ? null : ext,
     );
   }
@@ -6261,17 +6285,17 @@ final class UntitledMultiSelectItems {
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'enum': enumValues,
-    'type': type,
+    if (type != null) 'type': type!.value,
     if (extensionData != null) ...extensionData!,
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Token usage information for a prompt turn.
+@experimental
 final class Usage {
   /// Total cache read tokens.
   final int? cachedReadTokens;
@@ -6341,12 +6365,12 @@ final class Usage {
   };
 }
 
-@experimental
 /// **UNSTABLE**
 ///
 /// This capability is not part of the spec yet, and may be removed or changed at any point.
 ///
 /// Context window and cost update for a session.
+@experimental
 final class UsageUpdate implements HasMeta {
   /// Cumulative session cost (optional).
   final Cost? cost;
@@ -6400,8 +6424,8 @@ final class UsageUpdate implements HasMeta {
   };
 }
 
-@experimental
 /// A workspace folder.
+@experimental
 final class WorkspaceFolder {
   /// The display name of the folder.
   final String name;

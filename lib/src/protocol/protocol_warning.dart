@@ -31,6 +31,11 @@ final class LateResponseWarning extends ProtocolWarning {
 }
 
 /// An unknown session configuration option ID was received.
+///
+/// Reserved for future use: emitted when a `session/setSessionConfigOption`
+/// notification references a config ID the local side doesn't recognize.
+/// Listeners on [Connection.warnings] can surface this to users to flag
+/// peer/version skew without aborting the session.
 final class UnknownConfigOptionWarning extends ProtocolWarning {
   /// The unrecognized option ID.
   final String optionId;

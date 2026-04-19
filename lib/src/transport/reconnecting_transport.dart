@@ -72,8 +72,12 @@ final class ReconnectingTransport implements AcpTransport {
   final Duration _maxDelay;
   final int _maxAttempts;
 
+  // Single-subscription so each message is delivered exactly once. A
+  // broadcast controller would silently drop messages emitted before the
+  // first subscription or between subscriptions, contradicting this
+  // transport's stated reliability purpose.
   final StreamController<JsonRpcMessage> _messageController =
-      StreamController<JsonRpcMessage>.broadcast();
+      StreamController<JsonRpcMessage>();
   final StreamController<ReconnectionEvent> _eventController =
       StreamController<ReconnectionEvent>.broadcast();
 
@@ -130,7 +134,10 @@ final class ReconnectingTransport implements AcpTransport {
     _subscription = null;
     await _current?.close();
     _current = null;
-    await _messageController.close();
+    // Don't await: a single-subscription controller's close() blocks until
+    // a listener has drained queued events — if no consumer ever subscribed
+    // to `messages`, the await would hang indefinitely.
+    unawaited(_messageController.close());
     await _eventController.close();
   }
 

@@ -173,6 +173,27 @@ void main() {
         expect((message as JsonRpcNotification).method, 'test/comment');
       });
 
+      test('reassembles SSE event split across writes', () async {
+        // Real-world SSE proxies (nginx, Cloudflare) routinely split frames
+        // across TCP segments. The transport must buffer partial bytes and
+        // emit a single message when the blank-line terminator arrives.
+        final received = Completer<JsonRpcMessage>();
+        final sub = f.transport.messages.listen(received.complete);
+        addTearDown(sub.cancel);
+
+        final msg = {'jsonrpc': '2.0', 'method': 'test/chunked'};
+        final encoded = jsonEncode(msg);
+        // Split partway through the JSON, then write the terminator
+        // separately so the transport sees three independent flushes.
+        await f.sendSse('data: ${encoded.substring(0, 12)}');
+        await f.sendSse('${encoded.substring(12)}\n');
+        await f.sendSse('\n');
+
+        final message = await received.future;
+        expect(message, isA<JsonRpcNotification>());
+        expect((message as JsonRpcNotification).method, 'test/chunked');
+      });
+
       test('stores last event ID', () async {
         final received = Completer<JsonRpcMessage>();
         final sub = f.transport.messages.listen(received.complete);

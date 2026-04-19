@@ -56,7 +56,7 @@ class _TestAgentHandler extends AgentHandler {
     required AcpCancellationToken cancelToken,
   }) async {
     if (onPrompt != null) return onPrompt!(request, conn);
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 
   @override
@@ -283,13 +283,11 @@ void main() {
       pair.agentHandler.onPrompt = (request, conn) async {
         await conn.notifySessionUpdate(
           request.sessionId,
-          const AgentMessageChunk(content: {'type': 'text', 'text': 'Hello'}),
+          const AgentMessageChunk(content: TextContent(text: 'Hello')),
         );
         await conn.notifySessionUpdate(
           request.sessionId,
-          const AgentThoughtChunk(
-            content: {'type': 'text', 'text': 'thinking...'},
-          ),
+          const AgentThoughtChunk(content: TextContent(text: 'thinking...')),
         );
         await conn.notifySessionUpdate(
           request.sessionId,
@@ -299,7 +297,7 @@ void main() {
             status: 'running',
           ),
         );
-        return const PromptResponse(stopReason: 'end_turn');
+        return const PromptResponse(stopReason: StopReason.endTurn);
       };
 
       await pair.client.sendPrompt(
@@ -514,7 +512,7 @@ void main() {
           terminalId: createResp.terminalId,
         );
 
-        return const PromptResponse(stopReason: 'end_turn');
+        return const PromptResponse(stopReason: StopReason.endTurn);
       };
 
       final response = await pair.client.sendPrompt(
@@ -522,7 +520,7 @@ void main() {
         prompt: [const TextContent(text: 'run command')],
       );
 
-      expect(response.stopReason, 'end_turn');
+      expect(response.stopReason, StopReason.endTurn);
       expect(capturedTerminalId, 'term-1');
       expect(pair.clientHandler.releasedTerminals, contains('term-1'));
     });
@@ -540,7 +538,7 @@ void main() {
           path: '/tmp/test.txt',
           content: 'Hello, world!',
         );
-        return const PromptResponse(stopReason: 'end_turn');
+        return const PromptResponse(stopReason: StopReason.endTurn);
       };
 
       await pair.client.sendPrompt(

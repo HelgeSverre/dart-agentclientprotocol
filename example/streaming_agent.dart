@@ -25,13 +25,14 @@
 /// from the prompt, so you can watch the turn unfold.
 library;
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:acp/acp.dart';
 
+import 'in_memory_transport.dart';
+
 Future<void> main() async {
-  final (agentTransport, clientTransport) = _linkedTransports();
+  final (agentTransport, clientTransport) = createInMemoryTransports();
 
   final agent = AgentSideConnection(
     agentTransport,
@@ -102,8 +103,8 @@ class _StreamingAgent extends AgentHandler {
     //    surface these under a "thinking" disclosure or hide them by default.
     await _send(
       sessionId,
-      AgentThoughtChunk(
-        content: const {'type': 'text', 'text': 'Thinking about the request…'},
+      const AgentThoughtChunk(
+        content: TextContent(text: 'Thinking about the request…'),
       ),
     );
     await _tick();
@@ -141,7 +142,7 @@ class _StreamingAgent extends AgentHandler {
     for (final token in tokens) {
       await _send(
         sessionId,
-        AgentMessageChunk(content: {'type': 'text', 'text': token}),
+        AgentMessageChunk(content: TextContent(text: token)),
       );
       await _tick();
     }
@@ -165,7 +166,7 @@ class _StreamingAgent extends AgentHandler {
       ),
     );
 
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 
   Future<void> _send(String sessionId, SessionUpdate update) =>
@@ -194,60 +195,19 @@ class _NarratingClient extends ClientHandler {
 void _describe(SessionUpdate update, {required String elapsedMs}) {
   final tag = '[+${elapsedMs}ms]';
   switch (update) {
-    case AgentThoughtChunk(:final content):
-      stdout.writeln('$tag thought: ${content['text']}');
+    case AgentThoughtChunk(content: final TextContent text):
+      stdout.writeln('$tag thought: ${text.text}');
     case PlanUpdate(:final entries):
       stdout.writeln('$tag plan:');
       for (final entry in entries) {
         stdout.writeln('         - [${entry['status']}] ${entry['content']}');
       }
-    case AgentMessageChunk(:final content):
-      stdout.writeln('$tag message chunk: ${content['text']}');
+    case AgentMessageChunk(content: final TextContent text):
+      stdout.writeln('$tag message chunk: ${text.text}');
     default:
       stdout.writeln('$tag ${update.runtimeType}');
   }
 }
 
-// --------------------------------------------------------------------------
-// In-memory transport plumbing for the two peers to talk to each other.
-// In real code you'd use StdioProcessTransport or WebSocketTransport.
-// --------------------------------------------------------------------------
-
-(AcpTransport, AcpTransport) _linkedTransports() {
-  // ignore: close_sinks
-  final aToB = StreamController<JsonRpcMessage>();
-  // ignore: close_sinks
-  final bToA = StreamController<JsonRpcMessage>();
-  return (
-    _LinkedTransport(inbound: bToA.stream, outbound: aToB),
-    _LinkedTransport(inbound: aToB.stream, outbound: bToA),
-  );
-}
-
-final class _LinkedTransport implements AcpTransport {
-  final Stream<JsonRpcMessage> _inbound;
-  final StreamController<JsonRpcMessage> _outbound;
-  bool _closed = false;
-
-  _LinkedTransport({
-    required Stream<JsonRpcMessage> inbound,
-    required StreamController<JsonRpcMessage> outbound,
-  }) : _inbound = inbound,
-       _outbound = outbound;
-
-  @override
-  Stream<JsonRpcMessage> get messages => _inbound;
-
-  @override
-  Future<void> send(JsonRpcMessage message) async {
-    if (_closed) throw StateError('Transport is closed');
-    _outbound.add(message);
-  }
-
-  @override
-  Future<void> close() async {
-    if (_closed) return;
-    _closed = true;
-    await _outbound.close();
-  }
-}
+// In-memory transport plumbing lives in `in_memory_transport.dart`,
+// imported above, and is shared with `project_assistant.dart`.

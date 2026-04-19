@@ -102,8 +102,13 @@ final class StdioProcessTransport implements AcpTransport {
 
   void _handleLine(String line) {
     try {
-      final json = jsonDecode(line) as Map<String, dynamic>;
-      final message = JsonRpcMessage.fromJson(json);
+      final decoded = jsonDecode(line);
+      if (decoded is! Map<String, dynamic>) {
+        throw FormatException(
+          'Expected JSON-RPC object, got ${decoded.runtimeType}',
+        );
+      }
+      final message = JsonRpcMessage.fromJson(decoded);
       _controller.add(message);
     } on FormatException catch (e, stack) {
       _log.warning('Failed to parse incoming message: $e');
@@ -141,8 +146,16 @@ final class StdioProcessTransport implements AcpTransport {
     );
     _log.fine('Process exited with code $exited');
 
-    // Wait for stream subscriptions to finish draining, then clean up.
-    await Future.wait([_stdoutDone.future, _stderrDone.future]);
+    // Wait for stream subscriptions to finish draining, but cap the wait so
+    // a misbehaving pipe (or a process whose stderr never closes cleanly)
+    // can't deadlock close().
+    await Future.wait([_stdoutDone.future, _stderrDone.future]).timeout(
+      const Duration(seconds: 2),
+      onTimeout: () {
+        _log.warning('stdout/stderr did not drain within 2s of process exit');
+        return const [];
+      },
+    );
     await _stdoutSubscription?.cancel();
     _stdoutSubscription = null;
     await _stderrSubscription?.cancel();

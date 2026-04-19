@@ -5,6 +5,7 @@
 
 import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/has_meta.dart';
+import 'package:acp/src/schema/session_update.dart';
 
 /// Request parameters for creating a new session.
 ///
@@ -335,7 +336,7 @@ enum StopReason {
 /// See protocol docs: [Check for Completion](https://agentclientprotocol.com/protocol/prompt-turn#4-check-for-completion)
 final class PromptResponse implements HasMeta {
   /// Indicates why the agent stopped processing the turn.
-  final String stopReason;
+  final StopReason? stopReason;
 
   @override
   final Map<String, Object?>? meta;
@@ -357,7 +358,10 @@ final class PromptResponse implements HasMeta {
       json.entries.where((e) => !known.contains(e.key)),
     );
     return PromptResponse(
-      stopReason: json['stopReason'] as String,
+      stopReason:
+          json['stopReason'] == null
+              ? null
+              : StopReason.fromString(json['stopReason'] as String),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -365,7 +369,7 @@ final class PromptResponse implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
-    'stopReason': stopReason,
+    if (stopReason != null) 'stopReason': stopReason!.value,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };
@@ -590,7 +594,7 @@ final class SessionNotification implements HasMeta {
   final String sessionId;
 
   /// The actual update content.
-  final Map<String, dynamic> update;
+  final SessionUpdate update;
 
   @override
   final Map<String, Object?>? meta;
@@ -614,7 +618,7 @@ final class SessionNotification implements HasMeta {
     );
     return SessionNotification(
       sessionId: json['sessionId'] as String,
-      update: json['update'] as Map<String, dynamic>,
+      update: SessionUpdate.fromJson(json['update'] as Map<String, dynamic>),
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -623,7 +627,7 @@ final class SessionNotification implements HasMeta {
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
-    'update': update,
+    'update': update.toJson(),
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

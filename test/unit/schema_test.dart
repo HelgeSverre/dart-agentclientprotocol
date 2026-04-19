@@ -215,7 +215,8 @@ void main() {
       expect(resp.protocolVersion, 1);
       expect(resp.agentCapabilities.loadSession, isTrue);
       expect(resp.authMethods, hasLength(1));
-      expect(resp.authMethods.first['id'], 'env_var');
+      expect(resp.authMethods.first.id, 'env_var');
+      expect(resp.authMethods.first.name, 'Environment Variable');
       expect(resp.agentInfo!.name, 'TestAgent');
     });
   });
@@ -307,14 +308,17 @@ void main() {
     });
 
     test('PromptResponse exposes parsed stopReason', () {
-      final resp = PromptResponse(stopReason: 'end_turn');
-      expect(StopReason.fromString(resp.stopReason), StopReason.endTurn);
+      final resp = PromptResponse(stopReason: StopReason.endTurn);
+      expect(resp.stopReason, StopReason.endTurn);
     });
 
-    test('PromptResponse with unknown stopReason', () {
-      final resp = PromptResponse(stopReason: 'future_reason');
-      expect(StopReason.fromString(resp.stopReason), isNull);
-      expect(resp.stopReason, 'future_reason');
+    test('PromptResponse with unknown stopReason decodes to null', () {
+      final resp = PromptResponse.fromJson(<String, dynamic>{
+        'stopReason': 'future_reason',
+      });
+      // Unknown enum values from a future protocol version decode to null
+      // rather than throwing, so the client can keep functioning.
+      expect(resp.stopReason, isNull);
     });
   });
 }

@@ -46,8 +46,10 @@ import 'dart:io';
 
 import 'package:acp/acp.dart';
 
+import 'in_memory_transport.dart';
+
 Future<void> main() async {
-  final (agentTransport, clientTransport) = _createLinkedTransports();
+  final (agentTransport, clientTransport) = createInMemoryTransports();
 
   final agent = AgentSideConnection(
     agentTransport,
@@ -103,49 +105,7 @@ Future<void> main() async {
   await agent.close();
 }
 
-(AcpTransport, AcpTransport) _createLinkedTransports() {
-  // ignore: close_sinks
-  final leftToRight = StreamController<JsonRpcMessage>();
-  // ignore: close_sinks
-  final rightToLeft = StreamController<JsonRpcMessage>();
-
-  return (
-    _LinkedTransport(inbound: rightToLeft.stream, outbound: leftToRight),
-    _LinkedTransport(inbound: leftToRight.stream, outbound: rightToLeft),
-  );
-}
-
-final class _LinkedTransport implements AcpTransport {
-  final Stream<JsonRpcMessage> _inbound;
-  final StreamController<JsonRpcMessage> _outbound;
-  bool _closed = false;
-
-  _LinkedTransport({
-    required Stream<JsonRpcMessage> inbound,
-    required StreamController<JsonRpcMessage> outbound,
-  }) : _inbound = inbound,
-       _outbound = outbound;
-
-  @override
-  Stream<JsonRpcMessage> get messages => _inbound;
-
-  @override
-  Future<void> send(JsonRpcMessage message) async {
-    if (_closed) {
-      throw StateError('Transport is closed');
-    }
-    _outbound.add(message);
-  }
-
-  @override
-  Future<void> close() async {
-    if (_closed) {
-      return;
-    }
-    _closed = true;
-    await _outbound.close();
-  }
-}
+// In-memory transport plumbing lives in `in_memory_transport.dart`.
 
 // ---------------------------------------------------------------------------
 // The agent side: decides what to do, asks the client for help when needed.
@@ -302,9 +262,14 @@ final class _ProjectAssistantAgent extends AgentHandler {
         permission.outcome['optionId'] == 'allow_once') {
       // Now we can call back into the client to read the file. The client's
       // `readTextFile` handler runs with whatever permissions it has.
+      // Build paths via Uri to handle Windows separators and trailing
+      // slashes correctly — string concatenation here would produce
+      // `C:\dir/pubspec.yaml` on Windows or `//pubspec.yaml` if cwd is `/`.
+      final pubspecPath =
+          Uri.directory(session.cwd).resolve('pubspec.yaml').toFilePath();
       final pubspec = await _connection.sendReadTextFile(
         sessionId: request.sessionId,
-        path: '${session.cwd}/pubspec.yaml',
+        path: pubspecPath,
       );
       packageName = _extractPackageName(pubspec.content);
     }
@@ -348,17 +313,16 @@ final class _ProjectAssistantAgent extends AgentHandler {
     await _connection.notifySessionUpdate(
       request.sessionId,
       AgentMessageChunk(
-        content:
-            TextContent(
-              text:
-                  'Package `$packageName` is available in `${session.cwd}`. '
-                  'The client exposed filesystem and terminal capabilities; '
-                  'Dart reported `${output.output.trim()}`.',
-            ).toJson(),
+        content: TextContent(
+          text:
+              'Package `$packageName` is available in `${session.cwd}`. '
+              'The client exposed filesystem and terminal capabilities; '
+              'Dart reported `${output.output.trim()}`.',
+        ),
       ),
     );
 
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 }
 
@@ -490,8 +454,8 @@ void _printUpdate(String sessionId, SessionUpdate update) {
       for (final entry in entries) {
         stdout.writeln(' - ${entry['status']}: ${entry['content']}');
       }
-    case AgentMessageChunk(:final content):
-      stdout.writeln('\n[$sessionId] ${content['text']}');
+    case AgentMessageChunk(content: final TextContent text):
+      stdout.writeln('\n[$sessionId] ${text.text}');
     default:
       stdout.writeln('[$sessionId] ${update.runtimeType}');
   }

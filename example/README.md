@@ -123,7 +123,7 @@ shows a complete prompt turn producing, in order:
 2. A `PlanUpdate` with `in_progress` entries (a live TODO list).
 3. Several `AgentMessageChunk`s (the user-visible answer, token by token).
 4. A final `PlanUpdate` with all entries `completed`.
-5. A `PromptResponse` with `stopReason: 'end_turn'`.
+5. A `PromptResponse` with `stopReason: StopReason.endTurn`.
 
 The client prints each update with elapsed time so you can see the ordering.
 

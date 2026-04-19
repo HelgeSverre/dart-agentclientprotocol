@@ -86,6 +86,18 @@ final class ClientSideConnection {
        _capabilityEnforcement = capabilityEnforcement {
     _registerHandlers();
     _connection.start();
+    // Close the session-update controller when the underlying connection
+    // closes (transport disconnect, keepalive timeout, write error). Without
+    // this, a remote-initiated disconnect leaks the controller — the
+    // application's `sessionUpdates.listen(...)` subscription never sees a
+    // done event and the controller is never GC'd.
+    _connection.onStateChange
+        .firstWhere((s) => s == ConnectionState.closed)
+        .then((_) {
+          if (!_sessionUpdateController.isClosed) {
+            unawaited(_sessionUpdateController.close());
+          }
+        }, onError: (_) {});
   }
 
   // -- Delegated properties --
@@ -123,7 +135,9 @@ final class ClientSideConnection {
     Duration flushTimeout = const Duration(seconds: 5),
   }) async {
     await _connection.close(flushTimeout: flushTimeout);
-    await _sessionUpdateController.close();
+    if (!_sessionUpdateController.isClosed) {
+      await _sessionUpdateController.close();
+    }
   }
 
   // -- Client → Agent request methods --
@@ -686,10 +700,12 @@ final class ClientSideConnection {
     final sessionNotif = SessionNotification.fromJson(
       notification.params ?? {},
     );
-    final update = SessionUpdate.fromJson(sessionNotif.update);
-    _handler.onSessionUpdate(sessionNotif.sessionId, update);
+    _handler.onSessionUpdate(sessionNotif.sessionId, sessionNotif.update);
     _sessionUpdateController.add(
-      SessionUpdateEvent(sessionId: sessionNotif.sessionId, update: update),
+      SessionUpdateEvent(
+        sessionId: sessionNotif.sessionId,
+        update: sessionNotif.update,
+      ),
     );
   }
 

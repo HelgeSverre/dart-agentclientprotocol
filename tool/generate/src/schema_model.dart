@@ -230,6 +230,21 @@ class RefFieldType extends FieldType {
   String get dartType => dartClassName;
 }
 
+/// A reference to an enum type. Always emitted nullable so unknown wire
+/// values from a future-version peer decode as `null` instead of throwing.
+class EnumFieldType extends FieldType {
+  /// The Dart enum class name.
+  final String dartClassName;
+
+  const EnumFieldType(this.dartClassName);
+
+  @override
+  String get dartType => '$dartClassName?';
+
+  @override
+  bool get isNullable => true;
+}
+
 class DynamicFieldType extends FieldType {
   const DynamicFieldType();
 

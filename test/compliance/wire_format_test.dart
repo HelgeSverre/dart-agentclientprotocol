@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:acp/src/protocol/json_rpc_message.dart';
+import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/session.dart';
 import 'package:acp/src/schema/session_update.dart';
 import 'package:test/test.dart';
@@ -37,10 +38,9 @@ void main() {
     test('request round-trips through toJson', () async {
       final json = await _loadFixture('initialize_request.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['id'], 1);
-      expect(roundTripped['method'], 'initialize');
-      expect(roundTripped['params'], json['params']);
+      // Full-envelope comparison: catches any field added or dropped, not
+      // only fields the test happens to enumerate.
+      expect(roundTripped, json);
     });
 
     test('response parses as JsonRpcResponse', () async {
@@ -58,9 +58,7 @@ void main() {
     test('response round-trips through toJson', () async {
       final json = await _loadFixture('initialize_response.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['id'], 1);
-      expect(roundTripped['result'], json['result']);
+      expect(roundTripped, json);
     });
   });
 
@@ -81,10 +79,7 @@ void main() {
     test('request round-trips through toJson', () async {
       final json = await _loadFixture('session_new_request.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['id'], 2);
-      expect(roundTripped['method'], 'session/new');
-      expect(roundTripped['params'], json['params']);
+      expect(roundTripped, json);
     });
 
     test('response parses as JsonRpcResponse', () async {
@@ -104,9 +99,7 @@ void main() {
     test('response round-trips through toJson', () async {
       final json = await _loadFixture('session_new_response.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['id'], 2);
-      expect(roundTripped['result'], json['result']);
+      expect(roundTripped, json);
     });
   });
 
@@ -125,19 +118,16 @@ void main() {
       final sessionNotif = SessionNotification.fromJson(notif.params!);
       expect(sessionNotif.sessionId, 'sess-abc-123');
 
-      final update = SessionUpdate.fromJson(sessionNotif.update);
-      expect(update, isA<AgentMessageChunk>());
-      final chunk = update as AgentMessageChunk;
-      expect(chunk.content['type'], 'text');
-      expect(chunk.content['text'], 'Hello world');
+      expect(sessionNotif.update, isA<AgentMessageChunk>());
+      final chunk = sessionNotif.update as AgentMessageChunk;
+      expect(chunk.content, isA<TextContent>());
+      expect((chunk.content as TextContent).text, 'Hello world');
     });
 
     test('round-trips through toJson', () async {
       final json = await _loadFixture('session_update_agent_message.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['method'], 'session/update');
-      expect(roundTripped['params'], json['params']);
+      expect(roundTripped, json);
     });
   });
 
@@ -154,9 +144,8 @@ void main() {
       final sessionNotif = SessionNotification.fromJson(notif.params!);
       expect(sessionNotif.sessionId, 'sess-abc-123');
 
-      final update = SessionUpdate.fromJson(sessionNotif.update);
-      expect(update, isA<ToolCallSessionUpdate>());
-      final toolCall = update as ToolCallSessionUpdate;
+      expect(sessionNotif.update, isA<ToolCallSessionUpdate>());
+      final toolCall = sessionNotif.update as ToolCallSessionUpdate;
       expect(toolCall.toolCallId, 'tc-1');
       final toolCallJson = toolCall.toJson();
       expect(toolCallJson['name'], 'read_file');
@@ -169,9 +158,7 @@ void main() {
     test('round-trips through toJson', () async {
       final json = await _loadFixture('session_update_tool_call.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['method'], 'session/update');
-      expect(roundTripped['params'], json['params']);
+      expect(roundTripped, json);
     });
   });
 
@@ -190,10 +177,7 @@ void main() {
     test('round-trips through toJson', () async {
       final json = await _loadFixture('extension_request.json');
       final roundTripped = JsonRpcMessage.fromJson(json).toJson();
-      expect(roundTripped['jsonrpc'], '2.0');
-      expect(roundTripped['id'], 5);
-      expect(roundTripped['method'], '_vendor/custom');
-      expect(roundTripped['params'], json['params']);
+      expect(roundTripped, json);
     });
   });
 

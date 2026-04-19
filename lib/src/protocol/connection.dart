@@ -70,12 +70,23 @@ final class Connection {
   final Queue<_WriteEntry> _writeQueue = Queue<_WriteEntry>();
   bool _draining = false;
 
+  // Resolved when the current drain finishes; null when the queue is
+  // already empty. Lets `_waitForWriteQueueDrain` block on a real signal
+  // instead of polling.
+  Completer<void>? _drainCompleter;
+
   // Warnings stream
   final StreamController<ProtocolWarning> _warningController =
       StreamController<ProtocolWarning>.broadcast();
 
   // Transport subscription
   StreamSubscription<JsonRpcMessage>? _transportSubscription;
+
+  // Re-entry guard for _cleanup. Set as soon as the first invocation enters
+  // the cleanup body; later invocations (e.g. from a transport error firing
+  // during graceful close drain) early-return rather than racing the same
+  // controllers and pending requests.
+  bool _cleaningUp = false;
 
   /// Optional callback invoked before each outgoing message is written.
   void Function(Map<String, dynamic> message)? onSend;
@@ -185,6 +196,13 @@ final class Connection {
     final completer = Completer<Map<String, dynamic>>();
     final effectiveTimeout = timeout ?? _defaultTimeout;
 
+    // Per-request cancellation source. Forwarded cancellations from the
+    // caller's token complete this source instead of subscribing directly to
+    // `whenCanceled`, so when the request finishes normally we cancel the
+    // local source and the listener closure is released for GC.
+    final localCancel = AcpCancellationSource();
+    StreamSubscription<void>? cancelForwarder;
+
     final pending = _PendingRequest(
       completer: completer,
       method: method,
@@ -195,6 +213,7 @@ final class Connection {
             RequestTimeoutException(id, effectiveTimeout),
           );
         }
+        localCancel.cancel('Request timed out');
       }),
     );
 
@@ -207,20 +226,37 @@ final class Connection {
         pending.timer.cancel();
         throw RequestCanceledException(id, 'Already canceled');
       }
-      unawaited(
-        cancelToken.whenCanceled.then((_) {
-          final removed = _pendingRequests.remove(id);
-          if (removed != null && !removed.completer.isCompleted) {
-            removed.timer.cancel();
-            unawaited(_notifyCancelRequest(id));
-            removed.completer.completeError(RequestCanceledException(id));
-          }
-        }),
-      );
+      // Forward the caller's cancel into the per-request source. Once the
+      // request completes (success/error/timeout), cancelling the local
+      // source resolves `whenCanceled` and the closure can be GC'd.
+      cancelForwarder = cancelToken.whenCanceled.asStream().listen((_) {
+        if (!localCancel.token.isCanceled) {
+          localCancel.cancel('Cancelled by caller');
+        }
+      });
     }
 
-    await _enqueueWrite(request);
-    return completer.future;
+    unawaited(
+      localCancel.token.whenCanceled.then((_) {
+        final removed = _pendingRequests.remove(id);
+        if (removed == null) return;
+        removed.timer.cancel();
+        if (!removed.completer.isCompleted) {
+          unawaited(_notifyCancelRequest(id));
+          removed.completer.completeError(RequestCanceledException(id));
+        }
+      }),
+    );
+
+    try {
+      await _enqueueWrite(request);
+      return await completer.future;
+    } finally {
+      if (!localCancel.token.isCanceled) {
+        localCancel.cancel('Request completed');
+      }
+      await cancelForwarder?.cancel();
+    }
   }
 
   /// Sends a JSON-RPC notification (no response expected).
@@ -328,13 +364,16 @@ final class Connection {
       }
     } finally {
       _draining = false;
+      final waiter = _drainCompleter;
+      _drainCompleter = null;
+      waiter?.complete();
     }
   }
 
-  Future<void> _waitForWriteQueueDrain() async {
-    while (_writeQueue.isNotEmpty || _draining) {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-    }
+  Future<void> _waitForWriteQueueDrain() {
+    if (!_draining && _writeQueue.isEmpty) return Future<void>.value();
+    final completer = _drainCompleter ??= Completer<void>();
+    return completer.future;
   }
 
   void _handleIncomingMessage(JsonRpcMessage message) {
@@ -400,9 +439,12 @@ final class Connection {
       );
     } on Object catch (e, stack) {
       _log.severe('Handler error for ${request.method}', e, stack);
+      // Send a generic message to the peer — exception toString() can leak
+      // file paths, query fragments, environment values, or internal class
+      // names. Keep detail in the local log only.
       await _sendErrorResponse(
         request.id,
-        RpcErrorException.internalError(e.toString()),
+        RpcErrorException.internalError('Internal server error'),
       );
     } finally {
       _activeIncomingRequests.remove(request.id);
@@ -448,9 +490,19 @@ final class Connection {
       );
     } else {
       final result = response.result;
-      pending.completer.complete(
-        result is Map<String, dynamic> ? result : <String, dynamic>{},
-      );
+      if (result is Map<String, dynamic>) {
+        pending.completer.complete(result);
+      } else {
+        // ACP responses are always JSON objects. A scalar/null/array result
+        // would be silently discarded if coerced to {}, so surface the
+        // protocol violation to the caller instead of returning fake-empty.
+        pending.completer.completeError(
+          RpcErrorException.internalError(
+            'Expected response result to be a JSON object, '
+            'got ${result.runtimeType}',
+          ),
+        );
+      }
     }
   }
 
@@ -541,7 +593,8 @@ final class Connection {
   }
 
   Future<void> _cleanup() async {
-    if (_state == ConnectionState.closed) return;
+    if (_state == ConnectionState.closed || _cleaningUp) return;
+    _cleaningUp = true;
 
     _stopKeepalive();
 

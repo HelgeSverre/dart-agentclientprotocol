@@ -50,7 +50,7 @@ class _TestAgentHandler extends AgentHandler {
     required AcpCancellationToken cancelToken,
   }) async {
     if (onPrompt != null) return onPrompt!(request, conn);
-    return const PromptResponse(stopReason: 'end_turn');
+    return const PromptResponse(stopReason: StopReason.endTurn);
   }
 
   @override
@@ -189,7 +189,7 @@ void main() {
         prompt: [const TextContent(text: 'Hello over WebSocket')],
       );
 
-      expect(response.stopReason, 'end_turn');
+      expect(response.stopReason, StopReason.endTurn);
     });
 
     test('session updates stream over WebSocket', () async {
@@ -203,15 +203,13 @@ void main() {
       pair.agentHandler.onPrompt = (request, conn) async {
         await conn.notifySessionUpdate(
           request.sessionId,
-          const AgentMessageChunk(content: {'type': 'text', 'text': 'Hello'}),
+          const AgentMessageChunk(content: TextContent(text: 'Hello')),
         );
         await conn.notifySessionUpdate(
           request.sessionId,
-          const AgentThoughtChunk(
-            content: {'type': 'text', 'text': 'thinking...'},
-          ),
+          const AgentThoughtChunk(content: TextContent(text: 'thinking...')),
         );
-        return const PromptResponse(stopReason: 'end_turn');
+        return const PromptResponse(stopReason: StopReason.endTurn);
       };
 
       await pair.client.sendPrompt(
@@ -246,7 +244,7 @@ void main() {
           path: '/tmp/ws-test.txt',
           content: 'Written via WebSocket',
         );
-        return const PromptResponse(stopReason: 'end_turn');
+        return const PromptResponse(stopReason: StopReason.endTurn);
       };
 
       final response = await pair.client.sendPrompt(
@@ -254,7 +252,7 @@ void main() {
         prompt: [const TextContent(text: 'write a file')],
       );
 
-      expect(response.stopReason, 'end_turn');
+      expect(response.stopReason, StopReason.endTurn);
       expect(pair.clientHandler.lastWrittenPath, '/tmp/ws-test.txt');
       expect(pair.clientHandler.lastWrittenContent, 'Written via WebSocket');
     });

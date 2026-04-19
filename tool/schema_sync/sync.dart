@@ -6,6 +6,7 @@
 /// `dart run -DACP_SCHEMA_VERSION=v0.12.0 tool/schema_sync/sync.dart`
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 const _schemaVersion = String.fromEnvironment(
@@ -31,6 +32,7 @@ Future<void> main() async {
   }
 
   final client = HttpClient();
+  final failed = <String>[];
   try {
     for (final file in _files) {
       final url = baseUrl.resolve(file);
@@ -40,15 +42,30 @@ Future<void> main() async {
       if (response.statusCode != 200) {
         stderr.writeln('FAILED (HTTP ${response.statusCode})');
         await response.drain<void>();
+        failed.add(file);
+        continue;
+      }
+      final body = await response.transform(utf8.decoder).join();
+      try {
+        jsonDecode(body);
+      } on FormatException catch (e) {
+        stderr.writeln('FAILED (invalid JSON: $e)');
+        failed.add(file);
         continue;
       }
       final outFile = File('${outDir.path}/$file');
-      final sink = outFile.openWrite();
-      await response.pipe(sink);
+      outFile.writeAsStringSync(body);
       stdout.writeln('OK (${outFile.lengthSync()} bytes)');
     }
   } finally {
     client.close();
+  }
+
+  if (failed.isNotEmpty) {
+    stderr.writeln(
+      '\nFAILED: could not download ${failed.length} file(s): $failed',
+    );
+    exit(1);
   }
 
   stdout.writeln(
