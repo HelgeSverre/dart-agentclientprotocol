@@ -67,11 +67,12 @@ class _TerminalClientHandler extends ClientHandler {
   }
 
   @override
-  Future<void> killTerminal(
+  Future<KillTerminalCommandResponse> killTerminal(
     KillTerminalCommandRequest request, {
     required AcpCancellationToken cancelToken,
   }) async {
     calls.add('killTerminal:${request.terminalId}');
+    return const KillTerminalCommandResponse();
   }
 
   @override
@@ -84,11 +85,12 @@ class _TerminalClientHandler extends ClientHandler {
   }
 
   @override
-  Future<void> releaseTerminal(
+  Future<ReleaseTerminalResponse> releaseTerminal(
     ReleaseTerminalRequest request, {
     required AcpCancellationToken cancelToken,
   }) async {
     calls.add('releaseTerminal:${request.terminalId}');
+    return const ReleaseTerminalResponse();
   }
 }
 

@@ -109,6 +109,25 @@ void main() {
       final resp = JsonRpcMessage.fromJson(json) as JsonRpcResponse;
       expect(resp.error!.data, isA<Map<String, dynamic>>());
     });
+
+    test('rejects response with both result and error', () {
+      expect(
+        () => JsonRpcMessage.fromJson({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'result': <String, dynamic>{},
+          'error': {'code': -32603, 'message': 'Internal error'},
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects response without result or error', () {
+      expect(
+        () => JsonRpcMessage.fromJson({'jsonrpc': '2.0', 'id': 1}),
+        throwsFormatException,
+      );
+    });
   });
 
   group('fromJson error cases', () {
@@ -176,15 +195,13 @@ void main() {
       );
     });
 
-    test('parseBatch skips non-map items in array', () {
+    test('parseBatch rejects non-object items in array', () {
       final json = <Object>[
         <String, dynamic>{'jsonrpc': '2.0', 'id': 1, 'method': 'initialize'},
         42,
         'garbage',
       ];
-      final messages = JsonRpcMessage.parseBatch(json);
-      expect(messages, hasLength(1));
-      expect(messages[0], isA<JsonRpcRequest>());
+      expect(() => JsonRpcMessage.parseBatch(json), throwsFormatException);
     });
 
     test('parseBatch handles mixed request/notification/response array', () {

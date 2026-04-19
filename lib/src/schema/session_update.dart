@@ -33,6 +33,7 @@ sealed class SessionUpdate implements HasMeta {
       ),
       'current_mode_update' => CurrentModeSessionUpdate.fromJson(json),
       'config_option_update' => ConfigOptionSessionUpdate.fromJson(json),
+      'session_info_update' => SessionInfoUpdate.fromJson(json),
       _ => UnknownSessionUpdate(
         sessionUpdateType: updateType,
         rawJson: json,
@@ -517,6 +518,52 @@ final class ConfigOptionSessionUpdate extends SessionUpdate {
   Map<String, dynamic> toJson() => {
     'sessionUpdate': 'config_option_update',
     'configOptions': configOptions,
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}
+
+/// Session metadata has been updated (title, timestamps, custom metadata)
+final class SessionInfoUpdate extends SessionUpdate {
+  /// Human-readable title for the session. Set to null to clear.
+  final String? title;
+
+  /// ISO 8601 timestamp of last activity. Set to null to clear.
+  final String? updatedAt;
+
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [SessionInfoUpdate].
+  const SessionInfoUpdate({
+    this.title,
+    this.updatedAt,
+    this.meta,
+    this.extensionData,
+  });
+
+  /// Deserializes from JSON.
+  factory SessionInfoUpdate.fromJson(Map<String, dynamic> json) {
+    final known = {'title', 'updatedAt', '_meta', 'sessionUpdate'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return SessionInfoUpdate(
+      title: json['title'] as String?,
+      updatedAt: json['updatedAt'] as String?,
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'sessionUpdate': 'session_info_update',
+    if (title != null) 'title': title,
+    if (updatedAt != null) 'updatedAt': updatedAt,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

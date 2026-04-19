@@ -74,6 +74,10 @@ class RpcErrorException extends AcpException {
   factory RpcErrorException.authRequired([String? message, Object? data]) =>
       RpcErrorException(-32000, message ?? 'Authentication required', data);
 
+  /// Request cancelled (`-32800`).
+  factory RpcErrorException.requestCancelled([String? message, Object? data]) =>
+      RpcErrorException(-32800, message ?? 'Request cancelled', data);
+
   /// The requested resource was not found (`-32002`).
   factory RpcErrorException.resourceNotFound([String? message, Object? data]) =>
       RpcErrorException(-32002, message ?? 'Resource not found', data);

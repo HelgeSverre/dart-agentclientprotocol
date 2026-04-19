@@ -139,6 +139,35 @@ void main() {
       },
     );
 
+    test(
+      'sendNewSession maps auth_required to AuthenticationException',
+      () async {
+        final transport = MockTransport();
+        final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+        await _performInitialize(transport, conn);
+        transport.sent.clear();
+
+        final future = conn.sendNewSession(cwd: '/tmp');
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        final req = transport.sent.first as JsonRpcRequest;
+        transport.receive(
+          JsonRpcResponse(
+            id: req.id,
+            error: const JsonRpcError(
+              code: -32000,
+              message: 'Authentication required',
+            ),
+          ),
+        );
+
+        await expectLater(future, throwsA(isA<AuthenticationException>()));
+
+        await conn.close();
+      },
+    );
+
     test('sendPrompt sends session/prompt request', () async {
       final transport = MockTransport();
       final conn = ClientSideConnection(transport, handler: _TestHandler());

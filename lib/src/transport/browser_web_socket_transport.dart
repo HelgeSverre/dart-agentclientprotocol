@@ -1,20 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
-import 'package:web/web.dart' as web;
+
 import 'package:acp/src/protocol/json_rpc_message.dart';
 import 'package:acp/src/transport/acp_transport.dart';
 import 'package:logging/logging.dart';
+import 'package:web/web.dart' as web;
 
 final _log = Logger('acp.transport.browser_web_socket');
 
 /// A transport that communicates via browser WebSockets.
-/// 
-/// This implementation uses `package:web` and is suitable for 
+///
+/// This implementation uses `package:web` and is suitable for
 /// browser-based applications compiled with `dart2js` or `dart2wasm`.
 final class BrowserWebSocketTransport implements AcpTransport {
   final web.WebSocket _socket;
-  final StreamController<JsonRpcMessage> _controller = StreamController<JsonRpcMessage>();
+  final StreamController<JsonRpcMessage> _controller =
+      StreamController<JsonRpcMessage>();
   bool _closed = false;
 
   BrowserWebSocketTransport._(this._socket) {
@@ -22,7 +24,8 @@ final class BrowserWebSocketTransport implements AcpTransport {
       final data = event.data;
       if (data.isA<JSString>()) {
         try {
-          final json = jsonDecode((data as JSString).toDart) as Map<String, dynamic>;
+          final json =
+              jsonDecode((data as JSString).toDart) as Map<String, dynamic>;
           final message = JsonRpcMessage.fromJson(json);
           _controller.add(message);
         } catch (e, stack) {
@@ -50,8 +53,8 @@ final class BrowserWebSocketTransport implements AcpTransport {
     final completer = Completer<BrowserWebSocketTransport>();
     final socket = web.WebSocket(url.toString());
 
-    StreamSubscription? openSub;
-    StreamSubscription? errorSub;
+    StreamSubscription<web.Event>? openSub;
+    StreamSubscription<web.Event>? errorSub;
 
     openSub = socket.onOpen.listen((_) {
       openSub?.cancel();
@@ -62,7 +65,9 @@ final class BrowserWebSocketTransport implements AcpTransport {
     errorSub = socket.onError.listen((_) {
       openSub?.cancel();
       errorSub?.cancel();
-      completer.completeError(Exception('Failed to connect to WebSocket at $url'));
+      completer.completeError(
+        Exception('Failed to connect to WebSocket at $url'),
+      );
     });
 
     return completer.future;

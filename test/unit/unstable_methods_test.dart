@@ -5,6 +5,8 @@ import 'package:acp/src/protocol/agent_side_connection.dart';
 import 'package:acp/src/protocol/cancellation.dart';
 import 'package:acp/src/protocol/client_handler.dart';
 import 'package:acp/src/protocol/client_side_connection.dart';
+import 'package:acp/src/protocol/exceptions.dart';
+import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/initialize.dart';
 import 'package:acp/src/schema/session.dart';
 import 'package:acp/src/schema/session_update.dart';
@@ -20,7 +22,12 @@ class _TestAgentHandler extends AgentHandler {
   Future<InitializeResponse> initialize(
     InitializeRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async => const InitializeResponse(protocolVersion: 1);
+  }) async => const InitializeResponse(
+    protocolVersion: 1,
+    agentCapabilities: AgentCapabilities(
+      sessionCapabilities: SessionCapabilities(list: <String, dynamic>{}),
+    ),
+  );
 
   @override
   Future<NewSessionResponse> newSession(
@@ -38,10 +45,8 @@ class _TestAgentHandler extends AgentHandler {
   Future<ListSessionsResponse> listSessions(
     ListSessionsRequest request, {
     required AcpCancellationToken cancelToken,
-  }) async => ListSessionsResponse(
-    sessions: [
-      {'id': 'sess-1', 'cwd': '/home'},
-    ],
+  }) async => const ListSessionsResponse(
+    sessions: [SessionInfo(sessionId: 'sess-1', cwd: '/home')],
   );
 
   @override
@@ -51,20 +56,27 @@ class _TestAgentHandler extends AgentHandler {
   }) async => ForkSessionResponse(sessionId: 'sess-forked');
 }
 
+class _NoListAgentHandler extends _TestAgentHandler {
+  @override
+  Future<InitializeResponse> initialize(
+    InitializeRequest request, {
+    required AcpCancellationToken cancelToken,
+  }) async => const InitializeResponse(protocolVersion: 1);
+}
+
 class _TestClientHandler extends ClientHandler {
   @override
   void onSessionUpdate(String sessionId, SessionUpdate update) {}
 }
 
 void main() {
-  group('Unstable method gating', () {
-    test('sendListSessions throws UnsupportedError without opt-in', () async {
+  group('Stable session/list', () {
+    test('sendListSessions works without unstable opt-in', () async {
       final (agentTransport, clientTransport) = createLinkedTransports();
 
       AgentSideConnection(
         agentTransport,
         handlerFactory: (conn) => _TestAgentHandler(),
-        useUnstableProtocol: true,
       );
 
       final clientConn = ClientSideConnection(
@@ -74,11 +86,39 @@ void main() {
 
       await clientConn.sendInitialize(protocolVersion: 1);
 
-      expect(() => clientConn.sendListSessions(), throwsUnsupportedError);
+      final response = await clientConn.sendListSessions(cwd: '/home');
+      expect(response.sessions, hasLength(1));
+      expect(response.sessions.first.sessionId, 'sess-1');
+      expect(response.sessions.first.cwd, '/home');
 
       await clientConn.close();
     });
 
+    test('sendListSessions enforces sessionCapabilities.list', () async {
+      final (agentTransport, clientTransport) = createLinkedTransports();
+
+      AgentSideConnection(
+        agentTransport,
+        handlerFactory: (conn) => _NoListAgentHandler(),
+      );
+
+      final clientConn = ClientSideConnection(
+        clientTransport,
+        handler: _TestClientHandler(),
+      );
+
+      await clientConn.sendInitialize(protocolVersion: 1);
+
+      expect(
+        () => clientConn.sendListSessions(),
+        throwsA(isA<CapabilityException>()),
+      );
+
+      await clientConn.close();
+    });
+  });
+
+  group('Unstable method gating', () {
     test('sendForkSession throws UnsupportedError without opt-in', () async {
       final (agentTransport, clientTransport) = createLinkedTransports();
 
@@ -99,30 +139,6 @@ void main() {
         () => clientConn.sendForkSession(sessionId: 'sess-1', cwd: '/tmp'),
         throwsUnsupportedError,
       );
-
-      await clientConn.close();
-    });
-
-    test('sendListSessions works with useUnstableProtocol: true', () async {
-      final (agentTransport, clientTransport) = createLinkedTransports();
-
-      AgentSideConnection(
-        agentTransport,
-        handlerFactory: (conn) => _TestAgentHandler(),
-        useUnstableProtocol: true,
-      );
-
-      final clientConn = ClientSideConnection(
-        clientTransport,
-        handler: _TestClientHandler(),
-        useUnstableProtocol: true,
-      );
-
-      await clientConn.sendInitialize(protocolVersion: 1);
-
-      final response = await clientConn.sendListSessions();
-      expect(response.sessions, hasLength(1));
-      expect(response.sessions.first['id'], 'sess-1');
 
       await clientConn.close();
     });
@@ -170,8 +186,11 @@ void main() {
 
       await clientConn.sendInitialize(protocolVersion: 1);
 
-      // Agent should return an error (internal error wrapping UnsupportedError)
-      expect(clientConn.sendListSessions(), throwsA(anything));
+      // Agent should return an error (internal error wrapping UnsupportedError).
+      expect(
+        clientConn.sendForkSession(sessionId: 'sess-1', cwd: '/tmp'),
+        throwsA(anything),
+      );
 
       await Future<void>.delayed(const Duration(milliseconds: 50));
       await clientConn.close();
@@ -191,16 +210,18 @@ void main() {
     test('ListSessionsResponse round-trip', () {
       final json = <String, dynamic>{
         'sessions': [
-          {'id': 's1', 'cwd': '/home'},
+          {'sessionId': 's1', 'cwd': '/home'},
         ],
       };
       final resp = ListSessionsResponse.fromJson(json);
       expect(resp.sessions, hasLength(1));
+      expect(resp.sessions.first.sessionId, 's1');
       expect(resp.toJson(), json);
     });
 
     test('ForkSessionRequest round-trip', () {
       final json = <String, dynamic>{
+        'additionalDirectories': <dynamic>[],
         'cwd': '/tmp',
         'mcpServers': <dynamic>[],
         'sessionId': 's1',
@@ -220,6 +241,7 @@ void main() {
 
     test('extensionData preserved', () {
       final json = <String, dynamic>{
+        'additionalDirectories': <dynamic>[],
         'cwd': '/home',
         'mcpServers': <dynamic>[],
         'sessionId': 's1',

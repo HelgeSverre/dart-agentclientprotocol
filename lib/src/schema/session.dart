@@ -628,3 +628,157 @@ final class SessionNotification implements HasMeta {
     if (extensionData != null) ...extensionData!,
   };
 }
+
+/// Information about a session returned by session/list
+final class SessionInfo implements HasMeta {
+  /// The working directory for this session. Must be an absolute path.
+  final String cwd;
+
+  /// Unique identifier for the session
+  final String sessionId;
+
+  /// Human-readable title for the session
+  final String? title;
+
+  /// ISO 8601 timestamp of last activity
+  final String? updatedAt;
+
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [SessionInfo].
+  const SessionInfo({
+    required this.cwd,
+    required this.sessionId,
+    this.title,
+    this.updatedAt,
+    this.meta,
+    this.extensionData,
+  });
+
+  /// Deserializes from JSON.
+  factory SessionInfo.fromJson(Map<String, dynamic> json) {
+    final known = {'cwd', 'sessionId', 'title', 'updatedAt', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return SessionInfo(
+      cwd: json['cwd'] as String,
+      sessionId: json['sessionId'] as String,
+      title: json['title'] as String?,
+      updatedAt: json['updatedAt'] as String?,
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  /// Serializes to JSON.
+  Map<String, dynamic> toJson() => {
+    'cwd': cwd,
+    'sessionId': sessionId,
+    if (title != null) 'title': title,
+    if (updatedAt != null) 'updatedAt': updatedAt,
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}
+
+/// Request parameters for listing existing sessions.
+///
+/// Only available if the Agent supports the `sessionCapabilities.list` capability.
+final class ListSessionsRequest implements HasMeta {
+  /// Opaque cursor token from a previous response's nextCursor field for cursor-based pagination
+  final String? cursor;
+
+  /// Filter sessions by working directory. Must be an absolute path.
+  final String? cwd;
+
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [ListSessionsRequest].
+  const ListSessionsRequest({
+    this.cursor,
+    this.cwd,
+    this.meta,
+    this.extensionData,
+  });
+
+  /// Deserializes from JSON.
+  factory ListSessionsRequest.fromJson(Map<String, dynamic> json) {
+    final known = {'cursor', 'cwd', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return ListSessionsRequest(
+      cursor: json['cursor'] as String?,
+      cwd: json['cwd'] as String?,
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  /// Serializes to JSON.
+  Map<String, dynamic> toJson() => {
+    if (cursor != null) 'cursor': cursor,
+    if (cwd != null) 'cwd': cwd,
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}
+
+/// Response from listing sessions.
+final class ListSessionsResponse implements HasMeta {
+  /// Opaque cursor token. If present, pass this in the next request's cursor parameter
+  /// to fetch the next page. If absent, there are no more results.
+  final String? nextCursor;
+
+  /// Array of session information objects
+  final List<SessionInfo> sessions;
+
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [ListSessionsResponse].
+  const ListSessionsResponse({
+    this.nextCursor,
+    this.sessions = const [],
+    this.meta,
+    this.extensionData,
+  });
+
+  /// Deserializes from JSON.
+  factory ListSessionsResponse.fromJson(Map<String, dynamic> json) {
+    final known = {'nextCursor', 'sessions', '_meta'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return ListSessionsResponse(
+      nextCursor: json['nextCursor'] as String?,
+      sessions:
+          (json['sessions'] as List<dynamic>?)
+              ?.map((e) => SessionInfo.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  /// Serializes to JSON.
+  Map<String, dynamic> toJson() => {
+    if (nextCursor != null) 'nextCursor': nextCursor,
+    'sessions': sessions.map((e) => e.toJson()).toList(),
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}

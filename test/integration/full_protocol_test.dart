@@ -161,11 +161,12 @@ class _TestClientHandler extends ClientHandler {
   }
 
   @override
-  Future<void> releaseTerminal(
+  Future<ReleaseTerminalResponse> releaseTerminal(
     ReleaseTerminalRequest request, {
     required AcpCancellationToken cancelToken,
   }) async {
     releasedTerminals.add(request.terminalId);
+    return const ReleaseTerminalResponse();
   }
 }
 

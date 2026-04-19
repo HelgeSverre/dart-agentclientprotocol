@@ -61,10 +61,7 @@ sealed class JsonRpcMessage {
       if (json.isEmpty) {
         throw const FormatException('Empty JSON-RPC batch array');
       }
-      return [
-        for (final item in json)
-          if (item is Map<String, dynamic>) JsonRpcMessage.fromJson(item),
-      ];
+      return [for (final item in json) _parseBatchItem(item)];
     }
     throw FormatException(
       'Expected JSON object or array, got ${json.runtimeType}',
@@ -73,6 +70,15 @@ sealed class JsonRpcMessage {
 
   /// Serializes this message to a JSON map.
   Map<String, dynamic> toJson();
+
+  static JsonRpcMessage _parseBatchItem(Object? item) {
+    if (item is Map<String, dynamic>) {
+      return JsonRpcMessage.fromJson(item);
+    }
+    throw FormatException(
+      'JSON-RPC batch item must be an object, got ${item.runtimeType}',
+    );
+  }
 }
 
 /// A JSON-RPC 2.0 request.
@@ -214,6 +220,14 @@ final class JsonRpcResponse extends JsonRpcMessage {
 
   /// Deserializes a [JsonRpcResponse] from a JSON map.
   factory JsonRpcResponse.fromJson(Map<String, dynamic> json) {
+    final hasResult = json.containsKey('result');
+    final hasError = json.containsKey('error');
+    if (hasResult == hasError) {
+      throw const FormatException(
+        'JSON-RPC response must contain exactly one of "result" or "error"',
+      );
+    }
+
     final id = json['id'];
     final error = json['error'];
     return JsonRpcResponse(

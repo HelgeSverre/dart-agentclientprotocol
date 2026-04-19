@@ -58,8 +58,7 @@ abstract class AgentHandler {
     required AcpCancellationToken cancelToken,
   }) async => throw RpcErrorException.methodNotFound();
 
-  /// Handles a `session/list` request (unstable).
-  @experimental
+  /// Handles a `session/list` request.
   Future<ListSessionsResponse> listSessions(
     ListSessionsRequest request, {
     required AcpCancellationToken cancelToken,

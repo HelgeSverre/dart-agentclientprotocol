@@ -10,7 +10,6 @@ import 'dart:async';
 import 'package:acp/agent.dart';
 import 'package:acp/client.dart';
 import 'package:acp/schema.dart';
-import 'package:acp/src/protocol/json_rpc_message.dart';
 import 'package:acp/transport.dart';
 
 // -- In-memory linked transports --

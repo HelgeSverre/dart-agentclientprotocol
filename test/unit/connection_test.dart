@@ -1,3 +1,4 @@
+import 'package:acp/src/protocol/cancellation.dart';
 import 'package:acp/src/protocol/connection.dart';
 import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
@@ -185,6 +186,71 @@ void main() {
 
       await conn.close();
     });
+  });
+
+  group(r'$/cancel_request handling', () {
+    test('cancels an active incoming request by id', () async {
+      final transport = MockTransport();
+      final conn = Connection(transport);
+      conn.setRequestHandler('test/slow', (req, cancel) async {
+        await cancel.whenCanceled;
+        cancel.throwIfCanceled();
+        return <String, dynamic>{'ok': true};
+      });
+
+      conn.start();
+      conn.markOpen();
+
+      transport.receive(const JsonRpcRequest(id: 1, method: 'test/slow'));
+      await Future<void>.delayed(Duration.zero);
+
+      transport.receive(
+        const JsonRpcNotification(
+          method: r'$/cancel_request',
+          params: {'requestId': 1},
+        ),
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(transport.sent, hasLength(1));
+      final response = transport.sent.single as JsonRpcResponse;
+      expect(response.id, 1);
+      expect(response.error?.code, -32800);
+
+      await conn.close();
+    });
+
+    test(
+      'canceling an outgoing token notifies the peer by request id',
+      () async {
+        final transport = MockTransport();
+        final conn = Connection(transport);
+        final source = AcpCancellationSource();
+        conn.start();
+        conn.markOpen();
+
+        final future = conn.sendRequest(
+          'test/slow',
+          null,
+          cancelToken: source.token,
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final request = transport.sent.single as JsonRpcRequest;
+        source.cancel('user stopped waiting');
+
+        await expectLater(future, throwsA(isA<RequestCanceledException>()));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(transport.sent, hasLength(2));
+        final notification = transport.sent.last as JsonRpcNotification;
+        expect(notification.method, r'$/cancel_request');
+        expect(notification.params?['requestId'], request.id);
+
+        await conn.close();
+      },
+    );
   });
 
   group('Request handler dispatch', () {

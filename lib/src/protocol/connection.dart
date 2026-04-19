@@ -59,6 +59,8 @@ final class Connection {
       <String, RequestHandler>{};
   final Map<String, NotificationHandler> _notificationHandlers =
       <String, NotificationHandler>{};
+  final Map<Object, AcpCancellationSource> _activeIncomingRequests =
+      <Object, AcpCancellationSource>{};
 
   // Extension fallback handlers
   RequestHandler? _extensionRequestHandler;
@@ -99,6 +101,7 @@ final class Connection {
        _keepaliveTimeout = keepaliveTimeout {
     _notificationHandlers[AcpMethods.ping] = _handlePing;
     _notificationHandlers[AcpMethods.pong] = _handlePong;
+    _notificationHandlers[AcpMethods.cancelRequest] = _handleCancelRequest;
   }
 
   /// The timestamp of the last received pong, or `null` if no pong received.
@@ -209,6 +212,7 @@ final class Connection {
           final removed = _pendingRequests.remove(id);
           if (removed != null && !removed.completer.isCompleted) {
             removed.timer.cancel();
+            unawaited(_notifyCancelRequest(id));
             removed.completer.completeError(RequestCanceledException(id));
           }
         }),
@@ -368,6 +372,7 @@ final class Connection {
     }
 
     final cancelSource = AcpCancellationSource();
+    _activeIncomingRequests[request.id] = cancelSource;
     unawaited(_runHandler(request, handler, cancelSource.token));
   }
 
@@ -378,15 +383,29 @@ final class Connection {
   ) async {
     try {
       final result = await handler(request, cancelToken);
-      await sendResponse(JsonRpcResponse(id: request.id, result: result));
+      if (cancelToken.isCanceled) {
+        await _sendErrorResponse(
+          request.id,
+          RpcErrorException.requestCancelled(),
+        );
+      } else {
+        await sendResponse(JsonRpcResponse(id: request.id, result: result));
+      }
     } on RpcErrorException catch (e) {
       await _sendErrorResponse(request.id, e);
+    } on CanceledException {
+      await _sendErrorResponse(
+        request.id,
+        RpcErrorException.requestCancelled(),
+      );
     } on Object catch (e, stack) {
       _log.severe('Handler error for ${request.method}', e, stack);
       await _sendErrorResponse(
         request.id,
         RpcErrorException.internalError(e.toString()),
       );
+    } finally {
+      _activeIncomingRequests.remove(request.id);
     }
   }
 
@@ -503,6 +522,24 @@ final class Connection {
     _keepaliveTimeoutTimer = null;
   }
 
+  Future<void> _handleCancelRequest(JsonRpcNotification notification) async {
+    final requestId = notification.params?['requestId'];
+    if (requestId is! String && requestId is! int) {
+      return;
+    }
+    _activeIncomingRequests[requestId]?.cancel('Cancelled by peer');
+  }
+
+  Future<void> _notifyCancelRequest(Object requestId) async {
+    try {
+      await notify(AcpMethods.cancelRequest, <String, dynamic>{
+        'requestId': requestId,
+      });
+    } on Object catch (e) {
+      _log.fine('Failed to notify request cancellation for $requestId: $e');
+    }
+  }
+
   Future<void> _cleanup() async {
     if (_state == ConnectionState.closed) return;
 
@@ -510,6 +547,12 @@ final class Connection {
 
     await _transportSubscription?.cancel();
     _transportSubscription = null;
+
+    // Cancel in-flight incoming request handlers.
+    for (final source in _activeIncomingRequests.values) {
+      source.cancel('Connection closed');
+    }
+    _activeIncomingRequests.clear();
 
     // Fail all pending requests
     final pending = Map<Object, _PendingRequest>.from(_pendingRequests);

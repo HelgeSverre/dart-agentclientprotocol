@@ -5,7 +5,9 @@
 
 import 'package:acp/src/schema/has_meta.dart';
 
-/// Describes an available authentication method.
+/// Agent handles authentication itself.
+///
+/// This is the default authentication method type.
 final class AuthMethod implements HasMeta {
   /// Optional description providing more details about this authentication method.
   final String? description;

@@ -241,11 +241,12 @@ final class AgentSideConnection {
       sessionId: sessionId,
       terminalId: terminalId,
     );
-    await _connection.sendRequest(
+    final result = await _connection.sendRequest(
       AcpMethods.terminalRelease,
       request.toJson(),
       cancelToken: cancelToken,
     );
+    ReleaseTerminalResponse.fromJson(result);
   }
 
   /// Sends a `terminal/kill` request.
@@ -263,11 +264,12 @@ final class AgentSideConnection {
       sessionId: sessionId,
       terminalId: terminalId,
     );
-    await _connection.sendRequest(
+    final result = await _connection.sendRequest(
       AcpMethods.terminalKill,
       request.toJson(),
       cancelToken: cancelToken,
     );
+    KillTerminalCommandResponse.fromJson(result);
   }
 
   /// Sends a `terminal/wait_for_exit` request.
@@ -355,8 +357,10 @@ final class AgentSideConnection {
     // Client → Agent notification handler
     _connection.setNotificationHandler(AcpMethods.sessionCancel, _handleCancel);
 
-    // Unstable method handlers
+    // Stable method handlers
     _connection.setRequestHandler(AcpMethods.sessionList, _handleListSessions);
+
+    // Unstable method handlers
     _connection.setRequestHandler(AcpMethods.sessionFork, _handleForkSession);
 
     // Extension handlers
@@ -479,7 +483,6 @@ final class AgentSideConnection {
     JsonRpcRequest request,
     AcpCancellationToken cancelToken,
   ) async {
-    _ensureUnstable(AcpMethods.sessionList);
     final listReq = ListSessionsRequest.fromJson(request.params ?? {});
     final response = await _handler.listSessions(
       listReq,

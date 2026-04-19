@@ -168,10 +168,18 @@ final class ClientSideConnection {
     List<Map<String, dynamic>> mcpServers = const [],
   }) async {
     final request = NewSessionRequest(cwd: cwd, mcpServers: mcpServers);
-    final result = await _connection.sendRequest(
-      AcpMethods.sessionNew,
-      request.toJson(),
-    );
+    late final Map<String, dynamic> result;
+    try {
+      result = await _connection.sendRequest(
+        AcpMethods.sessionNew,
+        request.toJson(),
+      );
+    } on RpcErrorException catch (e) {
+      if (e.code == -32000) {
+        throw AuthenticationException(e.message);
+      }
+      rethrow;
+    }
     return NewSessionResponse.fromJson(result);
   }
 
@@ -251,13 +259,20 @@ final class ClientSideConnection {
     return SetSessionConfigOptionResponse.fromJson(result);
   }
 
-  /// Sends a `session/list` request (unstable).
+  /// Sends a `session/list` request.
   ///
-  /// Requires `useUnstableProtocol: true` on this connection.
-  @experimental
-  Future<ListSessionsResponse> sendListSessions() async {
-    _ensureUnstable(AcpMethods.sessionList);
-    final request = const ListSessionsRequest();
+  /// Requires the agent to advertise `sessionCapabilities.list` when
+  /// [CapabilityEnforcement.strict] is active.
+  Future<ListSessionsResponse> sendListSessions({
+    String? cwd,
+    String? cursor,
+  }) async {
+    _enforceCapability(
+      AcpMethods.sessionList,
+      'sessionCapabilities.list',
+      _remoteCapabilities?.sessionCapabilities.list != null,
+    );
+    final request = ListSessionsRequest(cwd: cwd, cursor: cursor);
     final result = await _connection.sendRequest(
       AcpMethods.sessionList,
       request.toJson(),
@@ -390,8 +405,11 @@ final class ClientSideConnection {
     AcpCancellationToken cancelToken,
   ) async {
     final req = ReleaseTerminalRequest.fromJson(request.params ?? {});
-    await _handler.releaseTerminal(req, cancelToken: cancelToken);
-    return <String, dynamic>{};
+    final response = await _handler.releaseTerminal(
+      req,
+      cancelToken: cancelToken,
+    );
+    return response.toJson();
   }
 
   Future<Map<String, dynamic>> _handleKillTerminal(
@@ -399,8 +417,8 @@ final class ClientSideConnection {
     AcpCancellationToken cancelToken,
   ) async {
     final req = KillTerminalCommandRequest.fromJson(request.params ?? {});
-    await _handler.killTerminal(req, cancelToken: cancelToken);
-    return <String, dynamic>{};
+    final response = await _handler.killTerminal(req, cancelToken: cancelToken);
+    return response.toJson();
   }
 
   Future<Map<String, dynamic>> _handleWaitForTerminalExit(

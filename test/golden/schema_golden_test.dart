@@ -588,7 +588,7 @@ void main() {
 
     test('RequestPermissionResponse', () {
       final json = <String, dynamic>{
-        'outcome': {'outcome': 'allowed', 'optionId': 'allow'},
+        'outcome': {'outcome': 'selected', 'optionId': 'allow'},
         '_meta': {'decision': 'auto'},
       };
       expectRoundTrip(
@@ -611,8 +611,8 @@ void main() {
     test('ListSessionsResponse', () {
       final json = <String, dynamic>{
         'sessions': [
-          {'id': 's1', 'cwd': '/home'},
-          {'id': 's2', 'cwd': '/tmp'},
+          {'sessionId': 's1', 'cwd': '/home'},
+          {'sessionId': 's2', 'cwd': '/tmp'},
         ],
         '_meta': {'count': 2},
       };
@@ -621,6 +621,7 @@ void main() {
 
     test('ForkSessionRequest', () {
       final json = <String, dynamic>{
+        'additionalDirectories': <dynamic>[],
         'cwd': '/home/user',
         'mcpServers': <dynamic>[],
         'sessionId': 'sess-original',

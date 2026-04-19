@@ -215,7 +215,7 @@ void main() {
       expect(resp.protocolVersion, 1);
       expect(resp.agentCapabilities.loadSession, isTrue);
       expect(resp.authMethods, hasLength(1));
-      expect(resp.authMethods.first.id, 'env_var');
+      expect(resp.authMethods.first['id'], 'env_var');
       expect(resp.agentInfo!.name, 'TestAgent');
     });
   });

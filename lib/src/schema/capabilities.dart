@@ -5,7 +5,6 @@
 
 import 'package:acp/src/schema/has_meta.dart';
 
-/// Filesystem capabilities supported by the client.
 /// File system capabilities that a client may support.
 ///
 /// See protocol docs: [FileSystem](https://agentclientprotocol.com/protocol/initialization#filesystem)
@@ -229,6 +228,9 @@ final class McpCapabilities implements HasMeta {
 ///
 /// See protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/initialization#session-capabilities)
 final class SessionCapabilities implements HasMeta {
+  /// Whether the agent supports `session/list`.
+  final Map<String, dynamic>? list;
+
   @override
   final Map<String, Object?>? meta;
 
@@ -236,15 +238,16 @@ final class SessionCapabilities implements HasMeta {
   final Map<String, Object?>? extensionData;
 
   /// Creates a [SessionCapabilities].
-  const SessionCapabilities({this.meta, this.extensionData});
+  const SessionCapabilities({this.list, this.meta, this.extensionData});
 
   /// Deserializes from JSON.
   factory SessionCapabilities.fromJson(Map<String, dynamic> json) {
-    final known = {'_meta'};
+    final known = {'list', '_meta'};
     final ext = Map<String, Object?>.fromEntries(
       json.entries.where((e) => !known.contains(e.key)),
     );
     return SessionCapabilities(
+      list: json['list'] as Map<String, dynamic>?,
       meta: json['_meta'] as Map<String, Object?>?,
       extensionData: ext.isEmpty ? null : ext,
     );
@@ -252,6 +255,7 @@ final class SessionCapabilities implements HasMeta {
 
   /// Serializes to JSON.
   Map<String, dynamic> toJson() => {
+    if (list != null) 'list': list,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

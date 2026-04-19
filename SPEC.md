@@ -64,7 +64,7 @@ Build a Dart package that feels idiomatic to Dart developers while implementing 
 
 ### 1.3 Target ACP Version
 
-- Initial implementation targets **ACP schema v0.10.8** (latest stable as of 2026-02).
+- Initial implementation targets **ACP schema v0.12.0**.
 - Track upstream releases via `tool/schema_sync` and update `doc/protocol/version-support.md` on each sync.
 
 ### 1.4 Product Outcomes
@@ -257,7 +257,8 @@ ACP defines a first-class authentication handshake:
 
 Model types:
 
-- `AuthMethod` — sealed class with variants: `AgentAuth`, `EnvVarAuth`, `TerminalAuth`, `UnknownAuthMethod`.
+- `AuthMethod` — agent-managed authentication method with `id`, `name`,
+  optional `description`, `_meta`, and extension fields.
 - `AuthenticateRequest` — contains `methodId` and optional `_meta`.
 - `AuthenticateResponse` — contains optional `_meta`.
 
@@ -271,7 +272,7 @@ ACP's `ContentBlock` is a sealed union discriminated by a `type` field:
 - `ImageContent` (`type: "image"`) — base64-encoded image with MIME type.
 - `AudioContent` (`type: "audio"`) — base64-encoded audio with MIME type.
 - `ResourceLink` (`type: "resource_link"`) — URI reference.
-- `EmbeddedResource` (`type: "embedded_resource"`) — inline resource.
+- `EmbeddedResource` (`type: "resource"`) — inline resource.
 - `UnknownContentBlock` — forward-compatibility fallback preserving raw JSON.
 
 This requires a custom `fromJson` factory with explicit `switch` on the `type` discriminator, since `json_serializable` cannot auto-handle this.
@@ -362,7 +363,7 @@ ACP has unstable/experimental methods (e.g., `session/fork`, `session/list`). Th
 - If an unstable method is called without the opt-in flag, throw `UnsupportedError` with a message explaining how to enable it.
 - This mirrors Python's `use_unstable_protocol` flag and Kotlin's `@UnstableApi` annotation.
 
-### 4.7 ACP Method Surface (v0.10.8)
+### 4.7 ACP Method Surface (v0.12.0)
 
 For compliance tracking, the full method surface to implement:
 
@@ -397,7 +398,8 @@ For compliance tracking, the full method surface to implement:
 
 **Unstable methods** (gated by `useUnstableProtocol`, see §4.6):
 
-- `session/list` — list existing sessions (unstable).
+- `session/list` — list existing sessions when `sessionCapabilities.list` is
+  advertised.
 - `session/fork` — fork an existing session (unstable).
 - Additional unstable methods per ACP schema evolution.
 

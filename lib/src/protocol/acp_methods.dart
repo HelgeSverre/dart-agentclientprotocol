@@ -1,7 +1,7 @@
 /// ACP JSON-RPC method name constants.
 ///
 /// These constants define the wire-format method strings for all ACP
-/// protocol methods and notifications as of schema v0.10.8.
+/// protocol methods and notifications as of schema v0.12.0.
 abstract final class AcpMethods {
   // -- Agent-side methods (client → agent requests) --
 
@@ -62,10 +62,12 @@ abstract final class AcpMethods {
   /// Streaming session updates.
   static const String sessionUpdate = 'session/update';
 
-  // -- Unstable methods --
+  // -- Stable optional methods --
 
-  /// List existing sessions (unstable).
+  /// List existing sessions.
   static const String sessionList = 'session/list';
+
+  // -- Unstable methods --
 
   /// Fork an existing session (unstable).
   static const String sessionFork = 'session/fork';
@@ -73,7 +75,7 @@ abstract final class AcpMethods {
   // -- Meta --
 
   /// Cancel a pending request (JSON-RPC extension).
-  static const String cancelRequest = r'$/cancelRequest';
+  static const String cancelRequest = r'$/cancel_request';
 
   /// Keepalive ping (JSON-RPC extension notification).
   static const String ping = r'$/ping';

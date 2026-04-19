@@ -31,11 +31,11 @@ List<FileConfig> _fileConfigs(
 ) {
   return [
     FileConfig(fileName: 'annotations.dart', typeNames: ['Annotations']),
-    FileConfig(fileName: 'auth_method.dart', typeNames: ['AuthMethod']),
+    FileConfig(fileName: 'auth_method.dart', typeNames: ['AuthMethodAgent']),
     FileConfig(
       fileName: 'capabilities.dart',
       typeNames: [
-        'FileSystemCapability',
+        'FileSystemCapabilities',
         'ClientCapabilities',
         'PromptCapabilities',
         'McpCapabilities',
@@ -65,11 +65,7 @@ List<FileConfig> _fileConfigs(
         'AuthenticateRequest',
         'AuthenticateResponse',
       ],
-      imports: [
-        'auth_method.dart',
-        'capabilities.dart',
-        'implementation_info.dart',
-      ],
+      imports: ['capabilities.dart', 'implementation_info.dart'],
     ),
     FileConfig(
       fileName: 'session.dart',
@@ -87,6 +83,9 @@ List<FileConfig> _fileConfigs(
         'SetSessionConfigOptionRequest',
         'SetSessionConfigOptionResponse',
         'SessionNotification',
+        'SessionInfo',
+        'ListSessionsRequest',
+        'ListSessionsResponse',
       ],
       imports: ['content_block.dart'],
     ),
@@ -103,7 +102,9 @@ List<FileConfig> _fileConfigs(
         'TerminalOutputRequest',
         'TerminalOutputResponse',
         'ReleaseTerminalRequest',
-        'KillTerminalCommandRequest',
+        'ReleaseTerminalResponse',
+        'KillTerminalRequest',
+        'KillTerminalResponse',
         'WaitForTerminalExitRequest',
         'WaitForTerminalExitResponse',
         'RequestPermissionRequest',
@@ -126,18 +127,9 @@ List<FileConfig> _fileConfigs(
     ),
     FileConfig(
       fileName: 'unstable_methods.dart',
-      typeNames: [
-        'ListSessionsRequest',
-        'ListSessionsResponse',
-        'ForkSessionRequest',
-        'ForkSessionResponse',
-      ],
+      typeNames: ['ForkSessionRequest', 'ForkSessionResponse'],
       experimental: true,
       sectionComments: [
-        SectionComment(
-          beforeType: 'ListSessionsRequest',
-          comment: '// -- session/list (unstable) --',
-        ),
         SectionComment(
           beforeType: 'ForkSessionRequest',
           comment: '// -- session/fork (unstable) --',

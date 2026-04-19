@@ -2,7 +2,8 @@
 
 ## Target Version
 
-This library targets **ACP schema v0.10.8** (latest stable as of 2026-02).
+This library targets **ACP schema v0.12.0**, released by the official ACP
+repository on 2026-04-17.
 
 The protocol version integer is exchanged during the `initialize` handshake
 via `InitializeRequest.protocolVersion` and
@@ -14,6 +15,7 @@ via `InitializeRequest.protocolVersion` and
 - When a new schema version is synced, the schema source at
   `tool/upstream/schema/schema.json` is updated and code is regenerated
   via `tool/generate/generate.dart`.
+- Primary reference snapshots are kept under `docs/references/`.
 - This document is updated on each sync to reflect the new target version.
 - Breaking protocol changes follow the library's semver policy: breaking
   changes only in major versions, with a deprecation window when practical.
@@ -36,7 +38,7 @@ covering every ACP method, notification, and schema type.
 | `session/prompt`            | ✅            |
 | `session/set_mode`          | ✅            |
 | `session/set_config_option` | ✅            |
-| `session/list`              | ✅ (unstable) |
+| `session/list`              | ✅            |
 | `session/fork`              | ✅ (unstable) |
 
 ### Methods (agent → client)
@@ -54,10 +56,12 @@ covering every ACP method, notification, and schema type.
 
 ### Notifications
 
-| Notification     | Direction      | Status |
-| ---------------- | -------------- | ------ |
-| `session/update` | agent → client | ✅     |
-| `session/cancel` | client → agent | ✅     |
+| Notification        | Direction      | Status |
+| ------------------- | -------------- | ------ |
+| `session/update`    | agent → client | ✅     |
+| `session/cancel`    | client → agent | ✅     |
+| `$/cancel_request`  | both           | ✅     |
+| `$/ping` / `$/pong` | both           | ✅     |
 
 ### SessionUpdate discriminators
 

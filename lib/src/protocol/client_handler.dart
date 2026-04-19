@@ -41,13 +41,13 @@ abstract class ClientHandler {
   }) async => throw RpcErrorException.methodNotFound();
 
   /// Handles a `terminal/release` request.
-  Future<void> releaseTerminal(
+  Future<ReleaseTerminalResponse> releaseTerminal(
     ReleaseTerminalRequest request, {
     required AcpCancellationToken cancelToken,
   }) async => throw RpcErrorException.methodNotFound();
 
   /// Handles a `terminal/kill` request.
-  Future<void> killTerminal(
+  Future<KillTerminalCommandResponse> killTerminal(
     KillTerminalCommandRequest request, {
     required AcpCancellationToken cancelToken,
   }) async => throw RpcErrorException.methodNotFound();

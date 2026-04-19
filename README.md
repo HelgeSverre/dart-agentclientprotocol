@@ -135,16 +135,16 @@ It demonstrates initialization with implementation metadata, client filesystem a
 
 ## Transports
 
-| Transport | Use case |
-| --- | --- |
-| `StdioTransport` | Agent-side NDJSON over stdin/stdout |
-| `StdioProcessTransport` | Client-side subprocess spawning |
-| `HttpSseTransport` | HTTP POST plus Server-Sent Events |
-| `StreamableHttpTransport` | Streamable HTTP transport |
-| `WebSocketTransport` | VM WebSocket text frames |
-| `BrowserWebSocketTransport` | Browser WebSocket text frames |
-| `ReconnectingTransport` | Reconnect wrapper for reconnectable transports |
-| `AcpTransport` | Interface for custom transports |
+| Transport                   | Use case                                       |
+| --------------------------- | ---------------------------------------------- |
+| `StdioTransport`            | Agent-side NDJSON over stdin/stdout            |
+| `StdioProcessTransport`     | Client-side subprocess spawning                |
+| `HttpSseTransport`          | HTTP POST plus Server-Sent Events              |
+| `StreamableHttpTransport`   | Streamable HTTP transport                      |
+| `WebSocketTransport`        | VM WebSocket text frames                       |
+| `BrowserWebSocketTransport` | Browser WebSocket text frames                  |
+| `ReconnectingTransport`     | Reconnect wrapper for reconnectable transports |
+| `AcpTransport`              | Interface for custom transports                |
 
 ## Protocol Features
 

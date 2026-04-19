@@ -3,7 +3,6 @@
 // Source: tool/upstream/schema/schema.json
 // Run `dart run tool/generate/generate.dart` to regenerate.
 
-import 'package:acp/src/schema/auth_method.dart';
 import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/has_meta.dart';
 import 'package:acp/src/schema/implementation_info.dart';
@@ -95,7 +94,7 @@ final class InitializeResponse implements HasMeta {
   final ImplementationInfo? agentInfo;
 
   /// Authentication methods supported by the agent.
-  final List<AuthMethod> authMethods;
+  final List<Map<String, dynamic>> authMethods;
 
   /// The protocol version the client specified if supported by the agent,
   /// or the latest protocol version supported by the agent.
@@ -146,8 +145,7 @@ final class InitializeResponse implements HasMeta {
               : null,
       authMethods:
           (json['authMethods'] as List<dynamic>?)
-              ?.map((e) => AuthMethod.fromJson(e as Map<String, dynamic>))
-              .toList() ??
+              ?.cast<Map<String, dynamic>>() ??
           const [],
       protocolVersion: json['protocolVersion'] as int,
       meta: json['_meta'] as Map<String, Object?>?,
@@ -159,7 +157,7 @@ final class InitializeResponse implements HasMeta {
   Map<String, dynamic> toJson() => {
     'agentCapabilities': agentCapabilities.toJson(),
     if (agentInfo != null) 'agentInfo': agentInfo!.toJson(),
-    'authMethods': authMethods.map((e) => e.toJson()).toList(),
+    'authMethods': authMethods,
     'protocolVersion': protocolVersion,
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,

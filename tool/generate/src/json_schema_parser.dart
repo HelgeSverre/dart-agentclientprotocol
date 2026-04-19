@@ -7,7 +7,15 @@ import 'dart:io';
 import 'schema_model.dart';
 
 /// Name overrides: schema name → Dart class name.
-const _nameOverrides = <String, String>{'Implementation': 'ImplementationInfo'};
+const _nameOverrides = <String, String>{
+  'Implementation': 'ImplementationInfo',
+  // Preserve package API names used before upstream schema renamed these
+  // definitions.
+  'AuthMethodAgent': 'AuthMethod',
+  'FileSystemCapabilities': 'FileSystemCapability',
+  'KillTerminalRequest': 'KillTerminalCommandRequest',
+  'KillTerminalResponse': 'KillTerminalCommandResponse',
+};
 
 /// Variant class name overrides: "ParentSchemaName.RawDartName" → final Dart name.
 /// The key uses the PascalCase of the discriminator value (since schema variants

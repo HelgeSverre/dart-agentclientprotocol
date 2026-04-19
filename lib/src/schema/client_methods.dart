@@ -455,7 +455,37 @@ final class ReleaseTerminalRequest implements HasMeta {
   };
 }
 
-/// Request to kill a terminal command without releasing the terminal.
+/// Response to terminal/release method
+final class ReleaseTerminalResponse implements HasMeta {
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [ReleaseTerminalResponse].
+  const ReleaseTerminalResponse({this.meta, this.extensionData});
+
+  /// Deserializes from JSON.
+  factory ReleaseTerminalResponse.fromJson(Map<String, dynamic> json) {
+    final known = {'_meta'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return ReleaseTerminalResponse(
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  /// Serializes to JSON.
+  Map<String, dynamic> toJson() => {
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}
+
+/// Request to kill a terminal without releasing it.
 final class KillTerminalCommandRequest implements HasMeta {
   /// The session ID for this request.
   final String sessionId;
@@ -495,6 +525,36 @@ final class KillTerminalCommandRequest implements HasMeta {
   Map<String, dynamic> toJson() => {
     'sessionId': sessionId,
     'terminalId': terminalId,
+    if (meta != null) '_meta': meta,
+    if (extensionData != null) ...extensionData!,
+  };
+}
+
+/// Response to `terminal/kill` method
+final class KillTerminalCommandResponse implements HasMeta {
+  @override
+  final Map<String, Object?>? meta;
+
+  /// Unknown fields preserved for round-trip fidelity.
+  final Map<String, Object?>? extensionData;
+
+  /// Creates a [KillTerminalCommandResponse].
+  const KillTerminalCommandResponse({this.meta, this.extensionData});
+
+  /// Deserializes from JSON.
+  factory KillTerminalCommandResponse.fromJson(Map<String, dynamic> json) {
+    final known = {'_meta'};
+    final ext = Map<String, Object?>.fromEntries(
+      json.entries.where((e) => !known.contains(e.key)),
+    );
+    return KillTerminalCommandResponse(
+      meta: json['_meta'] as Map<String, Object?>?,
+      extensionData: ext.isEmpty ? null : ext,
+    );
+  }
+
+  /// Serializes to JSON.
+  Map<String, dynamic> toJson() => {
     if (meta != null) '_meta': meta,
     if (extensionData != null) ...extensionData!,
   };

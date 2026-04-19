@@ -1,12 +1,17 @@
-/// Downloads the latest ACP schema files from the official GitHub repository.
+/// Downloads ACP schema files from the official GitHub repository.
 ///
 /// Run with: `dart run tool/schema_sync/sync.dart`
+///
+/// Override the tag with:
+/// `dart run -DACP_SCHEMA_VERSION=v0.12.0 tool/schema_sync/sync.dart`
 library;
 
 import 'dart:io';
 
-const _baseUrl =
-    'https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema';
+const _schemaVersion = String.fromEnvironment(
+  'ACP_SCHEMA_VERSION',
+  defaultValue: 'v0.12.0',
+);
 
 const _files = [
   'schema.json',
@@ -16,6 +21,10 @@ const _files = [
 ];
 
 Future<void> main() async {
+  final baseUrl = Uri.parse(
+    'https://raw.githubusercontent.com/agentclientprotocol/'
+    'agent-client-protocol/$_schemaVersion/schema/',
+  );
   final outDir = Directory('tool/upstream/schema');
   if (!outDir.existsSync()) {
     outDir.createSync(recursive: true);
@@ -24,7 +33,7 @@ Future<void> main() async {
   final client = HttpClient();
   try {
     for (final file in _files) {
-      final url = Uri.parse('$_baseUrl/$file');
+      final url = baseUrl.resolve(file);
       stdout.write('Downloading $file ... ');
       final request = await client.getUrl(url);
       final response = await request.close();
@@ -42,5 +51,7 @@ Future<void> main() async {
     client.close();
   }
 
-  stdout.writeln('Done. Schema files written to ${outDir.path}/');
+  stdout.writeln(
+    'Done. ACP $_schemaVersion schema files written to ${outDir.path}/',
+  );
 }
