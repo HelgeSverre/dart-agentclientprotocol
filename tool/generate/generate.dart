@@ -127,12 +127,35 @@ List<FileConfig> _fileConfigs(
     ),
     FileConfig(
       fileName: 'unstable_methods.dart',
-      typeNames: ['ForkSessionRequest', 'ForkSessionResponse'],
+      typeNames:
+          unstable.types.keys
+              .where((name) => !stable.types.containsKey(name))
+              .toList(),
       experimental: true,
       sectionComments: [
         SectionComment(
+          beforeType: 'ListProvidersRequest',
+          comment: '// -- Providers (unstable) --',
+        ),
+        SectionComment(
+          beforeType: 'LogoutRequest',
+          comment: '// -- Auth (unstable) --',
+        ),
+        SectionComment(
           beforeType: 'ForkSessionRequest',
-          comment: '// -- session/fork (unstable) --',
+          comment: '// -- Sessions (unstable) --',
+        ),
+        SectionComment(
+          beforeType: 'DidOpenDocumentNotification',
+          comment: '// -- Documents (unstable) --',
+        ),
+        SectionComment(
+          beforeType: 'StartNesRequest',
+          comment: '// -- Next Edit Suggestions (unstable) --',
+        ),
+        SectionComment(
+          beforeType: 'CreateElicitationRequest',
+          comment: '// -- Elicitation (unstable) --',
         ),
       ],
     ),

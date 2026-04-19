@@ -72,6 +72,63 @@ abstract final class AcpMethods {
   /// Fork an existing session (unstable).
   static const String sessionFork = 'session/fork';
 
+  /// Resume an existing session without replaying history (unstable).
+  static const String sessionResume = 'session/resume';
+
+  /// Close an existing session (unstable).
+  static const String sessionClose = 'session/close';
+
+  /// Set the active model for a session (unstable).
+  static const String sessionSetModel = 'session/set_model';
+
+  /// List configurable providers (unstable).
+  static const String providersList = 'providers/list';
+
+  /// Replace provider configuration (unstable).
+  static const String providersSet = 'providers/set';
+
+  /// Disable a provider (unstable).
+  static const String providersDisable = 'providers/disable';
+
+  /// Log out of the current authenticated state (unstable).
+  static const String logout = 'logout';
+
+  /// Start a next edit suggestion session (unstable).
+  static const String nesStart = 'nes/start';
+
+  /// Request next edit suggestions (unstable).
+  static const String nesSuggest = 'nes/suggest';
+
+  /// Close a next edit suggestion session (unstable).
+  static const String nesClose = 'nes/close';
+
+  /// Notify that a next edit suggestion was accepted (unstable).
+  static const String nesAccept = 'nes/accept';
+
+  /// Notify that a next edit suggestion was rejected (unstable).
+  static const String nesReject = 'nes/reject';
+
+  /// Notify that a document opened (unstable).
+  static const String documentDidOpen = 'document/didOpen';
+
+  /// Notify that a document changed (unstable).
+  static const String documentDidChange = 'document/didChange';
+
+  /// Notify that a document closed (unstable).
+  static const String documentDidClose = 'document/didClose';
+
+  /// Notify that a document was saved (unstable).
+  static const String documentDidSave = 'document/didSave';
+
+  /// Notify that a document became focused (unstable).
+  static const String documentDidFocus = 'document/didFocus';
+
+  /// Request structured user input (unstable).
+  static const String elicitationCreate = 'elicitation/create';
+
+  /// Notify that URL-based elicitation completed (unstable).
+  static const String elicitationComplete = 'elicitation/complete';
+
   // -- Meta --
 
   /// Cancel a pending request (JSON-RPC extension).

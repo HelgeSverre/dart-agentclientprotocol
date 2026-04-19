@@ -151,7 +151,10 @@ It demonstrates initialization with implementation metadata, client filesystem a
 - Typed models generated from the checked-in ACP v0.12.0 schema.
 - JSON-RPC 2.0 requests, responses, notifications, and batch parsing.
 - Stable `session/list` support guarded by `sessionCapabilities.list`.
-- Unstable `session/fork` gated by `useUnstableProtocol`.
+- Unstable v0.12 preview types and method helpers gated by `useUnstableProtocol`
+  for session resume/close/model selection, providers, document events, NES,
+  and elicitation.
+- Outgoing absolute-path and prompt content capability validation.
 - Cooperative request cancellation via `$/cancel_request` and `AcpCancellationToken`.
 - Client-to-agent and agent-to-client extension methods with `_` prefixes.
 - Strict capability enforcement by default, with a permissive mode for integration work.

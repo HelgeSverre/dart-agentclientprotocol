@@ -4,42 +4,42 @@
 
 ### Added
 
-- *(rust-only)* Remove unused RPC message schema types (schema.json unchanged) ([#1009](https://github.com/agentclientprotocol/agent-client-protocol/pull/1009))
-- *(rust-only)* better tolerate malformed optional fields in deserialization ([#1006](https://github.com/agentclientprotocol/agent-client-protocol/pull/1006))
+- _(rust-only)_ Remove unused RPC message schema types (schema.json unchanged) ([#1009](https://github.com/agentclientprotocol/agent-client-protocol/pull/1009))
+- _(rust-only)_ better tolerate malformed optional fields in deserialization ([#1006](https://github.com/agentclientprotocol/agent-client-protocol/pull/1006))
 
 ### Fixed
 
-- *(rpc)* preserve '_' prefix for extension methods and reject empty ext ([#883](https://github.com/agentclientprotocol/agent-client-protocol/pull/883))
+- _(rpc)_ preserve '\_' prefix for extension methods and reject empty ext ([#883](https://github.com/agentclientprotocol/agent-client-protocol/pull/883))
 
 ## [0.11.7](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.11.6...v0.11.7) - 2026-04-15
 
 ### Added
 
-- *(unstable)* Initial implementation of providers ([#899](https://github.com/agentclientprotocol/agent-client-protocol/pull/899))
+- _(unstable)_ Initial implementation of providers ([#899](https://github.com/agentclientprotocol/agent-client-protocol/pull/899))
 
 ### Other
 
-- *(rfd)* Move session/close to Preview ([#970](https://github.com/agentclientprotocol/agent-client-protocol/pull/970))
-- *(rfd)* Move session/resume to Preview ([#969](https://github.com/agentclientprotocol/agent-client-protocol/pull/969))
+- _(rfd)_ Move session/close to Preview ([#970](https://github.com/agentclientprotocol/agent-client-protocol/pull/970))
+- _(rfd)_ Move session/resume to Preview ([#969](https://github.com/agentclientprotocol/agent-client-protocol/pull/969))
 
 ## [0.11.6](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.11.5...v0.11.6) - 2026-04-14
 
 ### Fixed
 
-- *(unstable)* Move elicitation scope into mode variants ([#966](https://github.com/agentclientprotocol/agent-client-protocol/pull/966))
+- _(unstable)_ Move elicitation scope into mode variants ([#966](https://github.com/agentclientprotocol/agent-client-protocol/pull/966))
 
 ## [0.11.5](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.11.4...v0.11.5) - 2026-04-09
 
 ### Added
 
-- *(unstable)* elicitation for session, tool call, and requests ([#792](https://github.com/agentclientprotocol/agent-client-protocol/pull/792))
+- _(unstable)_ elicitation for session, tool call, and requests ([#792](https://github.com/agentclientprotocol/agent-client-protocol/pull/792))
 
 ## [0.11.4](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.11.3...v0.11.4) - 2026-03-28
 
 ### Added
 
-- *(unstable)* initial unstable nes implementation ([#754](https://github.com/agentclientprotocol/agent-client-protocol/pull/754))
-- *(unstable)* initial additional directories implementation ([#838](https://github.com/agentclientprotocol/agent-client-protocol/pull/838))
+- _(unstable)_ initial unstable nes implementation ([#754](https://github.com/agentclientprotocol/agent-client-protocol/pull/754))
+- _(unstable)_ initial additional directories implementation ([#838](https://github.com/agentclientprotocol/agent-client-protocol/pull/838))
 
 ### Other
 
@@ -51,9 +51,9 @@
 
 ### Added
 
-- *(unstable)* More robust schema for elicitation types ([#771](https://github.com/agentclientprotocol/agent-client-protocol/pull/771))
-- *(unstable)* initial implementation for the logout method capability ([#751](https://github.com/agentclientprotocol/agent-client-protocol/pull/751))
-- *(rust-only)* Add meta getter for AuthMethod enum ([#725](https://github.com/agentclientprotocol/agent-client-protocol/pull/725))
+- _(unstable)_ More robust schema for elicitation types ([#771](https://github.com/agentclientprotocol/agent-client-protocol/pull/771))
+- _(unstable)_ initial implementation for the logout method capability ([#751](https://github.com/agentclientprotocol/agent-client-protocol/pull/751))
+- _(rust-only)_ Add meta getter for AuthMethod enum ([#725](https://github.com/agentclientprotocol/agent-client-protocol/pull/725))
 
 ### Other
 
@@ -63,7 +63,7 @@
 
 ### Fixed
 
-- *(unstable)* Complete session/stop → session/close rename ([#724](https://github.com/agentclientprotocol/agent-client-protocol/pull/724))
+- _(unstable)_ Complete session/stop → session/close rename ([#724](https://github.com/agentclientprotocol/agent-client-protocol/pull/724))
 
 ### Other
 
@@ -73,23 +73,23 @@
 
 ### Added
 
-- *(unstable)* Remove unused auth_methods from Error type ([#708](https://github.com/agentclientprotocol/agent-client-protocol/pull/708))
+- _(unstable)_ Remove unused auth_methods from Error type ([#708](https://github.com/agentclientprotocol/agent-client-protocol/pull/708))
 - Stabilize session/list and session_info_update ([#705](https://github.com/agentclientprotocol/agent-client-protocol/pull/705))
-- *(unstable)* Rename unstable session/stop method to session/close ([#701](https://github.com/agentclientprotocol/agent-client-protocol/pull/701))
-- *(unstable)* Add config option type for boolean on/off toggles ([#576](https://github.com/agentclientprotocol/agent-client-protocol/pull/576))
+- _(unstable)_ Rename unstable session/stop method to session/close ([#701](https://github.com/agentclientprotocol/agent-client-protocol/pull/701))
+- _(unstable)_ Add config option type for boolean on/off toggles ([#576](https://github.com/agentclientprotocol/agent-client-protocol/pull/576))
 
 ### Other
 
-- *(rfd)* Move initial registry RFD to completed ([#706](https://github.com/agentclientprotocol/agent-client-protocol/pull/706))
-- *(deps)* bump quote from 1.0.44 to 1.0.45 in the minor group ([#698](https://github.com/agentclientprotocol/agent-client-protocol/pull/698))
+- _(rfd)_ Move initial registry RFD to completed ([#706](https://github.com/agentclientprotocol/agent-client-protocol/pull/706))
+- _(deps)_ bump quote from 1.0.44 to 1.0.45 in the minor group ([#698](https://github.com/agentclientprotocol/agent-client-protocol/pull/698))
 
 ## [0.11.0](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.8...v0.11.0) - 2026-03-04
 
 ### Added
 
-- *(unstable)* implementation for unstable session/stop ([#583](https://github.com/agentclientprotocol/agent-client-protocol/pull/583))
-- *(unstable)* implement message id rfd ([#581](https://github.com/agentclientprotocol/agent-client-protocol/pull/581))
-- *(unstable)* Initial support for various auth methods ([#588](https://github.com/agentclientprotocol/agent-client-protocol/pull/588))
+- _(unstable)_ implementation for unstable session/stop ([#583](https://github.com/agentclientprotocol/agent-client-protocol/pull/583))
+- _(unstable)_ implement message id rfd ([#581](https://github.com/agentclientprotocol/agent-client-protocol/pull/581))
+- _(unstable)_ Initial support for various auth methods ([#588](https://github.com/agentclientprotocol/agent-client-protocol/pull/588))
 
 ### Fixed
 
@@ -102,82 +102,82 @@
 
 - Clean up some builder pattern inconsistencies ([#635](https://github.com/agentclientprotocol/agent-client-protocol/pull/635))
 - fix incomplete sentence in KillTerminalCommandRequest doc comment ([#608](https://github.com/agentclientprotocol/agent-client-protocol/pull/608))
-- *(deps)* bump the minor group with 2 updates ([#563](https://github.com/agentclientprotocol/agent-client-protocol/pull/563))
-- *(deps)* bump strum from 0.27.2 to 0.28.0 ([#564](https://github.com/agentclientprotocol/agent-client-protocol/pull/564))
-- *(deps)* bump the minor group with 3 updates ([#518](https://github.com/agentclientprotocol/agent-client-protocol/pull/518))
-- *(deps)* bump the minor group with 4 updates ([#480](https://github.com/agentclientprotocol/agent-client-protocol/pull/480))
+- _(deps)_ bump the minor group with 2 updates ([#563](https://github.com/agentclientprotocol/agent-client-protocol/pull/563))
+- _(deps)_ bump strum from 0.27.2 to 0.28.0 ([#564](https://github.com/agentclientprotocol/agent-client-protocol/pull/564))
+- _(deps)_ bump the minor group with 3 updates ([#518](https://github.com/agentclientprotocol/agent-client-protocol/pull/518))
+- _(deps)_ bump the minor group with 4 updates ([#480](https://github.com/agentclientprotocol/agent-client-protocol/pull/480))
 
 ## [0.10.8](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.7...v0.10.8) - 2026-02-04
 
 ### Added
 
 - Stabilize Session Config Options ([#411](https://github.com/agentclientprotocol/agent-client-protocol/pull/411))
-- *(unstable)* Add unstable support for session usage ([#454](https://github.com/agentclientprotocol/agent-client-protocol/pull/454))
+- _(unstable)_ Add unstable support for session usage ([#454](https://github.com/agentclientprotocol/agent-client-protocol/pull/454))
 
 ## [0.10.7](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.6...v0.10.7) - 2026-01-15
 
 ### Fixed
 
-- *(schema)* Add missing titles for enum variants in schema ([#384](https://github.com/agentclientprotocol/agent-client-protocol/pull/384))
-- *(unstable)* Add missing session capabilities builder method ([#380](https://github.com/agentclientprotocol/agent-client-protocol/pull/380))
-- *(unstable)* Add copy to SessionConfigOptionCategory ([#368](https://github.com/agentclientprotocol/agent-client-protocol/pull/368))
+- _(schema)_ Add missing titles for enum variants in schema ([#384](https://github.com/agentclientprotocol/agent-client-protocol/pull/384))
+- _(unstable)_ Add missing session capabilities builder method ([#380](https://github.com/agentclientprotocol/agent-client-protocol/pull/380))
+- _(unstable)_ Add copy to SessionConfigOptionCategory ([#368](https://github.com/agentclientprotocol/agent-client-protocol/pull/368))
 
 ### Other
 
-- *(rfd)* Session Config Options to Preview stage ([#378](https://github.com/agentclientprotocol/agent-client-protocol/pull/378))
-- *(deps)* bump the minor group with 5 updates ([#375](https://github.com/agentclientprotocol/agent-client-protocol/pull/375))
+- _(rfd)_ Session Config Options to Preview stage ([#378](https://github.com/agentclientprotocol/agent-client-protocol/pull/378))
+- _(deps)_ bump the minor group with 5 updates ([#375](https://github.com/agentclientprotocol/agent-client-protocol/pull/375))
 
 ## [0.10.6](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.5...v0.10.6) - 2026-01-09
 
 ### Added
 
-- *(unstable)* Add a category to session config options ([#366](https://github.com/agentclientprotocol/agent-client-protocol/pull/366))
-- *(unstable)* Add a request cancelled error constructor ([#347](https://github.com/agentclientprotocol/agent-client-protocol/pull/347))
+- _(unstable)_ Add a category to session config options ([#366](https://github.com/agentclientprotocol/agent-client-protocol/pull/366))
+- _(unstable)_ Add a request cancelled error constructor ([#347](https://github.com/agentclientprotocol/agent-client-protocol/pull/347))
 
 ### Fixed
 
-- *(error)* Add human readable titles for error code variants ([#367](https://github.com/agentclientprotocol/agent-client-protocol/pull/367))
+- _(error)_ Add human readable titles for error code variants ([#367](https://github.com/agentclientprotocol/agent-client-protocol/pull/367))
 
 ### Other
 
-- *(deps)* bump the minor group with 2 updates ([#362](https://github.com/agentclientprotocol/agent-client-protocol/pull/362))
-- *(deps)* bump the minor group across 1 directory with 7 updates ([#358](https://github.com/agentclientprotocol/agent-client-protocol/pull/358))
+- _(deps)_ bump the minor group with 2 updates ([#362](https://github.com/agentclientprotocol/agent-client-protocol/pull/362))
+- _(deps)_ bump the minor group across 1 directory with 7 updates ([#358](https://github.com/agentclientprotocol/agent-client-protocol/pull/358))
 
 ## [0.10.5](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.4...v0.10.5) - 2025-12-17
 
 ### Added
 
-- *(unstable)* Make constructing SessionConfigSelects on the Rust side nicer ([#343](https://github.com/agentclientprotocol/agent-client-protocol/pull/343))
+- _(unstable)_ Make constructing SessionConfigSelects on the Rust side nicer ([#343](https://github.com/agentclientprotocol/agent-client-protocol/pull/343))
 
 ## [0.10.4](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.3...v0.10.4) - 2025-12-16
 
 ### Added
 
-- *(unstable)* Draft implementation of session config options ([#339](https://github.com/agentclientprotocol/agent-client-protocol/pull/339))
+- _(unstable)_ Draft implementation of session config options ([#339](https://github.com/agentclientprotocol/agent-client-protocol/pull/339))
 
 ## [0.10.3](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.2...v0.10.3) - 2025-12-15
 
 ### Added
 
-- *(unstable)* add SessionInfoUpdate to SessionUpdate enum ([#334](https://github.com/agentclientprotocol/agent-client-protocol/pull/334))
-- *(rust-only)* Introduce MaybeUndefined type to allow for distinguishing between null and undefined ([#337](https://github.com/agentclientprotocol/agent-client-protocol/pull/337))
+- _(unstable)_ add SessionInfoUpdate to SessionUpdate enum ([#334](https://github.com/agentclientprotocol/agent-client-protocol/pull/334))
+- _(rust-only)_ Introduce MaybeUndefined type to allow for distinguishing between null and undefined ([#337](https://github.com/agentclientprotocol/agent-client-protocol/pull/337))
 
 ## [0.10.2](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.1...v0.10.2) - 2025-12-11
 
 ### Added
 
-- *(unstable)* add cwd and mcp_servers to session/fork ([#333](https://github.com/agentclientprotocol/agent-client-protocol/pull/333))
-- *(unstable)* Draft implementation of session/resume ([#324](https://github.com/agentclientprotocol/agent-client-protocol/pull/324))
+- _(unstable)_ add cwd and mcp_servers to session/fork ([#333](https://github.com/agentclientprotocol/agent-client-protocol/pull/333))
+- _(unstable)_ Draft implementation of session/resume ([#324](https://github.com/agentclientprotocol/agent-client-protocol/pull/324))
 
 ## [0.10.1](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.10.0...v0.10.1) - 2025-12-09
 
 ### Added
 
-- *(unstable)* Draft implementation of `$/cancel_request` notification ([#303](https://github.com/agentclientprotocol/agent-client-protocol/pull/303))
+- _(unstable)_ Draft implementation of `$/cancel_request` notification ([#303](https://github.com/agentclientprotocol/agent-client-protocol/pull/303))
 
 ### Fixed
 
-- *(schema)* Add title field back ([#321](https://github.com/agentclientprotocol/agent-client-protocol/pull/321))
+- _(schema)_ Add title field back ([#321](https://github.com/agentclientprotocol/agent-client-protocol/pull/321))
 
 ## [0.10.0](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.9.1...v0.10.0) - 2025-12-06
 
@@ -185,18 +185,18 @@ This release mostly contains several nice quality-of-life improvements for the R
 
 ### Added
 
-- *(rust-only)* More convenient builder method params ([#313](https://github.com/agentclientprotocol/agent-client-protocol/pull/313))
-- *(unstable)* Draft implementation of session/fork ([#311](https://github.com/agentclientprotocol/agent-client-protocol/pull/311))
-- *(rust-only)*: Provide nicer interface to `ErrorCode` and add them to the docs ([#301](https://github.com/agentclientprotocol/agent-client-protocol/pull/301))
+- _(rust-only)_ More convenient builder method params ([#313](https://github.com/agentclientprotocol/agent-client-protocol/pull/313))
+- _(unstable)_ Draft implementation of session/fork ([#311](https://github.com/agentclientprotocol/agent-client-protocol/pull/311))
+- _(rust-only)_: Provide nicer interface to `ErrorCode` and add them to the docs ([#301](https://github.com/agentclientprotocol/agent-client-protocol/pull/301))
 
 ### Fixed
 
-- *(rust)* Make new methods consistent for all id params ([#306](https://github.com/agentclientprotocol/agent-client-protocol/pull/306))
+- _(rust)_ Make new methods consistent for all id params ([#306](https://github.com/agentclientprotocol/agent-client-protocol/pull/306))
 
 ### Other
 
 - Bump the minor group with 2 updates ([#310](https://github.com/agentclientprotocol/agent-client-protocol/pull/310))
-- *(rust)* Move to a more typical rust lib setup ([#299](https://github.com/agentclientprotocol/agent-client-protocol/pull/299))
+- _(rust)_ Move to a more typical rust lib setup ([#299](https://github.com/agentclientprotocol/agent-client-protocol/pull/299))
 
 ## [0.9.1](https://github.com/agentclientprotocol/agent-client-protocol/compare/v0.9.0...v0.9.1) - 2025-12-01
 

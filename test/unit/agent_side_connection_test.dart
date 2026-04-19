@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acp/src/protocol/agent_handler.dart';
 import 'package:acp/src/protocol/agent_side_connection.dart';
 import 'package:acp/src/protocol/cancellation.dart';
@@ -6,6 +8,7 @@ import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/protocol/json_rpc_message.dart';
 import 'package:acp/src/schema/capabilities.dart';
+import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/initialize.dart';
 import 'package:acp/src/schema/session.dart';
 import 'package:acp/src/schema/session_update.dart';
@@ -50,6 +53,22 @@ class _TestHandler extends AgentHandler {
   @override
   Future<void> cancel(CancelNotification notification) async {
     calls.add('cancel:${notification.sessionId}');
+  }
+}
+
+class _CancelablePromptHandler extends _TestHandler {
+  final Completer<void> promptStarted = Completer<void>();
+  final Completer<void> promptCanceled = Completer<void>();
+
+  @override
+  Future<PromptResponse> prompt(
+    PromptRequest request, {
+    required AcpCancellationToken cancelToken,
+  }) async {
+    promptStarted.complete();
+    await cancelToken.whenCanceled;
+    promptCanceled.complete();
+    return PromptResponse(stopReason: StopReason.cancelled.value);
   }
 }
 
@@ -184,6 +203,52 @@ void main() {
     });
 
     test(
+      'session/cancel cancels active prompt token for that session',
+      () async {
+        final transport = MockTransport();
+        final handler = _CancelablePromptHandler();
+        final conn = AgentSideConnection(
+          transport,
+          handlerFactory: (_) => handler,
+        );
+
+        await _initializeConnection(transport);
+        transport.sent.clear();
+
+        transport.receive(
+          JsonRpcRequest(
+            id: 'prompt-1',
+            method: 'session/prompt',
+            params:
+                const PromptRequest(
+                  sessionId: 's1',
+                  prompt: [TextContent(text: 'work')],
+                ).toJson(),
+          ),
+        );
+
+        await handler.promptStarted.future;
+        transport.receive(
+          const JsonRpcNotification(
+            method: 'session/cancel',
+            params: {'sessionId': 's1'},
+          ),
+        );
+
+        await handler.promptCanceled.future;
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        final response = transport.sent.first as JsonRpcResponse;
+        expect(response.id, 'prompt-1');
+        expect(response.isSuccess, isTrue);
+        final result = response.result! as Map<String, dynamic>;
+        expect(result['stopReason'], StopReason.cancelled.value);
+
+        await conn.close();
+      },
+    );
+
+    test(
       'optional methods return METHOD_NOT_FOUND with default handler',
       () async {
         final transport = MockTransport();
@@ -271,6 +336,71 @@ void main() {
 
       final response = await future;
       expect(response.content, 'file contents');
+
+      await conn.close();
+    });
+
+    test('sendReadTextFile rejects relative path before sending', () async {
+      final transport = MockTransport();
+      final conn = AgentSideConnection(
+        transport,
+        handlerFactory: (_) => _TestHandler(),
+      );
+
+      await _initializeConnection(transport);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendReadTextFile(sessionId: 's1', path: 'relative.txt'),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
+    test('sendWriteTextFile rejects relative path before sending', () async {
+      final transport = MockTransport();
+      final conn = AgentSideConnection(
+        transport,
+        handlerFactory: (_) => _TestHandler(),
+      );
+
+      await _initializeConnection(transport);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendWriteTextFile(
+          sessionId: 's1',
+          path: 'relative.txt',
+          content: 'data',
+        ),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
+    test('sendCreateTerminal rejects relative cwd before sending', () async {
+      final transport = MockTransport();
+      final conn = AgentSideConnection(
+        transport,
+        handlerFactory: (_) => _TestHandler(),
+      );
+
+      await _initializeConnection(transport);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendCreateTerminal(
+          sessionId: 's1',
+          command: 'dart',
+          cwd: 'relative/path',
+        ),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
 
       await conn.close();
     });

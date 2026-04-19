@@ -8,6 +8,7 @@ import 'package:acp/src/protocol/connection.dart';
 import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/protocol/json_rpc_message.dart';
+import 'package:acp/src/protocol/protocol_validation.dart';
 import 'package:acp/src/protocol/protocol_warning.dart';
 import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/client_methods.dart';
@@ -167,6 +168,7 @@ final class ClientSideConnection {
     required String cwd,
     List<Map<String, dynamic>> mcpServers = const [],
   }) async {
+    validateAbsolutePath(cwd, 'cwd');
     final request = NewSessionRequest(cwd: cwd, mcpServers: mcpServers);
     late final Map<String, dynamic> result;
     try {
@@ -192,6 +194,7 @@ final class ClientSideConnection {
     required String cwd,
     List<Map<String, dynamic>> mcpServers = const [],
   }) async {
+    validateAbsolutePath(cwd, 'cwd');
     _enforceCapability(
       AcpMethods.sessionLoad,
       'loadSession',
@@ -214,6 +217,13 @@ final class ClientSideConnection {
     required String sessionId,
     required List<ContentBlock> prompt,
   }) async {
+    validatePromptCapabilities(
+      method: AcpMethods.sessionPrompt,
+      prompt: prompt,
+      capabilities:
+          _remoteCapabilities?.promptCapabilities ?? const PromptCapabilities(),
+      strict: _capabilityEnforcement == CapabilityEnforcement.strict,
+    );
     final request = PromptRequest(sessionId: sessionId, prompt: prompt);
     final result = await _connection.sendRequest(
       AcpMethods.sessionPrompt,
@@ -267,6 +277,7 @@ final class ClientSideConnection {
     String? cwd,
     String? cursor,
   }) async {
+    validateOptionalAbsolutePath(cwd, 'cwd');
     _enforceCapability(
       AcpMethods.sessionList,
       'sessionCapabilities.list',
@@ -289,12 +300,211 @@ final class ClientSideConnection {
     required String cwd,
   }) async {
     _ensureUnstable(AcpMethods.sessionFork);
+    validateAbsolutePath(cwd, 'cwd');
     final request = ForkSessionRequest(sessionId: sessionId, cwd: cwd);
     final result = await _connection.sendRequest(
       AcpMethods.sessionFork,
       request.toJson(),
     );
     return ForkSessionResponse.fromJson(result);
+  }
+
+  /// Sends a `providers/list` request (unstable).
+  @experimental
+  Future<ListProvidersResponse> sendListProviders([
+    ListProvidersRequest request = const ListProvidersRequest(),
+  ]) async {
+    _ensureUnstable(AcpMethods.providersList);
+    final result = await _connection.sendRequest(
+      AcpMethods.providersList,
+      request.toJson(),
+    );
+    return ListProvidersResponse.fromJson(result);
+  }
+
+  /// Sends a `providers/set` request (unstable).
+  @experimental
+  Future<SetProvidersResponse> sendSetProviders(
+    SetProvidersRequest request,
+  ) async {
+    _ensureUnstable(AcpMethods.providersSet);
+    final result = await _connection.sendRequest(
+      AcpMethods.providersSet,
+      request.toJson(),
+    );
+    return SetProvidersResponse.fromJson(result);
+  }
+
+  /// Sends a `providers/disable` request (unstable).
+  @experimental
+  Future<DisableProvidersResponse> sendDisableProviders(
+    DisableProvidersRequest request,
+  ) async {
+    _ensureUnstable(AcpMethods.providersDisable);
+    final result = await _connection.sendRequest(
+      AcpMethods.providersDisable,
+      request.toJson(),
+    );
+    return DisableProvidersResponse.fromJson(result);
+  }
+
+  /// Sends a `logout` request (unstable).
+  @experimental
+  Future<LogoutResponse> sendLogout([
+    LogoutRequest request = const LogoutRequest(),
+  ]) async {
+    _ensureUnstable(AcpMethods.logout);
+    final result = await _connection.sendRequest(
+      AcpMethods.logout,
+      request.toJson(),
+    );
+    return LogoutResponse.fromJson(result);
+  }
+
+  /// Sends a `session/resume` request (unstable).
+  @experimental
+  Future<ResumeSessionResponse> sendResumeSession(
+    ResumeSessionRequest request,
+  ) async {
+    _ensureUnstable(AcpMethods.sessionResume);
+    validateAbsolutePath(request.cwd, 'cwd');
+    for (final path in request.additionalDirectories) {
+      validateAbsolutePath(path, 'additionalDirectories');
+    }
+    final result = await _connection.sendRequest(
+      AcpMethods.sessionResume,
+      request.toJson(),
+    );
+    return ResumeSessionResponse.fromJson(result);
+  }
+
+  /// Sends a `session/close` request (unstable).
+  @experimental
+  Future<CloseSessionResponse> sendCloseSession(
+    CloseSessionRequest request,
+  ) async {
+    _ensureUnstable(AcpMethods.sessionClose);
+    final result = await _connection.sendRequest(
+      AcpMethods.sessionClose,
+      request.toJson(),
+    );
+    return CloseSessionResponse.fromJson(result);
+  }
+
+  /// Sends a `session/set_model` request (unstable).
+  @experimental
+  Future<SetSessionModelResponse> sendSetModel(
+    SetSessionModelRequest request,
+  ) async {
+    _ensureUnstable(AcpMethods.sessionSetModel);
+    final result = await _connection.sendRequest(
+      AcpMethods.sessionSetModel,
+      request.toJson(),
+    );
+    return SetSessionModelResponse.fromJson(result);
+  }
+
+  /// Sends a `nes/start` request (unstable).
+  @experimental
+  Future<StartNesResponse> sendStartNes(StartNesRequest request) async {
+    _ensureUnstable(AcpMethods.nesStart);
+    final result = await _connection.sendRequest(
+      AcpMethods.nesStart,
+      request.toJson(),
+    );
+    return StartNesResponse.fromJson(result);
+  }
+
+  /// Sends a `nes/suggest` request (unstable).
+  @experimental
+  Future<SuggestNesResponse> sendSuggestNes(SuggestNesRequest request) async {
+    _ensureUnstable(AcpMethods.nesSuggest);
+    final result = await _connection.sendRequest(
+      AcpMethods.nesSuggest,
+      request.toJson(),
+    );
+    return SuggestNesResponse.fromJson(result);
+  }
+
+  /// Sends a `nes/close` request (unstable).
+  @experimental
+  Future<CloseNesResponse> sendCloseNes(CloseNesRequest request) async {
+    _ensureUnstable(AcpMethods.nesClose);
+    final result = await _connection.sendRequest(
+      AcpMethods.nesClose,
+      request.toJson(),
+    );
+    return CloseNesResponse.fromJson(result);
+  }
+
+  /// Sends a `document/didOpen` notification (unstable).
+  @experimental
+  Future<void> notifyDidOpenDocument(DidOpenDocumentNotification notification) {
+    _ensureUnstable(AcpMethods.documentDidOpen);
+    return _connection.notify(
+      AcpMethods.documentDidOpen,
+      notification.toJson(),
+    );
+  }
+
+  /// Sends a `document/didChange` notification (unstable).
+  @experimental
+  Future<void> notifyDidChangeDocument(
+    DidChangeDocumentNotification notification,
+  ) {
+    _ensureUnstable(AcpMethods.documentDidChange);
+    return _connection.notify(
+      AcpMethods.documentDidChange,
+      notification.toJson(),
+    );
+  }
+
+  /// Sends a `document/didClose` notification (unstable).
+  @experimental
+  Future<void> notifyDidCloseDocument(
+    DidCloseDocumentNotification notification,
+  ) {
+    _ensureUnstable(AcpMethods.documentDidClose);
+    return _connection.notify(
+      AcpMethods.documentDidClose,
+      notification.toJson(),
+    );
+  }
+
+  /// Sends a `document/didSave` notification (unstable).
+  @experimental
+  Future<void> notifyDidSaveDocument(DidSaveDocumentNotification notification) {
+    _ensureUnstable(AcpMethods.documentDidSave);
+    return _connection.notify(
+      AcpMethods.documentDidSave,
+      notification.toJson(),
+    );
+  }
+
+  /// Sends a `document/didFocus` notification (unstable).
+  @experimental
+  Future<void> notifyDidFocusDocument(
+    DidFocusDocumentNotification notification,
+  ) {
+    _ensureUnstable(AcpMethods.documentDidFocus);
+    return _connection.notify(
+      AcpMethods.documentDidFocus,
+      notification.toJson(),
+    );
+  }
+
+  /// Sends a `nes/accept` notification (unstable).
+  @experimental
+  Future<void> notifyAcceptNes(AcceptNesNotification notification) {
+    _ensureUnstable(AcpMethods.nesAccept);
+    return _connection.notify(AcpMethods.nesAccept, notification.toJson());
+  }
+
+  /// Sends a `nes/reject` notification (unstable).
+  @experimental
+  Future<void> notifyRejectNes(RejectNesNotification notification) {
+    _ensureUnstable(AcpMethods.nesReject);
+    return _connection.notify(AcpMethods.nesReject, notification.toJson());
   }
 
   // -- Extension methods --
@@ -343,11 +553,19 @@ final class ClientSideConnection {
       AcpMethods.sessionRequestPermission,
       _handleRequestPermission,
     );
+    _connection.setRequestHandler(
+      AcpMethods.elicitationCreate,
+      _handleCreateElicitation,
+    );
 
     // Agent → Client notification handler
     _connection.setNotificationHandler(
       AcpMethods.sessionUpdate,
       _handleSessionUpdate,
+    );
+    _connection.setNotificationHandler(
+      AcpMethods.elicitationComplete,
+      _handleCompleteElicitation,
     );
 
     // Extension handlers
@@ -445,6 +663,25 @@ final class ClientSideConnection {
     return response.toJson();
   }
 
+  Future<Map<String, dynamic>> _handleCreateElicitation(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.elicitationCreate);
+    final handler = _handler;
+    if (handler is! UnstableClientHandler) {
+      throw RpcErrorException.methodNotFound(
+        'Handler does not mix in UnstableClientHandler',
+      );
+    }
+    final req = CreateElicitationRequest.fromJson(request.params ?? {});
+    final response = await handler.createElicitation(
+      req,
+      cancelToken: cancelToken,
+    );
+    return response.toJson();
+  }
+
   Future<void> _handleSessionUpdate(JsonRpcNotification notification) async {
     final sessionNotif = SessionNotification.fromJson(
       notification.params ?? {},
@@ -454,6 +691,18 @@ final class ClientSideConnection {
     _sessionUpdateController.add(
       SessionUpdateEvent(sessionId: sessionNotif.sessionId, update: update),
     );
+  }
+
+  Future<void> _handleCompleteElicitation(
+    JsonRpcNotification notification,
+  ) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableClientHandler) return;
+    final req = CompleteElicitationNotification.fromJson(
+      notification.params ?? {},
+    );
+    await handler.onElicitationComplete(req);
   }
 
   Future<Map<String, dynamic>> _handleExtRequest(
@@ -481,6 +730,14 @@ final class ClientSideConnection {
       throw UnsupportedError(
         'Method "$method" is unstable. Pass useUnstableProtocol: true '
         'to ClientSideConnection to enable it.',
+      );
+    }
+  }
+
+  void _ensureUnstableIncoming(String method) {
+    if (!_useUnstableProtocol) {
+      throw RpcErrorException.methodNotFound(
+        'Unstable method not enabled: $method',
       );
     }
   }

@@ -20,8 +20,8 @@ final _log = Logger('acp.transport.stdio');
 final class StdioTransport implements AcpTransport {
   final Stream<List<int>> _input;
   final IOSink _output;
-  final StreamController<JsonRpcMessage> _controller =
-      StreamController<JsonRpcMessage>();
+  late final StreamController<JsonRpcMessage> _controller =
+      StreamController<JsonRpcMessage>(onListen: _startReading);
   StreamSubscription<String>? _subscription;
   bool _closed = false;
 
@@ -34,13 +34,18 @@ final class StdioTransport implements AcpTransport {
 
   /// Starts reading from the input stream.
   ///
-  /// Must be called once before messages will be emitted. Calling more than
-  /// once throws [StateError].
+  /// Calling this is optional — the transport also auto-starts on the first
+  /// subscription to [messages]. Calling this after the transport has already
+  /// started throws [StateError].
   void start() {
     if (_subscription != null) {
       throw StateError('StdioTransport already started');
     }
+    _startReading();
+  }
 
+  void _startReading() {
+    if (_subscription != null) return;
     _subscription = _input
         .transform(utf8.decoder)
         .transform(const LineSplitter())
@@ -61,8 +66,21 @@ final class StdioTransport implements AcpTransport {
 
   void _handleLine(String line) {
     try {
-      final json = jsonDecode(line) as Map<String, dynamic>;
-      final message = JsonRpcMessage.fromJson(json);
+      final decoded = jsonDecode(line);
+      if (decoded is List) {
+        // JSON-RPC 2.0 batches are not supported over NDJSON.
+        _log.warning(
+          'Received JSON-RPC batch (${decoded.length} items); '
+          'batches are not supported, skipping',
+        );
+        return;
+      }
+      if (decoded is! Map<String, dynamic>) {
+        throw FormatException(
+          'Expected JSON object, got ${decoded.runtimeType}',
+        );
+      }
+      final message = JsonRpcMessage.fromJson(decoded);
       _controller.add(message);
     } on FormatException catch (e, stack) {
       _log.warning('Failed to parse incoming message: $e');

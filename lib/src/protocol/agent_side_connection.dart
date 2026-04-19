@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acp/src/protocol/acp_methods.dart';
 import 'package:acp/src/protocol/agent_handler.dart';
 import 'package:acp/src/protocol/cancellation.dart';
@@ -6,6 +8,7 @@ import 'package:acp/src/protocol/connection.dart';
 import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/protocol/json_rpc_message.dart';
+import 'package:acp/src/protocol/protocol_validation.dart';
 import 'package:acp/src/protocol/protocol_warning.dart';
 import 'package:acp/src/protocol/terminal_handle.dart';
 import 'package:acp/src/schema/capabilities.dart';
@@ -16,6 +19,7 @@ import 'package:acp/src/schema/session_update.dart';
 import 'package:acp/src/schema/unstable_methods.dart';
 import 'package:acp/src/transport/acp_transport.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 
 final _log = Logger('acp.protocol.agent_side');
 
@@ -33,6 +37,8 @@ final class AgentSideConnection {
 
   ClientCapabilities? _remoteCapabilities;
   AgentCapabilities? _localCapabilities;
+  final Map<String, Set<AcpCancellationSource>> _activePromptCancellations =
+      <String, Set<AcpCancellationSource>>{};
 
   /// Creates an [AgentSideConnection] over [transport].
   ///
@@ -101,6 +107,7 @@ final class AgentSideConnection {
     int? limit,
     AcpCancellationToken? cancelToken,
   }) async {
+    validateAbsolutePath(path, 'path');
     _enforceCapability(
       AcpMethods.fsReadTextFile,
       'fs.readTextFile',
@@ -127,6 +134,7 @@ final class AgentSideConnection {
     required String content,
     AcpCancellationToken? cancelToken,
   }) async {
+    validateAbsolutePath(path, 'path');
     _enforceCapability(
       AcpMethods.fsWriteTextFile,
       'fs.writeTextFile',
@@ -155,6 +163,7 @@ final class AgentSideConnection {
     int? outputByteLimit,
     AcpCancellationToken? cancelToken,
   }) async {
+    validateOptionalAbsolutePath(cwd, 'cwd');
     _enforceCapability(
       AcpMethods.terminalCreate,
       'terminal',
@@ -317,6 +326,21 @@ final class AgentSideConnection {
     return RequestPermissionResponse.fromJson(result);
   }
 
+  /// Sends an `elicitation/create` request (unstable).
+  @experimental
+  Future<CreateElicitationResponse> sendCreateElicitation(
+    CreateElicitationRequest request, {
+    AcpCancellationToken? cancelToken,
+  }) async {
+    _ensureUnstable(AcpMethods.elicitationCreate);
+    final result = await _connection.sendRequest(
+      AcpMethods.elicitationCreate,
+      request.toJson(),
+      cancelToken: cancelToken,
+    );
+    return CreateElicitationResponse.fromJson(result);
+  }
+
   // -- Agent → Client notification methods --
 
   /// Sends a `session/update` notification.
@@ -325,6 +349,18 @@ final class AgentSideConnection {
         'sessionId': sessionId,
         'update': update.toJson(),
       });
+
+  /// Sends an `elicitation/complete` notification (unstable).
+  @experimental
+  Future<void> notifyCompleteElicitation(
+    CompleteElicitationNotification notification,
+  ) {
+    _ensureUnstable(AcpMethods.elicitationComplete);
+    return _connection.notify(
+      AcpMethods.elicitationComplete,
+      notification.toJson(),
+    );
+  }
 
   // -- Extension methods --
 
@@ -362,6 +398,47 @@ final class AgentSideConnection {
 
     // Unstable method handlers
     _connection.setRequestHandler(AcpMethods.sessionFork, _handleForkSession);
+    _connection.setRequestHandler(
+      AcpMethods.providersList,
+      _handleListProviders,
+    );
+    _connection.setRequestHandler(AcpMethods.providersSet, _handleSetProviders);
+    _connection.setRequestHandler(
+      AcpMethods.providersDisable,
+      _handleDisableProviders,
+    );
+    _connection.setRequestHandler(AcpMethods.logout, _handleLogout);
+    _connection.setRequestHandler(
+      AcpMethods.sessionResume,
+      _handleResumeSession,
+    );
+    _connection.setRequestHandler(AcpMethods.sessionClose, _handleCloseSession);
+    _connection.setRequestHandler(AcpMethods.sessionSetModel, _handleSetModel);
+    _connection.setRequestHandler(AcpMethods.nesStart, _handleStartNes);
+    _connection.setRequestHandler(AcpMethods.nesSuggest, _handleSuggestNes);
+    _connection.setRequestHandler(AcpMethods.nesClose, _handleCloseNes);
+    _connection.setNotificationHandler(
+      AcpMethods.documentDidOpen,
+      _handleDidOpenDocument,
+    );
+    _connection.setNotificationHandler(
+      AcpMethods.documentDidChange,
+      _handleDidChangeDocument,
+    );
+    _connection.setNotificationHandler(
+      AcpMethods.documentDidClose,
+      _handleDidCloseDocument,
+    );
+    _connection.setNotificationHandler(
+      AcpMethods.documentDidSave,
+      _handleDidSaveDocument,
+    );
+    _connection.setNotificationHandler(
+      AcpMethods.documentDidFocus,
+      _handleDidFocusDocument,
+    );
+    _connection.setNotificationHandler(AcpMethods.nesAccept, _handleAcceptNes);
+    _connection.setNotificationHandler(AcpMethods.nesReject, _handleRejectNes);
 
     // Extension handlers
     _connection.setExtensionRequestHandler(_handleExtRequest);
@@ -427,8 +504,27 @@ final class AgentSideConnection {
     AcpCancellationToken cancelToken,
   ) async {
     final promptReq = PromptRequest.fromJson(request.params ?? {});
-    final response = await _handler.prompt(promptReq, cancelToken: cancelToken);
-    return response.toJson();
+    final sessionCancelSource = AcpCancellationSource();
+    final sessionSources = _activePromptCancellations.putIfAbsent(
+      promptReq.sessionId,
+      () => <AcpCancellationSource>{},
+    );
+    sessionSources.add(sessionCancelSource);
+    try {
+      final response = await _handler.prompt(
+        promptReq,
+        cancelToken: _LinkedCancellationToken(
+          cancelToken,
+          sessionCancelSource.token,
+        ),
+      );
+      return response.toJson();
+    } finally {
+      sessionSources.remove(sessionCancelSource);
+      if (sessionSources.isEmpty) {
+        _activePromptCancellations.remove(promptReq.sessionId);
+      }
+    }
   }
 
   Future<Map<String, dynamic>> _handleSetMode(
@@ -456,6 +552,12 @@ final class AgentSideConnection {
 
   Future<void> _handleCancel(JsonRpcNotification notification) async {
     final cancelNotif = CancelNotification.fromJson(notification.params ?? {});
+    final sources = _activePromptCancellations[cancelNotif.sessionId];
+    if (sources != null) {
+      for (final source in List<AcpCancellationSource>.of(sources)) {
+        source.cancel('Session ${cancelNotif.sessionId} canceled');
+      }
+    }
     await _handler.cancel(cancelNotif);
   }
 
@@ -491,17 +593,206 @@ final class AgentSideConnection {
     return response.toJson();
   }
 
+  UnstableAgentHandler _requireUnstableHandler() {
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) {
+      throw RpcErrorException.methodNotFound(
+        'Handler does not mix in UnstableAgentHandler',
+      );
+    }
+    return handler;
+  }
+
   Future<Map<String, dynamic>> _handleForkSession(
     JsonRpcRequest request,
     AcpCancellationToken cancelToken,
   ) async {
-    _ensureUnstable(AcpMethods.sessionFork);
+    _ensureUnstableIncoming(AcpMethods.sessionFork);
+    final handler = _requireUnstableHandler();
     final forkReq = ForkSessionRequest.fromJson(request.params ?? {});
-    final response = await _handler.forkSession(
+    final response = await handler.forkSession(
       forkReq,
       cancelToken: cancelToken,
     );
     return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleListProviders(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.providersList);
+    final handler = _requireUnstableHandler();
+    final req = ListProvidersRequest.fromJson(request.params ?? {});
+    final response = await handler.listProviders(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleSetProviders(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.providersSet);
+    final handler = _requireUnstableHandler();
+    final req = SetProvidersRequest.fromJson(request.params ?? {});
+    final response = await handler.setProviders(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleDisableProviders(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.providersDisable);
+    final handler = _requireUnstableHandler();
+    final req = DisableProvidersRequest.fromJson(request.params ?? {});
+    final response = await handler.disableProviders(
+      req,
+      cancelToken: cancelToken,
+    );
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleLogout(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.logout);
+    final handler = _requireUnstableHandler();
+    final req = LogoutRequest.fromJson(request.params ?? {});
+    final response = await handler.logout(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleResumeSession(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.sessionResume);
+    final handler = _requireUnstableHandler();
+    final req = ResumeSessionRequest.fromJson(request.params ?? {});
+    final response = await handler.resumeSession(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleCloseSession(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.sessionClose);
+    final handler = _requireUnstableHandler();
+    final req = CloseSessionRequest.fromJson(request.params ?? {});
+    final response = await handler.closeSession(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleSetModel(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.sessionSetModel);
+    final handler = _requireUnstableHandler();
+    final req = SetSessionModelRequest.fromJson(request.params ?? {});
+    final response = await handler.setModel(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleStartNes(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.nesStart);
+    final handler = _requireUnstableHandler();
+    final req = StartNesRequest.fromJson(request.params ?? {});
+    final response = await handler.startNes(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleSuggestNes(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.nesSuggest);
+    final handler = _requireUnstableHandler();
+    final req = SuggestNesRequest.fromJson(request.params ?? {});
+    final response = await handler.suggestNes(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<Map<String, dynamic>> _handleCloseNes(
+    JsonRpcRequest request,
+    AcpCancellationToken cancelToken,
+  ) async {
+    _ensureUnstableIncoming(AcpMethods.nesClose);
+    final handler = _requireUnstableHandler();
+    final req = CloseNesRequest.fromJson(request.params ?? {});
+    final response = await handler.closeNes(req, cancelToken: cancelToken);
+    return response.toJson();
+  }
+
+  Future<void> _handleDidOpenDocument(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.didOpenDocument(
+      DidOpenDocumentNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleDidChangeDocument(
+    JsonRpcNotification notification,
+  ) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.didChangeDocument(
+      DidChangeDocumentNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleDidCloseDocument(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.didCloseDocument(
+      DidCloseDocumentNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleDidSaveDocument(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.didSaveDocument(
+      DidSaveDocumentNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleDidFocusDocument(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.didFocusDocument(
+      DidFocusDocumentNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleAcceptNes(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.acceptNes(
+      AcceptNesNotification.fromJson(notification.params ?? {}),
+    );
+  }
+
+  Future<void> _handleRejectNes(JsonRpcNotification notification) async {
+    if (!_useUnstableProtocol) return;
+    final handler = _handler;
+    if (handler is! UnstableAgentHandler) return;
+    return handler.rejectNes(
+      RejectNesNotification.fromJson(notification.params ?? {}),
+    );
   }
 
   void _ensureUnstable(String method) {
@@ -513,10 +804,40 @@ final class AgentSideConnection {
     }
   }
 
+  void _ensureUnstableIncoming(String method) {
+    if (!_useUnstableProtocol) {
+      throw RpcErrorException.methodNotFound(
+        'Unstable method not enabled: $method',
+      );
+    }
+  }
+
   void _enforceCapability(String method, String capability, bool isAdvertised) {
     if (_capabilityEnforcement == CapabilityEnforcement.strict &&
         !isAdvertised) {
       throw CapabilityException(method, capability);
     }
+  }
+}
+
+final class _LinkedCancellationToken implements AcpCancellationToken {
+  final AcpCancellationToken _request;
+  final AcpCancellationToken _session;
+
+  _LinkedCancellationToken(this._request, this._session);
+
+  @override
+  bool get isCanceled => _request.isCanceled || _session.isCanceled;
+
+  @override
+  late final Future<void> whenCanceled = Future.any([
+    _request.whenCanceled,
+    _session.whenCanceled,
+  ]);
+
+  @override
+  void throwIfCanceled() {
+    _request.throwIfCanceled();
+    _session.throwIfCanceled();
   }
 }

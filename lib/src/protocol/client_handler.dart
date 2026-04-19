@@ -2,12 +2,23 @@ import 'package:acp/src/protocol/cancellation.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/schema/client_methods.dart';
 import 'package:acp/src/schema/session_update.dart';
+import 'package:acp/src/schema/unstable_methods.dart';
+import 'package:meta/meta.dart';
 
 /// Handler interface for client-side ACP method dispatch.
 ///
 /// Implement this interface to handle incoming requests from an agent.
 /// The [onSessionUpdate] callback must be overridden. Optional methods
 /// throw [RpcErrorException.methodNotFound] by default.
+///
+/// To opt into unstable (`@experimental`) method dispatch, mix in
+/// [UnstableClientHandler]:
+///
+/// ```dart
+/// class MyClient extends ClientHandler with UnstableClientHandler {
+///   // ... override stable + unstable methods ...
+/// }
+/// ```
 abstract class ClientHandler {
   // -- Required callback (must be overridden) --
 
@@ -81,5 +92,24 @@ abstract class ClientHandler {
   Future<void> onExtNotification(
     String method,
     Map<String, dynamic>? params,
+  ) async {}
+}
+
+/// Mix-in for handling unstable (`@experimental`) client-side ACP methods.
+///
+/// Opt-in by declaring `with UnstableClientHandler` on your [ClientHandler]
+/// subclass. The `ClientSideConnection` only dispatches unstable methods to
+/// handlers that mix this in; otherwise they respond with `methodNotFound`.
+@experimental
+mixin UnstableClientHandler on ClientHandler {
+  /// Handles an `elicitation/create` request (unstable).
+  Future<CreateElicitationResponse> createElicitation(
+    CreateElicitationRequest request, {
+    required AcpCancellationToken cancelToken,
+  }) async => throw RpcErrorException.methodNotFound();
+
+  /// Handles an `elicitation/complete` notification (unstable).
+  Future<void> onElicitationComplete(
+    CompleteElicitationNotification notification,
   ) async {}
 }

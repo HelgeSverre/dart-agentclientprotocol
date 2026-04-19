@@ -36,6 +36,14 @@ const _variantNameOverrides = <String, String>{
   'SessionUpdate.AvailableCommandsUpdate': 'AvailableCommandsSessionUpdate',
   'SessionUpdate.CurrentModeUpdate': 'CurrentModeSessionUpdate',
   'SessionUpdate.ConfigOptionUpdate': 'ConfigOptionSessionUpdate',
+
+  // Unstable elicitation property variants use JSON Schema primitive names as
+  // discriminator values. Avoid shadowing Dart core types.
+  'ElicitationPropertySchema.String': 'StringElicitationPropertySchema',
+  'ElicitationPropertySchema.Number': 'NumberElicitationPropertySchema',
+  'ElicitationPropertySchema.Integer': 'IntegerElicitationPropertySchema',
+  'ElicitationPropertySchema.Boolean': 'BooleanElicitationPropertySchema',
+  'ElicitationPropertySchema.Array': 'ArrayElicitationPropertySchema',
 };
 
 /// Types to skip entirely (internal routing types, not user-facing).
@@ -528,8 +536,12 @@ String? _findRef(Map<String, dynamic> propDef) {
 /// Converts a JSON key like "sessionId" to a Dart field name.
 /// Most keys are already camelCase, but some edge cases exist.
 String _jsonKeyToDartName(String key) {
-  // Already camelCase in the schema.
-  return key;
+  return switch (key) {
+    'const' => 'constValue',
+    'default' => 'defaultValue',
+    'enum' => 'enumValues',
+    _ => key,
+  };
 }
 
 /// Replaces [RefFieldType] references to types not in [availableTypes] with
@@ -677,19 +689,33 @@ Set<String> enumTypeNames(SchemaDefinition schema) {
 
 /// Converts "snake_case" to "camelCase".
 String _snakeToCamel(String s) {
-  final parts = s.split('_');
+  final parts = _identifierParts(s);
   if (parts.isEmpty) return s;
-  return parts.first +
+  final result =
+      parts.first +
       parts
           .skip(1)
           .map((p) => p.isEmpty ? '' : p[0].toUpperCase() + p.substring(1))
           .join();
+  return _startsWithDigit(result) ? 'value$result' : result;
 }
 
 /// Converts "snake_case" to "PascalCase".
 String _snakeToPascal(String s) {
-  return s
-      .split('_')
-      .map((p) => p.isEmpty ? '' : p[0].toUpperCase() + p.substring(1))
-      .join();
+  final result =
+      _identifierParts(
+        s,
+      ).map((p) => p.isEmpty ? '' : p[0].toUpperCase() + p.substring(1)).join();
+  return _startsWithDigit(result) ? 'Value$result' : result;
+}
+
+final _identifierSplitRe = RegExp(r'[^A-Za-z0-9]+');
+
+List<String> _identifierParts(String s) =>
+    s.split(_identifierSplitRe).where((p) => p.isNotEmpty).toList();
+
+bool _startsWithDigit(String s) {
+  if (s.isEmpty) return false;
+  final code = s.codeUnitAt(0);
+  return code >= 48 && code <= 57;
 }

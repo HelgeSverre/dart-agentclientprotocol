@@ -15,7 +15,7 @@ import 'package:test/test.dart';
 
 import '../helpers/linked_transport.dart';
 
-class _TestAgentHandler extends AgentHandler {
+class _TestAgentHandler extends AgentHandler with UnstableAgentHandler {
   _TestAgentHandler();
 
   @override

@@ -313,11 +313,9 @@ void _emitSealedVariant(
       buf.writeln();
     }
 
-    if (variant.hasMeta) {
-      buf.writeln('  @override');
-      buf.writeln('  final Map<String, Object?>? meta;');
-      buf.writeln();
-    }
+    buf.writeln('  @override');
+    buf.writeln('  final Map<String, Object?>? meta;');
+    buf.writeln();
 
     // Extension data for typed variants.
     buf.writeln('  /// Unknown fields preserved for round-trip fidelity.');
@@ -334,7 +332,7 @@ void _emitSealedVariant(
     for (final field in variant.fields) {
       ctorParams.add(_ctorParam(field));
     }
-    if (variant.hasMeta) ctorParams.add('this.meta');
+    ctorParams.add('this.meta');
     ctorParams.add('this.extensionData');
     buf.writeln();
     for (final p in ctorParams) {
@@ -351,7 +349,7 @@ void _emitSealedVariant(
     _emitKnownFieldsSet(
       buf,
       variant.fields,
-      variant.hasMeta,
+      true,
       extraKeys: {parent.discriminatorField},
     );
     _emitExtensionDataExtraction(buf);
@@ -359,9 +357,7 @@ void _emitSealedVariant(
     for (final field in variant.fields) {
       buf.writeln('      ${field.dartName}: ${_fromJsonExpr(field)},');
     }
-    if (variant.hasMeta) {
-      buf.writeln("      meta: json['_meta'] as Map<String, Object?>?,");
-    }
+    buf.writeln("      meta: json['_meta'] as Map<String, Object?>?,");
     buf.writeln('      extensionData: ext.isEmpty ? null : ext,');
     buf.writeln('    );');
     buf.writeln('  }');
@@ -376,9 +372,7 @@ void _emitSealedVariant(
     for (final field in variant.fields) {
       _emitToJsonField(buf, field);
     }
-    if (variant.hasMeta) {
-      buf.writeln("    if (meta != null) '_meta': meta,");
-    }
+    buf.writeln("    if (meta != null) '_meta': meta,");
     buf.writeln('    if (extensionData != null) ...extensionData!,');
     buf.writeln('  };');
   }
@@ -542,7 +536,10 @@ String _fromJsonForType(FieldType type, String accessor, FieldDef field) {
       if (!field.isRequired && field.defaultValue == null) {
         return '($accessor as num?)?.toDouble()';
       }
-      return '($accessor as num?)?.toDouble()';
+      if (field.defaultValue != null) {
+        return '($accessor as num?)?.toDouble() ?? ${field.defaultValue}';
+      }
+      return '($accessor as num).toDouble()';
     case ListFieldType():
       return _fromJsonList(type, accessor, field);
     case MapFieldType():

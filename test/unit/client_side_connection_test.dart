@@ -5,6 +5,7 @@ import 'package:acp/src/protocol/client_side_connection.dart';
 import 'package:acp/src/protocol/connection_state.dart';
 import 'package:acp/src/protocol/exceptions.dart';
 import 'package:acp/src/protocol/json_rpc_message.dart';
+import 'package:acp/src/schema/capabilities.dart';
 import 'package:acp/src/schema/client_methods.dart';
 import 'package:acp/src/schema/content_block.dart';
 import 'package:acp/src/schema/session_update.dart';
@@ -47,6 +48,8 @@ Future<void> _performInitialize(
   MockTransport transport,
   ClientSideConnection conn, {
   bool loadSession = false,
+  bool listSessions = false,
+  PromptCapabilities promptCapabilities = const PromptCapabilities(),
 }) async {
   final future = conn.sendInitialize(protocolVersion: 1);
 
@@ -63,9 +66,11 @@ Future<void> _performInitialize(
         'protocolVersion': 1,
         'agentCapabilities': <String, dynamic>{
           'loadSession': loadSession,
-          'promptCapabilities': <String, dynamic>{},
+          'promptCapabilities': promptCapabilities.toJson(),
           'mcpCapabilities': <String, dynamic>{},
-          'sessionCapabilities': <String, dynamic>{},
+          'sessionCapabilities': <String, dynamic>{
+            if (listSessions) 'list': <String, dynamic>{},
+          },
         },
         'authMethods': <dynamic>[],
       },
@@ -139,6 +144,22 @@ void main() {
       },
     );
 
+    test('sendNewSession rejects relative cwd before sending', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+      await _performInitialize(transport, conn);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendNewSession(cwd: 'relative/path'),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
     test(
       'sendNewSession maps auth_required to AuthenticationException',
       () async {
@@ -189,6 +210,99 @@ void main() {
       final prompt = req.params!['prompt'] as List<dynamic>;
       expect(prompt, hasLength(1));
 
+      transport.receive(
+        JsonRpcResponse(
+          id: req.id,
+          result: const <String, dynamic>{'stopReason': 'end_turn'},
+        ),
+      );
+
+      final response = await future;
+      expect(response.stopReason, 'end_turn');
+
+      await conn.close();
+    });
+
+    test('sendPrompt rejects image content without image capability', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+      await _performInitialize(transport, conn);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendPrompt(
+          sessionId: 's1',
+          prompt: const [ImageContent(data: 'abcd', mimeType: 'image/png')],
+        ),
+        throwsA(isA<CapabilityException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
+    test('sendPrompt rejects audio content without audio capability', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+      await _performInitialize(transport, conn);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendPrompt(
+          sessionId: 's1',
+          prompt: const [AudioContent(data: 'abcd', mimeType: 'audio/wav')],
+        ),
+        throwsA(isA<CapabilityException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
+    test(
+      'sendPrompt rejects embedded resources without embeddedContext capability',
+      () async {
+        final transport = MockTransport();
+        final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+        await _performInitialize(transport, conn);
+        transport.sent.clear();
+
+        expect(
+          () => conn.sendPrompt(
+            sessionId: 's1',
+            prompt: const [
+              EmbeddedResource(resource: {'uri': 'file:///tmp/a.dart'}),
+            ],
+          ),
+          throwsA(isA<CapabilityException>()),
+        );
+        expect(transport.sent, isEmpty);
+
+        await conn.close();
+      },
+    );
+
+    test('sendPrompt allows image content with image capability', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+      await _performInitialize(
+        transport,
+        conn,
+        promptCapabilities: const PromptCapabilities(image: true),
+      );
+      transport.sent.clear();
+
+      final future = conn.sendPrompt(
+        sessionId: 's1',
+        prompt: const [ImageContent(data: 'abcd', mimeType: 'image/png')],
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      final req = transport.sent.first as JsonRpcRequest;
       transport.receive(
         JsonRpcResponse(
           id: req.id,
@@ -344,6 +458,42 @@ void main() {
       expect(response.id, 'term-1');
       expect(response.isError, isTrue);
       expect(response.error!.code, -32601);
+
+      await conn.close();
+    });
+
+    test('sendLoadSession rejects relative cwd before sending', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(
+        transport,
+        handler: _TestHandler(),
+        capabilityEnforcement: CapabilityEnforcement.strict,
+      );
+
+      await _performInitialize(transport, conn, loadSession: true);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendLoadSession(sessionId: 's1', cwd: 'relative/path'),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
+
+      await conn.close();
+    });
+
+    test('sendListSessions rejects relative cwd before sending', () async {
+      final transport = MockTransport();
+      final conn = ClientSideConnection(transport, handler: _TestHandler());
+
+      await _performInitialize(transport, conn, listSessions: true);
+      transport.sent.clear();
+
+      expect(
+        () => conn.sendListSessions(cwd: 'relative/path'),
+        throwsA(isA<ProtocolValidationException>()),
+      );
+      expect(transport.sent, isEmpty);
 
       await conn.close();
     });

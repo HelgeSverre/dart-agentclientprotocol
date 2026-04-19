@@ -13,6 +13,7 @@
 ### Task 1: WebSocket Transport — Implementation
 
 **Files:**
+
 - Create: `lib/src/transport/web_socket_transport.dart`
 - Modify: `lib/transport.dart` (add export)
 
@@ -175,6 +176,7 @@ Expected: No issues found
 ### Task 2: WebSocket Transport — Unit Tests
 
 **Files:**
+
 - Create: `test/unit/web_socket_transport_test.dart`
 
 **Step 1: Write unit tests**
@@ -274,6 +276,7 @@ Expected: No issues found
 ### Task 3: JSON-RPC Batch Parsing
 
 **Files:**
+
 - Modify: `lib/src/protocol/json_rpc_message.dart` (add batch parsing helper)
 - Create: No new files — add tests to existing test file
 
@@ -329,6 +332,7 @@ Expected: All tests pass
 ### Task 4: Connection Keepalive — Implementation
 
 **Files:**
+
 - Modify: `lib/src/protocol/connection.dart` (add keepalive timer and ping/pong handling)
 - Modify: `lib/src/protocol/acp_methods.dart` (add `$/ping` and `$/pong` constants)
 
@@ -347,6 +351,7 @@ static const String pong = r'$/pong';
 **Step 2: Add keepalive to `Connection`**
 
 Add to `Connection`:
+
 - A `Timer? _keepaliveTimer` field.
 - A `Duration? _keepaliveInterval` constructor parameter (nullable, disabled by default).
 - A `_startKeepalive()` method called from `markOpen()` that schedules periodic `$/ping` notifications.
@@ -440,6 +445,7 @@ Expected: No issues found
 ### Task 5: Connection Keepalive — Unit Tests
 
 **Files:**
+
 - Modify: `test/unit/connection_test.dart` (add keepalive test group)
 
 **Step 1: Add keepalive tests**
