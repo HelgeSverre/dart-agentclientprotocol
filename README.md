@@ -12,7 +12,7 @@ This package targets the official [ACP v0.12.0](https://github.com/agentclientpr
 
 ```yaml
 dependencies:
-  acp: ^0.1.0
+  acp: ^0.1.0-rc.1
 ```
 
 ```bash

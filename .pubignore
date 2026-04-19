@@ -1,0 +1,29 @@
+# Exclude development-only content from the published pub package.
+# When this file is present, it replaces .gitignore for pub publishing.
+
+# Standard Dart / IDE / OS exclusions
+.dart_tool/
+.packages
+build/
+pubspec.lock
+pubspec_overrides.yaml
+coverage/
+doc/api/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Pub-specific exclusions — not needed at runtime by package consumers:
+
+# Upstream ACP spec reference copies (kept in repo for codegen review)
+docs/
+
+# Marketing website (deployed separately)
+website/
+
+# Codegen tooling and the bundled upstream schemas it consumes
+tool/
+
+# Historical planning and milestone docs
+doc/plans/
